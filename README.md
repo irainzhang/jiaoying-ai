@@ -80,11 +80,11 @@ GitHub Pages 静态版提供完整演练和本地规则对话，不运行模型�
 ## 验证与复现
 
 ```text
-node --test tests/engine.test.cjs tests/state.test.cjs tests/assistant.test.cjs tests/gateway.test.mjs tests/assistant-ui.test.cjs
+node --test tests/engine.test.cjs tests/state.test.cjs tests/assistant.test.cjs tests/gateway.test.mjs tests/assistant-ui.test.cjs tests/voice.test.cjs
 node examples/replay.cjs examples/default-exercise.json
 ```
 
-本版 44 项自动测试通过，新增对话意图、上下文失效、回执转入、执行冻结、网关配置与错误、并发控制，以及迟到响应不能覆盖手动本地模式或重置后的演练。原算法与状态检查包括独立最短路校对、16 种事件组合下基线约束、编辑原子性、版本失效、部分确认、执行冻结、接人顺序、回执不确认安全和新增需求拦截。
+本版 54 项自动测试通过，新增对话意图、上下文失效、回执转入、执行冻结、网关配置与错误、并发控制，以及迟到响应不能覆盖手动本地模式或重置后的演练。原算法与状态检查包括独立最短路校对、16 种事件组合下基线约束、编辑原子性、版本失效、部分确认、执行冻结、接人顺序、回执不确认安全和新增需求拦截。
 
 原 V2 浏览器已检查五个业务页、取消与保存编辑、单车路线、封路重算、部分方案拒绝与确认、跨页人工修正保留、联系门槛、上车到达核验链及执行中新增需求拦截。检查了 390 像素视口；路网和宽表在各自区域滚动。
 
@@ -98,6 +98,7 @@ dist/state.js         输入版本、人工确认、叫应联系与模拟执行�
 dist/app.js           各模块界面、人工编辑、导出与可选 WebMCP
 dist/assistant.js     对话入口、操作卡、可选模型请求与状态提示
 dist/assistant-core.js 当前演练上下文与本地规则导览
+dist/voice-input.js    浏览器语音转写、取消、权限与异常处理
 examples/             默认演练快照与复现脚本
 tests/                算法与业务状态边界测试
 server.mjs            可选本地静态服务器与模型网关入口
@@ -114,3 +115,13 @@ AI接入说明.md         交流操作与后续 DeepSeek 接入步骤
 Logo 已嵌入系统侧栏、助手身份、浮动交流入口与浏览器图标。完整组合标和独立图形位于 `dist/assets/`，由内置图像生成工具制作的 PNG 设计初稿。
 
 发布流程与维护方式见 [GitHub发布说明.md](GitHub发布说明.md)。GitHub Pages 只发布 `dist` 的内容；服务器、配置模板和测试供本地运行与复现。
+
+## 语音输入
+
+AI 助手输入框旁新增“语音输入”。点击后允许麦克风，使用普通话说出问题或现场反馈；说完点“结束识别”，浏览器返回的最终文字会接在原草稿后，核对地名、人数和需求后再手动发送。临时识别结果只作为预览，不会直接进入回执或调度操作。
+
+支持结束、取消、原草稿保留和 2000 字限制。切换业务页、离开前台、关闭或重置时停止识别；迟到回调不会覆盖新草稿。每次开始监听后最长 60 秒，停止后等待最后结果，期间暂停发送和示例填入。
+
+语音使用浏览器提供的 SpeechRecognition / webkitSpeechRecognition，独立于 DeepSeek。浏览器支持、麦克风权限和识别服务网络会影响可用性；API 存在也不保证识别服务可达。部分实现使用联网服务处理音频，不能把语音功能称为完全离线。本演示不保存录音；不支持时提示使用键盘听写或其他支持语音的浏览器。技术依据：[MDN 语音识别说明](https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognition)。
+
+新增 10 项自动测试使用识别服务测试替身，覆盖最终/临时结果、停止等待、重复结果、草稿保留、拒绝授权、设备和网络异常、超时、取消后的迟到回调、跨页/重置及浏览器后退恢复。未通过测试读取用户麦克风，也未据此验证特定设备的真实语音识别率。

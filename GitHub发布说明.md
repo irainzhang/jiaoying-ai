@@ -13,7 +13,7 @@
 ## 本地验证
 
 ```text
-node --test tests/engine.test.cjs tests/state.test.cjs tests/assistant.test.cjs tests/gateway.test.mjs tests/assistant-ui.test.cjs
+node --test tests/engine.test.cjs tests/state.test.cjs tests/assistant.test.cjs tests/gateway.test.mjs tests/assistant-ui.test.cjs tests/voice.test.cjs
 node examples/replay.cjs examples/default-exercise.json
 node server.mjs
 ```
