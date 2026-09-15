@@ -2,6 +2,8 @@
 
 <img src="dist/assets/logo-lockup.png" alt="叫应 AI — 防汛转移协同" width="480">
 
+[在线演示](https://irainzhang.github.io/jiaoying-ai/#assistant) · [源码仓库](https://github.com/irainzhang/jiaoying-ai)
+
 面向比赛评委和团队讨论的独立本地原型。沿用“叫应”的预警、受威胁家庭、包保责任与转移反馈场景，重点演示需求核实、路径规划、跨户车辆分配及安置容量约束。
 
 **全部人员、角色、路网、耗时和资源均为虚构。没有接入原“叫应”系统，没有调用大模型，没有真实消息、定位或调度指令。** 本版实际运行路径与组合搜索算法；回执整理与未接模型时的对话为有限文本规则。已新增 AI 协同助手交流页，并按 DeepSeek 预留可选后端，等待后续账号配置。
