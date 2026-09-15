@@ -1,0 +1,1296 @@
+{
+  "schema": "jiaoying-demo-v2",
+  "dataNature": "全部为虚构演练数据；不是原叫应业务数据",
+  "modelMode": "finite-text-rules-no-llm",
+  "scope": "出发前单趟规划；执行阶段冻结路线",
+  "scenario": {
+    "name": "青岚镇",
+    "nodes": [
+      {
+        "id": "D",
+        "x": 112,
+        "y": 290,
+        "label": "车辆集结点",
+        "kind": "depot"
+      },
+      {
+        "id": "W1",
+        "x": 238,
+        "y": 176,
+        "label": "西山路口",
+        "kind": "junction"
+      },
+      {
+        "id": "W2",
+        "x": 250,
+        "y": 388,
+        "label": "南环路口",
+        "kind": "junction"
+      },
+      {
+        "id": "B1",
+        "x": 398,
+        "y": 220,
+        "label": "东桥西",
+        "kind": "junction"
+      },
+      {
+        "id": "B2",
+        "x": 510,
+        "y": 220,
+        "label": "东桥东",
+        "kind": "junction"
+      },
+      {
+        "id": "N1",
+        "x": 394,
+        "y": 82,
+        "label": "北桥西",
+        "kind": "junction"
+      },
+      {
+        "id": "N2",
+        "x": 512,
+        "y": 82,
+        "label": "北桥东",
+        "kind": "junction"
+      },
+      {
+        "id": "E",
+        "x": 627,
+        "y": 334,
+        "label": "东岭路口",
+        "kind": "junction"
+      },
+      {
+        "id": "H1",
+        "x": 155,
+        "y": 93,
+        "label": "01 松林户",
+        "kind": "home"
+      },
+      {
+        "id": "H2",
+        "x": 327,
+        "y": 127,
+        "label": "02 石桥户",
+        "kind": "home"
+      },
+      {
+        "id": "H3",
+        "x": 558,
+        "y": 140,
+        "label": "03 东岭户",
+        "kind": "home"
+      },
+      {
+        "id": "H4",
+        "x": 708,
+        "y": 223,
+        "label": "04 河畔户",
+        "kind": "home"
+      },
+      {
+        "id": "H5",
+        "x": 558,
+        "y": 428,
+        "label": "05 南湾户",
+        "kind": "home"
+      },
+      {
+        "id": "H6",
+        "x": 146,
+        "y": 458,
+        "label": "06 榆树户",
+        "kind": "home"
+      },
+      {
+        "id": "S1",
+        "x": 326,
+        "y": 478,
+        "label": "青岚学校",
+        "kind": "shelter"
+      },
+      {
+        "id": "S2",
+        "x": 730,
+        "y": 407,
+        "label": "东岭体育馆",
+        "kind": "shelter"
+      }
+    ],
+    "edges": [
+      {
+        "id": "r0",
+        "from": "D",
+        "to": "W1",
+        "minutes": 4,
+        "open": true
+      },
+      {
+        "id": "r1",
+        "from": "D",
+        "to": "W2",
+        "minutes": 4,
+        "open": true
+      },
+      {
+        "id": "r2",
+        "from": "W1",
+        "to": "H1",
+        "minutes": 3,
+        "open": true
+      },
+      {
+        "id": "r3",
+        "from": "W1",
+        "to": "H2",
+        "minutes": 3,
+        "open": true
+      },
+      {
+        "id": "r4",
+        "from": "W1",
+        "to": "B1",
+        "minutes": 4,
+        "open": true
+      },
+      {
+        "id": "r5",
+        "from": "W1",
+        "to": "N1",
+        "minutes": 6,
+        "open": true
+      },
+      {
+        "id": "r6",
+        "from": "W2",
+        "to": "B1",
+        "minutes": 5,
+        "open": true
+      },
+      {
+        "id": "r7",
+        "from": "W2",
+        "to": "H6",
+        "minutes": 3,
+        "open": true
+      },
+      {
+        "id": "r8",
+        "from": "W2",
+        "to": "S1",
+        "minutes": 4,
+        "open": true
+      },
+      {
+        "id": "r9",
+        "from": "H6",
+        "to": "S1",
+        "minutes": 5,
+        "open": true
+      },
+      {
+        "id": "r10",
+        "from": "H2",
+        "to": "N1",
+        "minutes": 3,
+        "open": true
+      },
+      {
+        "id": "r11",
+        "from": "B1",
+        "to": "N1",
+        "minutes": 5,
+        "open": true
+      },
+      {
+        "id": "north",
+        "from": "N1",
+        "to": "N2",
+        "minutes": 7,
+        "open": true
+      },
+      {
+        "id": "east",
+        "from": "B1",
+        "to": "B2",
+        "minutes": 3,
+        "open": true
+      },
+      {
+        "id": "r14",
+        "from": "N2",
+        "to": "H3",
+        "minutes": 3,
+        "open": true
+      },
+      {
+        "id": "r15",
+        "from": "B2",
+        "to": "H3",
+        "minutes": 3,
+        "open": true
+      },
+      {
+        "id": "r16",
+        "from": "B2",
+        "to": "E",
+        "minutes": 4,
+        "open": true
+      },
+      {
+        "id": "r17",
+        "from": "H3",
+        "to": "H4",
+        "minutes": 5,
+        "open": true
+      },
+      {
+        "id": "r18",
+        "from": "E",
+        "to": "H4",
+        "minutes": 3,
+        "open": true
+      },
+      {
+        "id": "r19",
+        "from": "E",
+        "to": "H5",
+        "minutes": 3,
+        "open": true
+      },
+      {
+        "id": "r20",
+        "from": "E",
+        "to": "S2",
+        "minutes": 4,
+        "open": true
+      },
+      {
+        "id": "r21",
+        "from": "H5",
+        "to": "S2",
+        "minutes": 5,
+        "open": true
+      }
+    ],
+    "households": [
+      {
+        "id": "H1",
+        "name": "松林户",
+        "people": 2,
+        "priority": 3,
+        "assistance": false,
+        "wheelchair": false,
+        "service": 2,
+        "note": "演练设定：需优先转移",
+        "response": "暂无本轮回执"
+      },
+      {
+        "id": "H2",
+        "name": "石桥户",
+        "people": 3,
+        "priority": 2,
+        "assistance": true,
+        "wheelchair": true,
+        "service": 6,
+        "note": "含 1 名轮椅使用者及 2 名同行者",
+        "response": "暂无本轮回执"
+      },
+      {
+        "id": "H3",
+        "name": "东岭户",
+        "people": 4,
+        "priority": 1,
+        "assistance": false,
+        "wheelchair": false,
+        "service": 2,
+        "note": "4 人同车转移",
+        "response": "暂无本轮回执"
+      },
+      {
+        "id": "H4",
+        "name": "河畔户",
+        "people": 2,
+        "priority": 2,
+        "assistance": true,
+        "wheelchair": false,
+        "service": 5,
+        "note": "需上门陪同，含同行人员",
+        "response": "暂无本轮回执"
+      },
+      {
+        "id": "H5",
+        "name": "南湾户",
+        "people": 1,
+        "priority": 1,
+        "assistance": false,
+        "wheelchair": false,
+        "service": 2,
+        "note": "待核实接送需求",
+        "response": "暂无本轮回执"
+      },
+      {
+        "id": "H6",
+        "name": "榆树户",
+        "people": 3,
+        "priority": 1,
+        "assistance": false,
+        "wheelchair": false,
+        "service": 2,
+        "note": "3 人同车转移",
+        "response": "暂无本轮回执"
+      }
+    ],
+    "vehicles": [
+      {
+        "id": "V1",
+        "name": "1 号车",
+        "capacity": 6,
+        "wheelchair": true,
+        "color": "#446dff",
+        "available": true,
+        "start": "D"
+      },
+      {
+        "id": "V2",
+        "name": "2 号车",
+        "capacity": 5,
+        "wheelchair": false,
+        "color": "#14a49b",
+        "available": true,
+        "start": "D"
+      },
+      {
+        "id": "V3",
+        "name": "3 号车",
+        "capacity": 4,
+        "wheelchair": false,
+        "color": "#d48c22",
+        "available": true,
+        "start": "D"
+      }
+    ],
+    "shelters": [
+      {
+        "id": "S1",
+        "name": "青岚学校",
+        "capacity": 10,
+        "available": true
+      },
+      {
+        "id": "S2",
+        "name": "东岭体育馆",
+        "capacity": 12,
+        "available": true
+      }
+    ]
+  },
+  "version": 1,
+  "plan": {
+    "mask": 63,
+    "servedPeople": 15,
+    "urgent": 1,
+    "assisted": 2,
+    "priorityWait": 87,
+    "totalWait": 250,
+    "finish": 38,
+    "drive": 86,
+    "routes": [
+      {
+        "vehicleId": "V1",
+        "mask": 34,
+        "people": 6,
+        "finish": 34,
+        "priorityWait": 21,
+        "totalWait": 102,
+        "drive": 26,
+        "stops": [
+          {
+            "id": "H2",
+            "arrival": 7,
+            "depart": 13,
+            "people": 3
+          },
+          {
+            "id": "H6",
+            "arrival": 27,
+            "depart": 29,
+            "people": 3
+          }
+        ],
+        "segments": [
+          {
+            "from": "D",
+            "to": "H2",
+            "nodes": [
+              "D",
+              "W1",
+              "H2"
+            ],
+            "edges": [
+              "r0",
+              "r3"
+            ],
+            "minutes": 7
+          },
+          {
+            "from": "H2",
+            "to": "H6",
+            "nodes": [
+              "H2",
+              "W1",
+              "D",
+              "W2",
+              "H6"
+            ],
+            "edges": [
+              "r3",
+              "r0",
+              "r1",
+              "r7"
+            ],
+            "minutes": 14
+          },
+          {
+            "from": "H6",
+            "to": "S1",
+            "nodes": [
+              "H6",
+              "S1"
+            ],
+            "edges": [
+              "r9"
+            ],
+            "minutes": 5
+          }
+        ],
+        "shelterId": "S1"
+      },
+      {
+        "vehicleId": "V2",
+        "mask": 20,
+        "people": 5,
+        "finish": 33,
+        "priorityWait": 0,
+        "totalWait": 82,
+        "drive": 29,
+        "stops": [
+          {
+            "id": "H3",
+            "arrival": 14,
+            "depart": 16,
+            "people": 4
+          },
+          {
+            "id": "H5",
+            "arrival": 26,
+            "depart": 28,
+            "people": 1
+          }
+        ],
+        "segments": [
+          {
+            "from": "D",
+            "to": "H3",
+            "nodes": [
+              "D",
+              "W1",
+              "B1",
+              "B2",
+              "H3"
+            ],
+            "edges": [
+              "r0",
+              "r4",
+              "east",
+              "r15"
+            ],
+            "minutes": 14
+          },
+          {
+            "from": "H3",
+            "to": "H5",
+            "nodes": [
+              "H3",
+              "B2",
+              "E",
+              "H5"
+            ],
+            "edges": [
+              "r15",
+              "r16",
+              "r19"
+            ],
+            "minutes": 10
+          },
+          {
+            "from": "H5",
+            "to": "S2",
+            "nodes": [
+              "H5",
+              "S2"
+            ],
+            "edges": [
+              "r21"
+            ],
+            "minutes": 5
+          }
+        ],
+        "shelterId": "S2"
+      },
+      {
+        "vehicleId": "V3",
+        "mask": 9,
+        "people": 4,
+        "finish": 38,
+        "priorityWait": 66,
+        "totalWait": 66,
+        "drive": 31,
+        "stops": [
+          {
+            "id": "H1",
+            "arrival": 7,
+            "depart": 9,
+            "people": 2
+          },
+          {
+            "id": "H4",
+            "arrival": 26,
+            "depart": 31,
+            "people": 2
+          }
+        ],
+        "segments": [
+          {
+            "from": "D",
+            "to": "H1",
+            "nodes": [
+              "D",
+              "W1",
+              "H1"
+            ],
+            "edges": [
+              "r0",
+              "r2"
+            ],
+            "minutes": 7
+          },
+          {
+            "from": "H1",
+            "to": "H4",
+            "nodes": [
+              "H1",
+              "W1",
+              "B1",
+              "B2",
+              "E",
+              "H4"
+            ],
+            "edges": [
+              "r2",
+              "r4",
+              "east",
+              "r16",
+              "r18"
+            ],
+            "minutes": 17
+          },
+          {
+            "from": "H4",
+            "to": "S2",
+            "nodes": [
+              "H4",
+              "E",
+              "S2"
+            ],
+            "edges": [
+              "r18",
+              "r20"
+            ],
+            "minutes": 7
+          }
+        ],
+        "shelterId": "S2"
+      }
+    ],
+    "totalPeople": 15,
+    "totalHouseholds": 6,
+    "servedHouseholds": 6,
+    "unassigned": [],
+    "complete": true,
+    "priorityAverage": 12.428571428571429,
+    "combinations": 4303,
+    "elapsedMs": 4
+  },
+  "baseline": {
+    "mask": 31,
+    "routes": [
+      {
+        "vehicleId": "V1",
+        "mask": 3,
+        "people": 5,
+        "finish": 36,
+        "priorityWait": 59,
+        "totalWait": 59,
+        "drive": 28,
+        "stops": [
+          {
+            "id": "H1",
+            "arrival": 7,
+            "depart": 9,
+            "people": 2
+          },
+          {
+            "id": "H2",
+            "arrival": 15,
+            "depart": 21,
+            "people": 3
+          }
+        ],
+        "segments": [
+          {
+            "from": "D",
+            "to": "H1",
+            "nodes": [
+              "D",
+              "W1",
+              "H1"
+            ],
+            "edges": [
+              "r0",
+              "r2"
+            ],
+            "minutes": 7
+          },
+          {
+            "from": "H1",
+            "to": "H2",
+            "nodes": [
+              "H1",
+              "W1",
+              "H2"
+            ],
+            "edges": [
+              "r2",
+              "r3"
+            ],
+            "minutes": 6
+          },
+          {
+            "from": "H2",
+            "to": "S1",
+            "nodes": [
+              "H2",
+              "W1",
+              "D",
+              "W2",
+              "S1"
+            ],
+            "edges": [
+              "r3",
+              "r0",
+              "r1",
+              "r8"
+            ],
+            "minutes": 15
+          }
+        ],
+        "shelterId": "S1"
+      },
+      {
+        "vehicleId": "V2",
+        "mask": 24,
+        "people": 3,
+        "finish": 36,
+        "priorityWait": 36,
+        "totalWait": 65,
+        "drive": 29,
+        "stops": [
+          {
+            "id": "H4",
+            "arrival": 18,
+            "depart": 23,
+            "people": 2
+          },
+          {
+            "id": "H5",
+            "arrival": 29,
+            "depart": 31,
+            "people": 1
+          }
+        ],
+        "segments": [
+          {
+            "from": "D",
+            "to": "H4",
+            "nodes": [
+              "D",
+              "W1",
+              "B1",
+              "B2",
+              "E",
+              "H4"
+            ],
+            "edges": [
+              "r0",
+              "r4",
+              "east",
+              "r16",
+              "r18"
+            ],
+            "minutes": 18
+          },
+          {
+            "from": "H4",
+            "to": "H5",
+            "nodes": [
+              "H4",
+              "E",
+              "H5"
+            ],
+            "edges": [
+              "r18",
+              "r19"
+            ],
+            "minutes": 6
+          },
+          {
+            "from": "H5",
+            "to": "S2",
+            "nodes": [
+              "H5",
+              "S2"
+            ],
+            "edges": [
+              "r21"
+            ],
+            "minutes": 5
+          }
+        ],
+        "shelterId": "S2"
+      },
+      {
+        "vehicleId": "V3",
+        "mask": 4,
+        "people": 4,
+        "finish": 27,
+        "priorityWait": 0,
+        "totalWait": 56,
+        "drive": 25,
+        "stops": [
+          {
+            "id": "H3",
+            "arrival": 14,
+            "depart": 16,
+            "people": 4
+          }
+        ],
+        "segments": [
+          {
+            "from": "D",
+            "to": "H3",
+            "nodes": [
+              "D",
+              "W1",
+              "B1",
+              "B2",
+              "H3"
+            ],
+            "edges": [
+              "r0",
+              "r4",
+              "east",
+              "r15"
+            ],
+            "minutes": 14
+          },
+          {
+            "from": "H3",
+            "to": "S2",
+            "nodes": [
+              "H3",
+              "B2",
+              "E",
+              "S2"
+            ],
+            "edges": [
+              "r15",
+              "r16",
+              "r20"
+            ],
+            "minutes": 11
+          }
+        ],
+        "shelterId": "S2"
+      }
+    ],
+    "servedPeople": 12,
+    "totalPeople": 15,
+    "totalHouseholds": 6,
+    "servedHouseholds": 5,
+    "urgent": 1,
+    "assisted": 2,
+    "priorityWait": 95,
+    "totalWait": 180,
+    "priorityAverage": 13.571428571428571,
+    "finish": 36,
+    "drive": 82,
+    "unassigned": [
+      {
+        "id": "H6",
+        "name": "榆树户",
+        "people": 3,
+        "priority": 1,
+        "assistance": false,
+        "wheelchair": false,
+        "service": 2,
+        "note": "3 人同车转移",
+        "response": "暂无本轮回执",
+        "reason": "按本基线的当前分配，无法继续安排；可尝试联合调度"
+      }
+    ],
+    "complete": false,
+    "combinations": 15,
+    "elapsedMs": 5
+  },
+  "planVersion": 1,
+  "planInput": {
+    "name": "青岚镇",
+    "nodes": [
+      {
+        "id": "D",
+        "x": 112,
+        "y": 290,
+        "label": "车辆集结点",
+        "kind": "depot"
+      },
+      {
+        "id": "W1",
+        "x": 238,
+        "y": 176,
+        "label": "西山路口",
+        "kind": "junction"
+      },
+      {
+        "id": "W2",
+        "x": 250,
+        "y": 388,
+        "label": "南环路口",
+        "kind": "junction"
+      },
+      {
+        "id": "B1",
+        "x": 398,
+        "y": 220,
+        "label": "东桥西",
+        "kind": "junction"
+      },
+      {
+        "id": "B2",
+        "x": 510,
+        "y": 220,
+        "label": "东桥东",
+        "kind": "junction"
+      },
+      {
+        "id": "N1",
+        "x": 394,
+        "y": 82,
+        "label": "北桥西",
+        "kind": "junction"
+      },
+      {
+        "id": "N2",
+        "x": 512,
+        "y": 82,
+        "label": "北桥东",
+        "kind": "junction"
+      },
+      {
+        "id": "E",
+        "x": 627,
+        "y": 334,
+        "label": "东岭路口",
+        "kind": "junction"
+      },
+      {
+        "id": "H1",
+        "x": 155,
+        "y": 93,
+        "label": "01 松林户",
+        "kind": "home"
+      },
+      {
+        "id": "H2",
+        "x": 327,
+        "y": 127,
+        "label": "02 石桥户",
+        "kind": "home"
+      },
+      {
+        "id": "H3",
+        "x": 558,
+        "y": 140,
+        "label": "03 东岭户",
+        "kind": "home"
+      },
+      {
+        "id": "H4",
+        "x": 708,
+        "y": 223,
+        "label": "04 河畔户",
+        "kind": "home"
+      },
+      {
+        "id": "H5",
+        "x": 558,
+        "y": 428,
+        "label": "05 南湾户",
+        "kind": "home"
+      },
+      {
+        "id": "H6",
+        "x": 146,
+        "y": 458,
+        "label": "06 榆树户",
+        "kind": "home"
+      },
+      {
+        "id": "S1",
+        "x": 326,
+        "y": 478,
+        "label": "青岚学校",
+        "kind": "shelter"
+      },
+      {
+        "id": "S2",
+        "x": 730,
+        "y": 407,
+        "label": "东岭体育馆",
+        "kind": "shelter"
+      }
+    ],
+    "edges": [
+      {
+        "id": "r0",
+        "from": "D",
+        "to": "W1",
+        "minutes": 4,
+        "open": true
+      },
+      {
+        "id": "r1",
+        "from": "D",
+        "to": "W2",
+        "minutes": 4,
+        "open": true
+      },
+      {
+        "id": "r2",
+        "from": "W1",
+        "to": "H1",
+        "minutes": 3,
+        "open": true
+      },
+      {
+        "id": "r3",
+        "from": "W1",
+        "to": "H2",
+        "minutes": 3,
+        "open": true
+      },
+      {
+        "id": "r4",
+        "from": "W1",
+        "to": "B1",
+        "minutes": 4,
+        "open": true
+      },
+      {
+        "id": "r5",
+        "from": "W1",
+        "to": "N1",
+        "minutes": 6,
+        "open": true
+      },
+      {
+        "id": "r6",
+        "from": "W2",
+        "to": "B1",
+        "minutes": 5,
+        "open": true
+      },
+      {
+        "id": "r7",
+        "from": "W2",
+        "to": "H6",
+        "minutes": 3,
+        "open": true
+      },
+      {
+        "id": "r8",
+        "from": "W2",
+        "to": "S1",
+        "minutes": 4,
+        "open": true
+      },
+      {
+        "id": "r9",
+        "from": "H6",
+        "to": "S1",
+        "minutes": 5,
+        "open": true
+      },
+      {
+        "id": "r10",
+        "from": "H2",
+        "to": "N1",
+        "minutes": 3,
+        "open": true
+      },
+      {
+        "id": "r11",
+        "from": "B1",
+        "to": "N1",
+        "minutes": 5,
+        "open": true
+      },
+      {
+        "id": "north",
+        "from": "N1",
+        "to": "N2",
+        "minutes": 7,
+        "open": true
+      },
+      {
+        "id": "east",
+        "from": "B1",
+        "to": "B2",
+        "minutes": 3,
+        "open": true
+      },
+      {
+        "id": "r14",
+        "from": "N2",
+        "to": "H3",
+        "minutes": 3,
+        "open": true
+      },
+      {
+        "id": "r15",
+        "from": "B2",
+        "to": "H3",
+        "minutes": 3,
+        "open": true
+      },
+      {
+        "id": "r16",
+        "from": "B2",
+        "to": "E",
+        "minutes": 4,
+        "open": true
+      },
+      {
+        "id": "r17",
+        "from": "H3",
+        "to": "H4",
+        "minutes": 5,
+        "open": true
+      },
+      {
+        "id": "r18",
+        "from": "E",
+        "to": "H4",
+        "minutes": 3,
+        "open": true
+      },
+      {
+        "id": "r19",
+        "from": "E",
+        "to": "H5",
+        "minutes": 3,
+        "open": true
+      },
+      {
+        "id": "r20",
+        "from": "E",
+        "to": "S2",
+        "minutes": 4,
+        "open": true
+      },
+      {
+        "id": "r21",
+        "from": "H5",
+        "to": "S2",
+        "minutes": 5,
+        "open": true
+      }
+    ],
+    "households": [
+      {
+        "id": "H1",
+        "name": "松林户",
+        "people": 2,
+        "priority": 3,
+        "assistance": false,
+        "wheelchair": false,
+        "service": 2,
+        "note": "演练设定：需优先转移",
+        "response": "暂无本轮回执"
+      },
+      {
+        "id": "H2",
+        "name": "石桥户",
+        "people": 3,
+        "priority": 2,
+        "assistance": true,
+        "wheelchair": true,
+        "service": 6,
+        "note": "含 1 名轮椅使用者及 2 名同行者",
+        "response": "暂无本轮回执"
+      },
+      {
+        "id": "H3",
+        "name": "东岭户",
+        "people": 4,
+        "priority": 1,
+        "assistance": false,
+        "wheelchair": false,
+        "service": 2,
+        "note": "4 人同车转移",
+        "response": "暂无本轮回执"
+      },
+      {
+        "id": "H4",
+        "name": "河畔户",
+        "people": 2,
+        "priority": 2,
+        "assistance": true,
+        "wheelchair": false,
+        "service": 5,
+        "note": "需上门陪同，含同行人员",
+        "response": "暂无本轮回执"
+      },
+      {
+        "id": "H5",
+        "name": "南湾户",
+        "people": 1,
+        "priority": 1,
+        "assistance": false,
+        "wheelchair": false,
+        "service": 2,
+        "note": "待核实接送需求",
+        "response": "暂无本轮回执"
+      },
+      {
+        "id": "H6",
+        "name": "榆树户",
+        "people": 3,
+        "priority": 1,
+        "assistance": false,
+        "wheelchair": false,
+        "service": 2,
+        "note": "3 人同车转移",
+        "response": "暂无本轮回执"
+      }
+    ],
+    "vehicles": [
+      {
+        "id": "V1",
+        "name": "1 号车",
+        "capacity": 6,
+        "wheelchair": true,
+        "color": "#446dff",
+        "available": true,
+        "start": "D"
+      },
+      {
+        "id": "V2",
+        "name": "2 号车",
+        "capacity": 5,
+        "wheelchair": false,
+        "color": "#14a49b",
+        "available": true,
+        "start": "D"
+      },
+      {
+        "id": "V3",
+        "name": "3 号车",
+        "capacity": 4,
+        "wheelchair": false,
+        "color": "#d48c22",
+        "available": true,
+        "start": "D"
+      }
+    ],
+    "shelters": [
+      {
+        "id": "S1",
+        "name": "青岚学校",
+        "capacity": 10,
+        "available": true
+      },
+      {
+        "id": "S2",
+        "name": "东岭体育馆",
+        "capacity": 12,
+        "available": true
+      }
+    ]
+  },
+  "confirmed": null,
+  "phase": "preparation",
+  "sent": false,
+  "contact": {
+    "H1": {
+      "ack": false,
+      "contacted": false
+    },
+    "H2": {
+      "ack": false,
+      "contacted": false
+    },
+    "H3": {
+      "ack": false,
+      "contacted": false
+    },
+    "H4": {
+      "ack": false,
+      "contacted": false
+    },
+    "H5": {
+      "ack": false,
+      "contacted": false
+    },
+    "H6": {
+      "ack": false,
+      "contacted": false
+    }
+  },
+  "execution": {
+    "H1": "waiting",
+    "H2": "waiting",
+    "H3": "waiting",
+    "H4": "waiting",
+    "H5": "waiting",
+    "H6": "waiting"
+  },
+  "receipts": [],
+  "pending": [],
+  "log": [
+    {
+      "sequence": 2,
+      "time": "2026-09-15T01:14:41.479Z",
+      "version": 1,
+      "message": "同一输入计算两种方案：联合调度 15 人，简单基线 12 人。"
+    },
+    {
+      "sequence": 1,
+      "time": "2026-09-15T01:14:41.469Z",
+      "version": 1,
+      "message": "载入虚构演练。6 户 15 人，3 辆车，2 个安置点。"
+    }
+  ]
+}
