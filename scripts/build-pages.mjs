@@ -10,7 +10,7 @@ const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 export const output=resolve(root,'tmp/pages-release');
 const read=path=>readFile(resolve(root,path),'utf8');
 const write=(path,data)=>writeFile(resolve(output,path),data,'utf8');
-const included=['.nojekyll','index.html','engine.js','voice-input.js','real-map.js','real-map.css','workspace-app.js','workspace.css','command-theme.css','interface-motion.js','interface-motion.css','field-assistant.js','field-workspace.js','field-workspace.css','village-assistant.js','village-workspace.js','village-workspace.css','pages-runtime.js','capabilities.js','evidence-library.js','operations-ui.js','operations-ui.css','start-page.js','start-page.css'];
+const included=['.nojekyll','index.html','engine.js','voice-input.js','real-map.js','real-map.css','workspace-app.js','workspace.css','command-theme.css','interface-motion.js','interface-motion.css','field-assistant.js','field-workspace.js','field-workspace.css','village-assistant.js','command-intake.js','intake-file.js','quick-context.js','intake-ui.js','village-workspace.js','village-workspace.css','pages-runtime.js','capabilities.js','evidence-library.js','operations-ui.js','operations-ui.css','start-page.js','start-page.css'];
 
 export async function buildPages(){
   await mkdir(output,{recursive:true});
@@ -25,7 +25,7 @@ export async function buildPages(){
   await write('exercise-browser.js',bundle);
   let index=await read('dist/index.html');
   index=index.replace('<script defer src="engine.js"></script>','<script defer src="engine.js"></script><script defer src="exercise-browser.js"></script><script defer src="pages-runtime.js"></script>')
-    .replace('本地演练 <b>V3.6</b>',`在线分享 <b>V${capabilities.version}</b>`)
+    .replace('本地演练 <b>V3.7</b>',`在线分享 <b>V${capabilities.version}</b>`)
     .replace('href="start.html">入口与清单','href="start.html">分享入口与清单');
   await write('index.html',index);
   const start=await read('dist/start.html');

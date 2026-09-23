@@ -60,7 +60,7 @@
     let indexedDB;try{indexedDB=env.indexedDB;}catch(_){}
     const storage=options.storage||createIndexedDBStorage(indexedDB,key);
     const integrations=options.integrations||{};
-    const capabilities={realtimeEvents:true,villageReporting:true,version:'3.5-pages',operations:true,stateRestore:true,persistentStorage:true,browserOnly:true,crossDeviceSync:false};
+    const capabilities={realtimeEvents:true,villageReporting:true,commandIntake:true,version:'3.7-pages',operations:true,stateRestore:true,persistentStorage:true,browserOnly:true,crossDeviceSync:false};
     const transport={preferred:'browser-storage',eventsUrl:'/api/v3/events',eventName:'state',pollIntervalMs:1200};
     const listeners=new Set(),streams=new Set();let lastError='',channel=null;
     try{if(typeof env.BroadcastChannel==='function')channel=new env.BroadcastChannel(key);}catch(_){}
@@ -121,7 +121,7 @@
           if(typeof init.body!=='string'||new TextEncoder().encode(init.body).length>6*1024*1024)return response(result(413,{error:'请求过长或格式无效'}));
           let value;try{value=JSON.parse(init.body);}catch(_){return response(result(400,{error:'JSON 格式无效'}));}
           if(!value||typeof value!=='object'||Array.isArray(value)||typeof value.action!=='string'||typeof value.requestId!=='string'||!value.requestId||value.requestId.length>100)return response(result(400,{error:'操作参数无效'}));
-          if(value.action!=='restore'&&new TextEncoder().encode(init.body).length>16384)return response(result(413,{error:'请求过长或格式无效'}));
+          if(value.action!=='restore'&&new TextEncoder().encode(init.body).length>(value.action==='command-intake'?262144:16384))return response(result(413,{error:'请求过长或格式无效'}));
           return response(await mutate(value,init.signal));
         }
         return response(result(404,{error:'接口不存在或请求方法不支持'}));

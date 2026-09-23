@@ -190,6 +190,38 @@ function create(initialData=null){
         assert(d.followups[key]||Object.keys(d.followups).length<500,'跟进事项达到演示上限');d.followups[key]={key,owner,note,dueAt:dueAt?new Date(dueAt).toISOString():null,status:p.status,updatedAt:now()};
         log(owner+' 更新 '+key+' 跟进：'+note+'；未自动改变道路、转移或安全核验状态。','followup');d.lastAnnouncement=d.log[0].message;
       }
+      else if(name==='command-intake'){
+        assert(Array.isArray(p.rows)&&p.rows.length>0&&p.rows.length<=100,'请上传或整理 1–100 行人员任务');
+        assert(['file','voice','text'].includes(p.source),'指挥录入来源无效');
+        assert(p.duplicateAcknowledged===undefined||typeof p.duplicateAcknowledged==='boolean','重复批次确认必须明确勾选');
+        const reporter=text(p.reporter===undefined?'指挥值守':p.reporter,40,'录入人');
+        const note=p.note===undefined?'指挥端已核对名单与人数':text(p.note,220,'核对说明');
+        const source=p.source==='file'?'manual':p.source,intakeId='CI'+(d.revision+1),batchIds=[];
+        const origin={origin:'command',intakeSource:p.source,commandIntakeId:intakeId};
+        V.ensure(d);
+        // The enclosing action transaction rolls back every row on any failure.
+        // Defer recalculation until the entire reviewed intake has materialized.
+        const context={now,log,invalidate:()=>{},generate:()=>{},fieldEvent:event=>{
+          if(event.stage==='village-review')fieldEvent({...event,...origin,stage:'command-intake'});
+        }};
+        for(let index=0;index<p.rows.length;index++){
+          const row=p.rows[index];
+          try{
+            assert(row&&typeof row==='object'&&!Array.isArray(row),'人员任务行无效');
+            assert(row.mode===undefined||row.mode==='increment','快捷建任务仅新增人员；总量与更正请使用村级核对');
+            const fields=Object.fromEntries(['villageId','pickupId','people','assistancePeople','wheelchairPeople','groupPolicy','text','reporter'].filter(key=>row[key]!==undefined).map(key=>[key,row[key]]));
+            V.handle(d,'village-report',{...fields,mode:'increment',source,reporter:row.reporter===undefined?reporter:row.reporter,duplicateAcknowledged:p.duplicateAcknowledged===true},context);
+            const record=d.villageReports[0];Object.assign(record,origin);
+            V.handle(d,'village-review',{id:record.id,decision:'accept',note:'指挥端批量核对：'+note},context);
+            batchIds.push(record.id);
+          }catch(error){throw new Error('第 '+(index+1)+' 行：'+error.message);}
+        }
+        const people=sum(p.rows,row=>row.people),held=sum(d.villageReports.filter(row=>batchIds.includes(row.id)&&row.needsInfo),row=>row.people);
+        invalidate('指挥端确认录入 '+p.rows.length+' 批、'+people+' 人；来源：'+{file:'名单上传',voice:'语音整理',text:'文字整理'}[p.source]);
+        generate('指挥端批量建立转移任务');
+        d.lastAnnouncement='已录入 '+p.rows.length+' 批、'+people+' 人'+(held?'，其中 '+held+' 人待补调度信息':'')+'；转移草案已计算，请核对后发布。';
+        log(d.lastAnnouncement,'command-intake');
+      }
       else if(V.handle(d,name,p,{now,log,invalidate,generate,fieldEvent})){}
       else if(name==='generate')generate();
       else if(name==='weather'){
