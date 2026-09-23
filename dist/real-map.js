@@ -7,11 +7,11 @@
   const isRoad=f=>f.properties.kind==='road'||Boolean(f.properties.highway);
   function style(feature){
     const p=feature.properties;
-    if(isWater(feature))return {color:'#286077',weight:p.waterway?3:1,fillColor:'#17435c',fillOpacity:1};
-    if(p.kind==='rail'||p.railway)return {color:'#577084',weight:2,dashArray:'5 4'};
-    if(p.kind==='park'||p.leisure||p.landuse)return {color:'#285050',weight:1,fillColor:'#1b3c3d',fillOpacity:.8};
+    if(isWater(feature))return {color:'#86b9ce',weight:p.waterway?3:1,fillColor:'#c9e6ef',fillOpacity:1};
+    if(p.kind==='rail'||p.railway)return {color:'#8399a9',weight:2,dashArray:'5 4'};
+    if(p.kind==='park'||p.leisure||p.landuse)return {color:'#b4cfbb',weight:1,fillColor:'#dbeadf',fillOpacity:.8};
     const major=['motorway','trunk','primary','secondary'].some(type=>p.highway?.startsWith(type));
-    return {color:major?'#62859b':'#35576b',weight:major?4.5:2.2,opacity:1};
+    return {color:major?'#ffffff':'#f9fcfe',weight:major?4.5:2.2,opacity:1};
   }
   function popup(feature,layer){const p=feature.properties;layer.bindPopup(`<div class="geo-popup"><strong>${escapeHTML(p.name||p['name:zh']||(isRoad(feature)?'未命名道路':'地理要素'))}</strong><p>OpenStreetMap 实际地理要素</p><small>这不是实时路况、灾情或调度任务。</small></div>`);}
   function addLabels(features){
@@ -32,7 +32,7 @@
       if(data.type!=='FeatureCollection'||!Array.isArray(features)||!features.length)throw new Error('地图数据格式不完整');
       L.geoJSON({type:'FeatureCollection',features:features.filter(f=>!isRoad(f)&&f.geometry.type!=='Point')},{style,onEachFeature:popup}).addTo(map);
       const roads={type:'FeatureCollection',features:features.filter(isRoad)};
-      L.geoJSON(roads,{style:f=>({color:['motorway','trunk','primary','secondary'].some(t=>f.properties.highway?.startsWith(t))?'#102333':'#102333',weight:['motorway','trunk','primary','secondary'].some(t=>f.properties.highway?.startsWith(t))?6.2:3.5,opacity:.85}),interactive:false}).addTo(map);
+      L.geoJSON(roads,{style:f=>({color:'#c1cdd3',weight:['motorway','trunk','primary','secondary'].some(t=>f.properties.highway?.startsWith(t))?6.2:3.5,opacity:.85}),interactive:false}).addTo(map);
       L.geoJSON(roads,{style,onEachFeature:popup}).addTo(map);addLabels(features);
       const sourceDate=data.metadata?.sourceTime||data.metadata?.timestamp||data.metadata?.osmBaseTime||'2026-09-22';
       baseStatus=`瑞安市城区 · 飞云江两岸 · ${features.length.toLocaleString()} 个公开地理要素 · ${String(sourceDate).slice(0,10)} 数据`;

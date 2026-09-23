@@ -25,7 +25,7 @@ export async function buildPages(){
   await write('exercise-browser.js',bundle);
   let index=await read('dist/index.html');
   index=index.replace('<script defer src="engine.js"></script>','<script defer src="engine.js"></script><script defer src="exercise-browser.js"></script><script defer src="pages-runtime.js"></script>')
-    .replace('本地演练 <b>V3.5</b>',`在线分享 <b>V${capabilities.version}</b>`)
+    .replace('本地演练 <b>V3.6</b>',`在线分享 <b>V${capabilities.version}</b>`)
     .replace('href="start.html">入口与清单','href="start.html">分享入口与清单');
   await write('index.html',index);
   const start=await read('dist/start.html');
