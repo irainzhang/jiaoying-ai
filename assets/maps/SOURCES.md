@@ -2,7 +2,8 @@
 
 ## 可直接接入
 
-- `ruian-urban.geojson`：标准 GeoJSON FeatureCollection，WGS84，经度在前、纬度在后。包含 1,461 个真实 OSM 要素：道路 1,198，水系 247，公园/绿地 6，地名 10。只用于地理底图。
+- `ruian-urban.geojson`：标准 GeoJSON FeatureCollection，WGS84，经度在前、纬度在后。包含 1,461 个真实 OSM 要素：道路 1,198，水系 247，公园/绿地 6，地名 10。用于地理底图。
+- `ruian-routing.json`：V3.5 新增的有限道路演练图，复用同一原始快照生成；101 个压缩节点、138 条路段，其中 73 条单行。选择“瑞安真实道路”情景后，路径计算和地图路线使用这同一份道路图。
 - `ruian-osm-raw.json`：未修改的 Overpass JSON 原始响应。
 - `query.overpassql`：完整原始查询，可复查选取类型和范围。
 - `source-metadata.json`：来源、查询范围、中心、版本时间及许可。
@@ -63,5 +64,22 @@ water 要素可能为 LineString（水系中心线）或 Polygon（水域面）�
 - Overpass 官方资源使用说明：https://dev.overpass-api.de/overpass-doc/en/preface/commons.html
 
 当前方案是保存一次合理范围的公开矢量查询并本地绘制，无需运行时访问 Overpass，不把公共 API 用作持续业务后端。
+
+## V3.5 道路演练图的生成与限制
+
+源码 `scripts/build-road-network.py` 直接读取上述原始响应，无网络下载；输出 `ruian-routing.json`。输出内含原始文件 SHA-256，可对照重新生成。选取范围 [120.633, 27.777, 120.652, 27.791] 仅为城区局部，不是行政边界。
+
+处理步骤：
+
+1. 保留 primary、secondary、tertiary 及其连接路、unclassified、residential、service、living_street；不纳入高速道路、步道、施工路等。
+2. 排除明示 access / vehicle / motor_vehicle / motorcar 为 no 或 private 的道路、附条件通行标签和无法解释的单行标签。缺失标签并不证明当前准许通行。
+3. 仅使用共享 OSM node ID 建立连接，不把画面中的几何交叉视为路口；按 oneway 与环岛标签保留方向，包括 -1 反向。
+4. 保留最大强连通分量（212 个原始节点），压缩同一 OSM way 内的度为 2 中间点；交叉口和演练业务点保留。138 条压缩路段仍含原始折线顶点、节点 ID、way ID、方向和长度，可逐段追溯。
+5. 9 个演练业务点按固定坐标目标选取最近道路节点，直接复用节点坐标，不添加虚构连接道路。D 是演练集结点，H1–H6 是演练集合点，S1/S2 是演练接收点。**这些用途、人员、容量为合成设定，不代表真实村庄设施、家庭地址或官方避难所。**
+6. 通行时间固定按 15 km/h 对每条压缩路段向上取整分钟，接人服务时间继续使用原演练参数。此算法用于复现比较，不是实测车速、交通预测或安全导航。
+
+当前样本不含完整转向禁限、车型限高限重、临时管制、最新路况或灾情。初始“开放”只是演练假设，现场演练反馈经人工核实后改变选中路段状态，不自动判定现实道路安全。道路关闭后重新计算使用同一份道路图；旧方案含被关闭路段时显示待复核，不能作为可用路线继续推进。
+
+本地与公开版均保留 OSM 署名、来源和 ODbL 许可，改编道路数据库随页面一起提供。**公开许可与比赛要求的“已审核地图来源”不是同一条件；当前地图的参赛使用资格仍需团队核实。**
 
 如另行增加可选在线 OSM 瓦片，必须遵守 https://operations.osmfoundation.org/policies/tiles/ ：只正常交互加载用户正在查看的视口，使用 https://tile.openstreetmap.org/{z}/{x}/{y}.png ，保留可见署名和真实浏览器 Referer，遵守缓存头；不得批量预取、下载离线瓦片、绕过缓存、伪装客户端、屏蔽 Referer。公共瓦片服务没有 SLA。因此本地 V3 默认推荐本文件的本地矢量渲染。

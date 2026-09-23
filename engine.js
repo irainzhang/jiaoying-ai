@@ -113,7 +113,7 @@
       unvisited.delete(u);
       for (const e of s.edges) {
         if (!e.open) continue;
-        const v = e.from === u ? e.to : e.to === u ? e.from : null;
+        const v = e.from === u ? e.to : !e.directed && e.to === u ? e.from : null;
         if (v === null || !unvisited.has(v)) continue;
         const nd = dist[u] + e.minutes;
         if (nd < dist[v]) { dist[v] = nd; previous[v] = { from: u, edge: e.id }; }
