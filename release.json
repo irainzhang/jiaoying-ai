@@ -1,0 +1,7 @@
+{
+  "version": "3.4.1-pages",
+  "mode": "browser-exercise",
+  "scope": "same-browser-tabs",
+  "modelConnected": false,
+  "weatherConnected": false
+}

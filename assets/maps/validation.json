@@ -1,0 +1,9 @@
+{
+  "features": 1461,
+  "coordinatePairs": 13023,
+  "closedPolygonRings": 77,
+  "all_ids_unique": true,
+  "coordinate_validation": "passed",
+  "direct_node_and_way_line_coords_match_raw": true,
+  "geojson_sha256": "dbeaf6ffc42fb1d6ae5784901d65ca723d0a40b2c457c40334a2b88bf47142fe"
+}

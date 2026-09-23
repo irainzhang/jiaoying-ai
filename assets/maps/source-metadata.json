@@ -1,0 +1,43 @@
+{
+  "name": "浙江省瑞安市城区 OSM 地理底图样本",
+  "selection_bbox": [
+    120.6,
+    27.74,
+    120.7,
+    27.82
+  ],
+  "center": [
+    120.6511821,
+    27.7809878
+  ],
+  "coordinate_system": "WGS84; GeoJSON longitude,latitude",
+  "source": "OpenStreetMap via Overpass API",
+  "endpoint": "https://overpass-api.de/api/interpreter",
+  "fetched_at": "2026-09-22T12:50:33.483761+00:00",
+  "osm_timestamp": "2026-09-22T08:45:51Z",
+  "license": "ODbL 1.0",
+  "license_url": "https://opendatacommons.org/licenses/odbl/1-0/",
+  "attribution": "© OpenStreetMap contributors",
+  "attribution_url": "https://www.openstreetmap.org/copyright",
+  "feature_count": 1461,
+  "kind_counts": {
+    "road": 1198,
+    "water": 247,
+    "park": 6,
+    "place": 10
+  },
+  "notes": [
+    "Actual OpenStreetMap geographic features, not synthetic geometry.",
+    "Selection bbox retrieves complete geometries, including portions outside selected extent; clip rendering to selection_bbox.",
+    "Only selected feature categories and map extent; not a complete navigation dataset.",
+    "No realtime traffic, flood depth, shelter status, road safety or live closures.",
+    "Preserve attribution and ODbL license when distributing the extracted database."
+  ],
+  "bounds": [
+    120.6,
+    27.74,
+    120.7,
+    27.82
+  ],
+  "sourceTime": "2026-09-22T08:45:51Z"
+}
