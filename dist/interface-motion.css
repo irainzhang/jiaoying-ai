@@ -1,0 +1,28 @@
+/* Independent feedback layer: does not set ordinary component colors or page layout. */
+.jy-motion-ready :is(button, a.button, nav a, [role="button"]){transition:box-shadow .18s ease,filter .18s ease,scale .18s ease,border-color .18s ease}
+.jy-motion-ready :is(button, a.button, nav a, [role="button"]):not(:disabled):not([aria-disabled="true"]):active{scale:.975}
+.jy-motion-ready .jy-press{box-shadow:0 0 0 3px #43efd48c,0 0 27px #19dabb6b!important;filter:brightness(1.12)!important}
+.jy-motion-ready .danger.jy-press{box-shadow:0 0 0 3px #ff858c8c,0 0 27px #fa58666b!important}
+.jy-motion-layer{position:fixed;inset:0;z-index:1090;overflow:hidden;pointer-events:none;contain:strict}
+.jy-click-ring{position:absolute;width:72px;height:72px;margin:-36px 0 0 -36px;border:2px solid #7afde9;border-radius:50%;background:radial-gradient(circle,#85ffec42 0,#29e4c91c 42%,transparent 68%);box-shadow:0 0 18px #34eddb8c,inset 0 0 12px #34eddb50;pointer-events:none;animation:jy-ring .58s cubic-bezier(.16,.74,.3,1) both}
+.jy-click-ring.is-danger{border-color:#ff9ca7;box-shadow:0 0 18px #ff627c8c,inset 0 0 12px #ff627c50;background:radial-gradient(circle,#ff9cad42 0,#f366771c 42%,transparent 68%)}
+.jy-motion-status{--jy-status-color:#45edcf;position:fixed;right:24px;bottom:90px;z-index:1100;display:flex;align-items:center;gap:12px;width:350px;max-width:calc(100vw - 32px);padding:15px 17px 19px;overflow:hidden;border:1px solid #45edcf70;border-radius:14px;background:linear-gradient(125deg,#092b40f7,#092334f7);box-shadow:0 12px 40px #00132270,0 0 24px #20d8b822;color:#edfdfa;pointer-events:none;animation:jy-status-in .22s ease-out both;backdrop-filter:blur(16px)}
+.jy-motion-status[hidden]{display:none!important}
+.jy-motion-status[data-state="error"]{--jy-status-color:#ff8792;border-color:#ff879288;background:linear-gradient(125deg,#382330f7,#251d2cf7)}
+.jy-motion-status-icon{display:grid;place-items:center;flex:0 0 31px;width:31px;height:31px;border:1px solid color-mix(in srgb,var(--jy-status-color) 42%,transparent);border-radius:50%;font-size:19px;font-weight:700;color:var(--jy-status-color);background:color-mix(in srgb,var(--jy-status-color) 10%,transparent)}
+.jy-motion-status-content{min-width:0;flex:1}
+.jy-motion-status-content strong{display:block;font-size:13px;line-height:1.6;font-weight:650;overflow-wrap:anywhere;color:#edfdfa}
+.jy-motion-status-content>span{display:block;font-size:11px;line-height:1.5;margin-top:3px;color:#aec9d6}
+.jy-motion-status-track{position:absolute;bottom:0;left:0;width:100%;height:3px;background:#143e4f}
+.jy-motion-status-track i{display:block;width:100%;height:100%;background:var(--jy-status-color);box-shadow:0 0 10px var(--jy-status-color)}
+.jy-motion-status[data-state="pending"] .jy-motion-status-track i{width:40%;animation:jy-indeterminate 1.15s ease-in-out infinite}
+.jy-motion-status.is-leaving{animation:jy-status-out .18s ease-in both}
+.jy-motion-ready #toast.show{animation:jy-toast-in .2s ease-out both}
+@keyframes jy-ring{0%{transform:scale(.18);opacity:1}65%{opacity:.8}100%{transform:scale(1.9);opacity:0}}
+@keyframes jy-indeterminate{0%{transform:translateX(-105%)}100%{transform:translateX(350%)}}
+@keyframes jy-status-in{from{opacity:0;translate:0 9px}to{opacity:1;translate:0 0}}
+@keyframes jy-status-out{from{opacity:1;translate:0 0}to{opacity:0;translate:0 5px}}
+@keyframes jy-toast-in{from{opacity:0;translate:0 6px}to{opacity:1;translate:0 0}}
+@media(max-width:640px){.jy-motion-status{right:16px;bottom:84px;width:calc(100vw - 32px);padding:13px 15px 17px}}
+@media(prefers-reduced-motion:reduce){.jy-motion-ready :is(button,a.button,nav a,[role="button"]){transition:none!important}.jy-motion-ready :is(button,a.button,nav a,[role="button"]):active{scale:1}.jy-click-ring{display:none}.jy-motion-status,.jy-motion-status.is-leaving,.jy-motion-status-track i,.jy-motion-ready #toast.show{animation:none!important;translate:none!important}.jy-motion-status[data-state="pending"] .jy-motion-status-track i{width:100%;opacity:.45;transform:none}}
+@media print{.jy-motion-layer,.jy-motion-status{display:none!important}}

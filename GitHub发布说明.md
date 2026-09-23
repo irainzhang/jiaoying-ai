@@ -1,27 +1,25 @@
 # GitHub 发布与维护
 
-项目代码位于 `main` 分支。静态演示仅需要 `dist` 内的 HTML、CSS、JavaScript、Logo 和 `.nojekyll`，不需要安装依赖或构建。
+仓库：https://github.com/irainzhang/jiaoying-ai
 
-## Pages 发布方式
+在线入口：https://irainzhang.github.io/jiaoying-ai/start.html
 
-发布分支使用 `gh-pages`，根目录内容对应 `main` 分支的 `dist`。在仓库的 Settings → Pages 中，Source 选择 Deploy from a branch，Branch 选择 `gh-pages`，目录选择 `/ (root)`，保存后等待 GitHub 完成部署。
+源码保存在 `main`，Pages 使用 `gh-pages` 分支根目录。GitHub Pages 只提供静态托管，因此 V3.4.1 分享版在浏览器内运行相同的演练计算与约束校验。每位访客独立演练；同一浏览器的两个标签页共享 IndexedDB 记录，并通过标签页通知及时更新，不同设备不共享一场演练。
 
-更新代码后，把新的 `dist` 内容发布到 `gh-pages`。源码中的资源引用采用相对路径，模块采用 hash 导航，支持仓库子路径访问；不要把包含本机服务和配置的完整源码作为 Pages 静态目录。
+## 构建和检查
 
-上述设置方式见 [GitHub 官方 Pages 发布说明](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site)。
+1. `node scripts/build-pages.mjs`。
+2. `node --test tests/*.test.cjs tests/*.test.mjs`。
+3. `node scripts/preview-pages.mjs`，在 `http://127.0.0.1:8768/jiaoying-ai/start.html` 检查实际仓库子路径，分别打开两个网页测试上报、核实回传和刷新恢复。
+4. 按 `tmp/pages-manifest.json` 白名单发布 `tmp/pages-release`，不是原始 `dist`。保留地图来源、原始地理数据及 Leaflet 许可。
+5. 更新源码 `main`、发布产物 `gh-pages` 后，等待 Pages 部署完成并验证线上版本、地图和双页联动。
 
-## 本地验证
+## 发布边界
 
-```text
-node --test tests/engine.test.cjs tests/state.test.cjs tests/assistant.test.cjs tests/gateway.test.mjs tests/assistant-ui.test.cjs tests/voice.test.cjs
-node examples/replay.cjs examples/default-exercise.json
-node server.mjs
-```
+发布项目代码、Logo、演练示例、公开底图、功能范围清单与测试。真实 `.env`、密钥、日志、原始 PDF/Word、会议逐字稿、浏览器演练记录和本机运行快照均不发布。浏览器演练首次从合成初始数据创建，不读取发布者当前演练。
 
-在线版运行虚构演练和本地规则导览。DeepSeek 网关仅在本机服务环境探测；真实接口接入步骤见 `AI接入说明.md`。
+IndexedDB 保存不等于服务器备份；清理浏览器数据或隐私窗口关闭可能丢失记录。重要演练结果仍需导出。没有跨设备协作、账号权限、真实 Agent、彩云实况或真实应急通知。网页语音识别可能使用浏览器的在线服务，需按浏览器授权使用。
 
-## 仓库内容
+本地服务仍可使用 `启动V3.4演示.cmd`，监听 127.0.0.1:8767，不会因公开构建而重启或重置。
 
-发布代码、Logo、说明、测试、默认虚构情景及复现脚本。`.env.example` 是不含密钥的配置模板；真实 `.env`、运行日志、编辑器运行配置、临时文件以及项目原始 PDF、Word 不在发布范围。
-
-本文件是部署操作说明；是否发布成功应以仓库记录、Pages 状态和实际访问结果为准。
+官方说明：https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages

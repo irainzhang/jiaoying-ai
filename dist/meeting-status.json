@@ -1,0 +1,507 @@
+{
+  "date": "2026-09-23",
+  "requirements": [
+    {
+      "id": "R01",
+      "module": "产品结构",
+      "title": "决策协同定位",
+      "status": "done",
+      "current": "首页、流程步骤、发布与执行分离，保留反馈核实闭环。",
+      "gap": "当前仍是独立演练原型，未接入原“叫应”。",
+      "time": "10:33–12:47",
+      "priority": "—",
+      "evidence": "dist/workspace-app.js:124; exercise.cjs:125"
+    },
+    {
+      "id": "R02",
+      "module": "产品结构",
+      "title": "两个网页工作空间",
+      "status": "done",
+      "current": "指挥台与现场页均为网页，#command / #field。",
+      "gap": "跨设备属于后续增量；同机双页已具备。",
+      "time": "40:03–40:39",
+      "priority": "—",
+      "evidence": "dist/workspace-app.js:154; local-server.mjs:10"
+    },
+    {
+      "id": "R03",
+      "module": "产品结构",
+      "title": "左监测、右规划发布",
+      "status": "done",
+      "current": "首行真实地图与常驻对话，中部左反馈/天气、右规划发布。",
+      "gap": "后续以实际演示反馈微调信息密度。",
+      "time": "35:22–37:29",
+      "priority": "—",
+      "evidence": "dist/workspace-app.js:154"
+    },
+    {
+      "id": "R04",
+      "module": "产品结构",
+      "title": "详细模块下沉",
+      "status": "done",
+      "current": "任务进展、人员资源、事件与依据、决策报告归入二级页签。",
+      "gap": "无本轮功能缺口。",
+      "time": "33:58；40:03",
+      "priority": "—",
+      "evidence": "dist/workspace-app.js:147"
+    },
+    {
+      "id": "R05",
+      "module": "产品结构",
+      "title": "两端助手与语音入口",
+      "status": "done",
+      "current": "两端可语音转写、文字交互；现场任务与村级确认卡均已接入。",
+      "gap": "字段整理是本地规则；真实麦克风与在线识别可用性仍需使用电脑实测。",
+      "time": "13:10–14:15；40:21–40:39",
+      "priority": "—",
+      "evidence": "dist/workspace-app.js:123; dist/field-assistant.js:1; dist/village-assistant.js:1"
+    },
+    {
+      "id": "R06",
+      "module": "产品结构",
+      "title": "工作人员称谓与叫应联系",
+      "status": "done",
+      "current": "现场工作人员/指挥工作台称谓统一，接收任务、联系家庭独立记录。",
+      "gap": "原系统仅有公开报道，独立原型身份已注明。",
+      "time": "14:16–14:37",
+      "priority": "—",
+      "evidence": "exercise.cjs:186; dist/field-workspace.js"
+    },
+    {
+      "id": "R07",
+      "module": "地图与触发",
+      "title": "一个真实示范区域",
+      "status": "partial",
+      "current": "真实瑞安市城区 OSM 底图已载入，范围与历史快照透明。",
+      "gap": "业务点位、村庄、安置点与路线仍为独立合成网络；未在真实道路上计算接送路线。",
+      "time": "29:24–32:00",
+      "priority": "P1",
+      "evidence": "dist/real-map.js:5; dist/workspace-app.js:129; village-ledger.cjs:7"
+    },
+    {
+      "id": "R08",
+      "module": "地图与触发",
+      "title": "天气演练与彩云预留",
+      "status": "done",
+      "current": "有明确最近一小时累计、更新时间、模拟来源；彩云查询模板、单位与新鲜度校验已准备。",
+      "gap": "真实请求、签名、凭证、示范点经纬度按用户要求暂不接入。",
+      "time": "26:48–30:58",
+      "priority": "—",
+      "evidence": "integrations.mjs:2; exercise.cjs:148; dist/workspace-app.js:138"
+    },
+    {
+      "id": "R09",
+      "module": "地图与触发",
+      "title": "人数和容量变化量",
+      "status": "partial",
+      "current": "展示转移对象、高风险对象、余位、总容量缺口、封路、雨量的前后值和差值。",
+      "gap": "尚无“需协助/轮椅等重点人群变化量”单列；总安置名额缺口不等于交通调度缺口。",
+      "time": "00:00–00:40",
+      "priority": "P2",
+      "evidence": "exercise.cjs:215; dist/workspace-app.js:127"
+    },
+    {
+      "id": "R10",
+      "module": "地图与触发",
+      "title": "情景推进与系统口播",
+      "status": "partial",
+      "current": "天气升降、封路、新增人员可推进，系统 TTS 播报事件/新草案，地图和指标联动。",
+      "gap": "尚未统一朗读全部指标增减；车辆/安置点失效仅能在准备阶段编辑，执行中资源失效情景未闭环。",
+      "time": "00:00；04:49–06:28；36:16–37:29",
+      "priority": "P1",
+      "evidence": "exercise.cjs:148; exercise.cjs:208; dist/workspace-app.js:138"
+    },
+    {
+      "id": "R11",
+      "module": "地图与触发",
+      "title": "触发标准与原因",
+      "status": "done",
+      "current": "同级雨量维持，跨级/核实封路/新需求/资源编辑触发草案，并记录原因。",
+      "gap": "阈值是明确标注的演练参数，未冒充官方预警标准。",
+      "time": "37:41–38:20",
+      "priority": "—",
+      "evidence": "exercise.cjs:149; exercise.cjs:125; dist/workspace-app.js:145"
+    },
+    {
+      "id": "R12",
+      "module": "地图与触发",
+      "title": "稳定性与版本控制",
+      "status": "partial",
+      "current": "输入/执行版本、过期草稿拒绝、人工发布、同级天气稳定均已实现；村级疑似重复提示。",
+      "gap": "未实现时间冷却、收益切换阈值及通用语义事件合并；这些参数原会议尚待定。",
+      "time": "37:41–38:20",
+      "priority": "P2",
+      "evidence": "exercise.cjs:124; local-server.mjs:49; village-ledger.cjs:84"
+    },
+    {
+      "id": "R13",
+      "module": "地图与触发",
+      "title": "位置监控接口",
+      "status": "partial",
+      "current": "车辆位置按最近登记节点与演练分钟更新，并注明非 GPS；位置接入状态预留。",
+      "gap": "尚无完整位置采样载荷、采集时间/精度/新鲜度契约或轨迹播放器；真实定位按范围暂缓。",
+      "time": "09:43–10:30；14:40–15:16",
+      "priority": "P2",
+      "evidence": "exercise.cjs:131; integrations.mjs:2; dist/workspace-app.js:135"
+    },
+    {
+      "id": "R14",
+      "module": "AI与计算",
+      "title": "可验证的工具调用流程",
+      "status": "partial",
+      "current": "读取快照、真实求解、约束校验、草案待确认均实际运行；有可触发动作。",
+      "gap": "当前意图识别是规则，工具名是契约，尚无模型 Agent 调用链；真实 Agent 接入按用户要求后续进行。",
+      "time": "10:33–12:47；36:16–37:29",
+      "priority": "P1",
+      "evidence": "exercise.cjs:125; integrations.mjs:17; dist/workspace-app.js:171"
+    },
+    {
+      "id": "R15",
+      "module": "AI与计算",
+      "title": "助手动作卡",
+      "status": "partial",
+      "current": "已支持重算、查看依据、Plan B、填反馈、看结果及接口状态等动作。",
+      "gap": "尚缺对话内“切换指定演练情景”“导出决策报告”等卡片；页面按钮已有对应部分功能。",
+      "time": "04:41–06:28",
+      "priority": "P2",
+      "evidence": "dist/workspace-app.js:171; dist/workspace-app.js:286"
+    },
+    {
+      "id": "R16",
+      "module": "AI与计算",
+      "title": "建议与已执行区分",
+      "status": "done",
+      "current": "确认前明确未改执行方案，成功后更新回执；含糊输入澄清，旧建议失效。",
+      "gap": "保持模型未来接入后仍由服务校验。",
+      "time": "04:49；13:48–14:15；36:16–37:29",
+      "priority": "—",
+      "evidence": "dist/workspace-app.js:176; dist/workspace-app.js:201; exercise.cjs:180"
+    },
+    {
+      "id": "R17",
+      "module": "AI与计算",
+      "title": "公开预案条款与来源依据",
+      "status": "missing",
+      "current": "页面明确说明尚无公开预案知识库，不伪造条款；已有算法规则说明。",
+      "gap": "需要公开预案名称/发布机构/条款/版本/获取时间/适用区域，形成可追溯证据卡。",
+      "time": "17:40–18:12",
+      "priority": "P1",
+      "evidence": "dist/workspace-app.js:145; V3接口与演练说明.md"
+    },
+    {
+      "id": "R18",
+      "module": "AI与计算",
+      "title": "版本与工具结果追溯",
+      "status": "partial",
+      "current": "记录输入/执行版本、算法版本、快照、求解耗时、候选数和日志；JSON 可导出。",
+      "gap": "缺少统一工具调用审计卡（调用输入摘要、校验逐项结果、失败原因）；尚无模型版本因为模型未接。",
+      "time": "17:40–18:12",
+      "priority": "P2",
+      "evidence": "exercise.cjs:52; exercise.cjs:125; dispatch-large.cjs:133; dist/workspace-app.js:190"
+    },
+    {
+      "id": "R19",
+      "module": "AI与计算",
+      "title": "同快照规则基线",
+      "status": "done",
+      "current": "按风险、协助、编号排序，近安置点/可行派车；同一资源与路网约束。",
+      "gap": "这是公开说明的模拟基线，不能称瑞安实际人工派车结果。",
+      "time": "01:03–02:30",
+      "priority": "—",
+      "evidence": "exercise.cjs:74; README.md"
+    },
+    {
+      "id": "R20",
+      "module": "AI与计算",
+      "title": "优化目标与约束",
+      "status": "done",
+      "current": "先保车上、高风险、协助与总覆盖，再比较加权等待、最后抵达和行驶；硬约束独立校验。",
+      "gap": "当前权重是可调整演练设定；大规模启发式不保证全局最优。",
+      "time": "01:45–03:08",
+      "priority": "—",
+      "evidence": "exercise.cjs:50; exercise.cjs:82; dispatch-large.cjs:10"
+    },
+    {
+      "id": "R21",
+      "module": "AI与计算",
+      "title": "公平且完整的方案比较",
+      "status": "partial",
+      "current": "同快照比较覆盖、重点人群、加权等待、抵达与行驶，并警示覆盖不同不可声称提速。",
+      "gap": "尚缺基线/草案逐车分配、各安置点占用、未安排对象并列及重点人群等待分列。",
+      "time": "01:03–03:08",
+      "priority": "P2",
+      "evidence": "dist/workspace-app.js:140; exercise.cjs:43"
+    },
+    {
+      "id": "R22",
+      "module": "AI与计算",
+      "title": "业务 Plan B",
+      "status": "partial",
+      "current": "有同输入第二方案，可人工采用；无解时显示待协调，所有方案受同样约束校验。",
+      "gap": "不是针对某道路/安置点失效事先设计的备用预案，缺触发条件/适用范围/增援措施结构化卡片。",
+      "time": "23:12–23:44",
+      "priority": "P1",
+      "evidence": "exercise.cjs:52; dispatch-large.cjs:134; dist/workspace-app.js:140"
+    },
+    {
+      "id": "R23",
+      "module": "反馈与重规划",
+      "title": "地图选点上报",
+      "status": "partial",
+      "current": "合成调度地图支持点道路/节点后打开关联表单，现场端也能选任务。",
+      "gap": "真实地图点击仅显示经纬度/要素，未能关联真实上报点；未见手机长按入口。",
+      "time": "39:22–40:02",
+      "priority": "P1",
+      "evidence": "dist/workspace-app.js:168; dist/real-map.js:65"
+    },
+    {
+      "id": "R24",
+      "module": "反馈与重规划",
+      "title": "结构化险情事件",
+      "status": "partial",
+      "current": "道路、人员、医疗、险情、进展、其他可上报，保留地点、时间、来源、文字。",
+      "gap": "树倒/积水/房屋倒塌目前靠原话或统属道路/险情，未有独立子类型；普通险情缺任务关联字段。",
+      "time": "38:20–40:02",
+      "priority": "P2",
+      "evidence": "exercise.cjs:154; dist/workspace-app.js:12"
+    },
+    {
+      "id": "R25",
+      "module": "反馈与重规划",
+      "title": "语音整理后人工核对",
+      "status": "done",
+      "current": "原话保留、保守提取、缺失澄清、编辑卡、人工确认；村级一键提交但不自动核实。",
+      "gap": "浏览器识别实际口述需环境验证；整理并非大模型理解。",
+      "time": "13:10–14:15；40:21",
+      "priority": "—",
+      "evidence": "dist/field-assistant.js; dist/village-assistant.js; dist/workspace-app.js:96; dist/workspace-app.js:228"
+    },
+    {
+      "id": "R26",
+      "module": "反馈与重规划",
+      "title": "双网页同步与处理回执",
+      "status": "done",
+      "current": "SSE 即时更新、断线轮询、版本冲突与请求去重；现场可看核实/采纳/协调/解决状态。",
+      "gap": "只监听本机，未实现手机到电脑跨设备；目前已完成用户要求的同机双网页联动。",
+      "time": "38:49–40:21",
+      "priority": "—",
+      "evidence": "local-server.mjs:10; local-server.mjs:40; exercise.cjs:161"
+    },
+    {
+      "id": "R27",
+      "module": "反馈与重规划",
+      "title": "有限途中重规划",
+      "status": "done",
+      "current": "封路或新需求核实后，从最后登记节点继续，已上车不换车，已完成不重派，确认才替换。",
+      "gap": "限定离散节点、单车单趟；没有真实连续 GPS、多趟或车间乘员转移。",
+      "time": "38:20–38:49",
+      "priority": "—",
+      "evidence": "exercise.cjs:29; exercise.cjs:131; exercise.cjs:180"
+    },
+    {
+      "id": "R28",
+      "module": "反馈与重规划",
+      "title": "新增人员与医疗协调",
+      "status": "done",
+      "current": "新需求核实后求解容量/轮椅/安置/路网；不能安排列协调；医疗先人工协调可记录处理结果。",
+      "gap": "通用医疗调度与救护车能力未建，符合本轮明确控制深度。",
+      "time": "38:49",
+      "priority": "—",
+      "evidence": "exercise.cjs:165; exercise.cjs:174; village-ledger.cjs:104"
+    },
+    {
+      "id": "R29",
+      "module": "反馈与重规划",
+      "title": "执行核验与协调解除",
+      "status": "done",
+      "current": "接单/联系/上车/到达待核验/人工核验分开；障碍逐项解除后才开放道路。",
+      "gap": "语音“到达”和位置不会直接确认安全；仍依工作人员登记。",
+      "time": "13:20；38:49",
+      "priority": "—",
+      "evidence": "exercise.cjs:174; exercise.cjs:186; exercise.cjs:205"
+    },
+    {
+      "id": "R30",
+      "module": "报告与边界",
+      "title": "可读决策报告",
+      "status": "partial",
+      "current": "有可读/打印/PDF报告和完整快照 JSON，标出草案/已发布、算法、基线、日志、未安排者。",
+      "gap": "可读报告尚未完整纳入村级批次/更正/待补信息台账、来源清单和逐项约束证据；日志有保留上限。",
+      "time": "04:49–06:07",
+      "priority": "P1",
+      "evidence": "dist/workspace-app.js:146; dist/workspace-app.js:190; exercise.cjs:121"
+    },
+    {
+      "id": "R31",
+      "module": "报告与边界",
+      "title": "固定能力边界",
+      "status": "done",
+      "current": "固定标识独立原型、合成演练、人工确认、无单点水深预测。",
+      "gap": "后续文字需继续与接入状态一致。",
+      "time": "03:18–04:32",
+      "priority": "—",
+      "evidence": "dist/workspace-app.js:154; dist/workspace-app.js:166"
+    },
+    {
+      "id": "R32",
+      "module": "报告与边界",
+      "title": "数据性质与接入透明",
+      "status": "done",
+      "current": "真实历史底图与合成业务分开；天气单位/时间窗明确；Agent/彩云/GPS均显示未连接。",
+      "gap": "没有把雨量直接推成积水深度或受灾人数。",
+      "time": "03:18–04:32；28:39–32:00",
+      "priority": "—",
+      "evidence": "integrations.mjs:2; dist/real-map.js:48; dist/workspace-app.js:138"
+    },
+    {
+      "id": "R33",
+      "module": "报告与边界",
+      "title": "有意义的动态可视化",
+      "status": "done",
+      "current": "路线、道路开闭、车辆登记节点、人数、容量、待处理、变化量均随状态变化；动效绑定真实操作结果。",
+      "gap": "当前轨迹是节点登记，不是连续行驶动画；这不是本轮必须新增的真实定位。",
+      "time": "00:00；03:18–04:32；25:43–26:41；36:16–37:29",
+      "priority": "—",
+      "evidence": "dist/workspace-app.js:127; dist/workspace-app.js:131; dist/interface-motion.js"
+    },
+    {
+      "id": "R34",
+      "module": "报告与边界",
+      "title": "控制本轮实现深度",
+      "status": "done",
+      "current": "保留代表性情景、独立演练与限制；最多500人/200组、单趟，未引入大并发/真实通知/水深预测。",
+      "gap": "保持演示目标，不将未授权外部接入作为本轮缺陷。",
+      "time": "14:40–15:38；22:19–23:12",
+      "priority": "—",
+      "evidence": "village-ledger.cjs:6; dist/workspace-app.js:166; V3接口与演练说明.md"
+    },
+    {
+      "id": "R35",
+      "module": "协作与交付",
+      "title": "Agent与页面接口协作",
+      "status": "partial",
+      "current": "已有 input/output、工具名、版本与人工边界契约，501 明示未连接；村级 proposal 可替换。",
+      "gap": "尚待团队对齐 URL/鉴权/错误协议/超时取消/流式格式/工具适配并完成契约联调。",
+      "time": "25:43–26:48；33:58–34:23",
+      "priority": "P1",
+      "evidence": "integrations.mjs:17; local-server.mjs:43; V3接口与演练说明.md"
+    },
+    {
+      "id": "R36",
+      "module": "协作与交付",
+      "title": "真实模型接入深度",
+      "status": "deferred",
+      "current": "已保留 DeepSeek / Agent 接入方向和接口契约；当前实际运行本地规则，不调用模型服务。",
+      "gap": "按用户约定后续接入模型，届时配置后端凭证并完成真实工具调用联调。",
+      "time": "25:43；后续用户确认",
+      "priority": "后续",
+      "evidence": "integrations.mjs:2; local-server.mjs:43"
+    },
+    {
+      "id": "R37",
+      "module": "协作与交付",
+      "title": "服务失败备用演示",
+      "status": "partial",
+      "current": "底图/求解在本机，语音可退回文字；连接中断暂停提交，有重连与轮询。",
+      "gap": "统一网页入口本轮已恢复；仍缺自动持久化、网页恢复导入和标准情景回放。",
+      "time": "落实建议（非会议原话）",
+      "priority": "P1",
+      "evidence": "local-server.mjs:12; server.mjs; launcher.mjs; README.md"
+    },
+    {
+      "id": "R38",
+      "module": "协作与交付",
+      "title": "赛事提交及公网确认",
+      "status": "partial",
+      "current": "已有源码与运行说明；本轮按约定仅在本机运行，未更新公网版本。",
+      "gap": "完整 PPT、视频、数据清单、依赖锁定、数据/地图来源适配及主办方最新答复仍需整理核验。",
+      "time": "19:07–21:59",
+      "priority": "P1",
+      "evidence": "README.md; ../tmp/reading/比赛手册提取.txt:79"
+    },
+    {
+      "id": "R39",
+      "module": "协作与交付",
+      "title": "任务拆分与团队同步",
+      "status": "partial",
+      "current": "有版本说明、接口文档、演示步骤、测试与实现记录。",
+      "gap": "尚无经团队确认的责任人/时间表/验收责任/材料交付跟踪表。",
+      "time": "26:48–27:32",
+      "priority": "P2",
+      "evidence": "README.md; V3接口与演练说明.md"
+    }
+  ],
+  "additional": [
+    {
+      "title": "统一网页入口与启动可靠性（本轮修复）",
+      "status": "partial",
+      "current": "原8765入口无响应；现有8767的V3.4服务已读取核验。本轮增加统一入口，保留指挥台、现场端和需求清单网页。",
+      "gap": "仍依赖本机服务；尚无数据库自动保存、网页导入或跨设备部署。"
+    },
+    {
+      "title": "村级语音/文字上报（后续新增需求）",
+      "status": "done",
+      "current": "村庄/集合点选择、语音或文字整理、可编辑确认卡，一键提交并同步指挥台。",
+      "gap": "村庄目录目前是明确标注的演示村A/B/C；实际麦克风可用性需使用环境验证。"
+    },
+    {
+      "title": "新增、总量观测、更正与重复提醒（后续新增需求）",
+      "status": "done",
+      "current": "总量不重复累加，更正保留历史，疑似同批重复需明确确认；已上车批次禁止覆盖更正。",
+      "gap": "总量观测差异需人工核对补报或更正，不猜测实际人数。"
+    },
+    {
+      "title": "特殊需求、同行分组与待补信息（后续新增需求）",
+      "status": "done",
+      "current": "轮椅人数包含于协助和总人数；整组同行不拆，缺信息先登记，补齐后才规划，台账分列等待/上车/到达/核验。",
+      "gap": "演练上限500名有效人员、200个组，单车单趟；未安排人员继续列待协调。"
+    },
+    {
+      "title": "公开数据集清单（赛事手册补充）",
+      "status": "partial",
+      "current": "OSM底图有来源、时间和许可文件；业务数据明确为合成演练。",
+      "gap": "需在参赛PPT统一列实际使用数据集名称、来源机构和公开获取方式；预案/安置点/气象等未来接入需一起核验。"
+    },
+    {
+      "title": "SDGs、Agent说明与最终材料（赛事手册补充）",
+      "status": "partial",
+      "current": "已有源码、运行说明、接口文档和演示流程。",
+      "gap": "尚需完整 PPT、视频、环境依赖、SDGs 与应用价值论证；清楚区分规则原型和真正 Agent，提交前核对主办方最新要求。"
+    },
+    {
+      "title": "地图来源适配核验（赛事手册补充）",
+      "status": "partial",
+      "current": "真实地图源自OSM，有许可及查询记录。",
+      "gap": "手册要求使用已审核的地图数据来源；目前仅核实了 OSM 来源与许可，尚需确认是否满足此参赛要求。"
+    }
+  ],
+  "priorities": [
+    {
+      "title": "稳定演示和保存记录",
+      "detail": "统一入口本轮恢复；下一步加入自动保存/恢复与可重复演示场景，降低服务重启后丢进度风险。"
+    },
+    {
+      "title": "将地图与业务点位统一",
+      "detail": "选公开、可展示的瑞安小片区及集合点/安置点，将接送路线接到真实道路；当前底图浏览不能称真实导航。"
+    },
+    {
+      "title": "补公开预案与计算证据",
+      "detail": "加入可追溯条款、数据目录、工具输入/校验记录，完善同快照基线和草案的逐车/逐点比较。"
+    },
+    {
+      "title": "完善失效情景、Plan B与报告",
+      "detail": "为道路/安置点失效说明触发条件和协调措施，将村级批次、更正、待补信息与审核记录纳入可读报告。"
+    },
+    {
+      "title": "对齐Agent联调契约",
+      "detail": "先准备样例、URL/鉴权/错误/版本/超时约定；DeepSeek、彩云真实接入继续依用户已确认的后续节奏。"
+    }
+  ],
+  "counts": {
+    "已完成": 20,
+    "部分完成": 17,
+    "未完成": 1,
+    "按用户要求暂缓": 1
+  },
+  "method": "只读核查会议、后续用户范围及V3.4源码；不等同于重跑所有测试或真实麦克风验证。"
+}
