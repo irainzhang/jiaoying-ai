@@ -36,7 +36,8 @@ test('public pages retain repo-relative links and every referenced script and st
   assert.ok(index.indexOf('pages-runtime.js')<index.indexOf('workspace-app.js'));
   const start=await read('start.html');
   assert.match(start,/不同设备、浏览器或隐私窗口不共享数据/);
-  assert.equal((start.match(/<tr data-status=/g)||[]).length,39);
+  assert.match(start,/capabilities.js/);
+  const catalog=await read('capabilities.js');assert.equal((catalog.match(/id:'O\d+'/g)||[]).length,18);
 });
 
 test('publication allowlist excludes local snapshots, credentials, transcripts and unused legacy app',async()=>{

@@ -1,0 +1,3726 @@
+{
+  "version": "3.5-evaluation",
+  "generatedAt": "2026-09-23T12:41:09.193Z",
+  "reproduce": "node scripts/evaluate-scenarios.cjs",
+  "method": "每个场景从同一输入快照分别运行优化算法与风险优先最近可行基线，各重复 3 次。所有结果调用约束校验；模型与 Agent 未接入，结果不是 AI 理解能力或真实防汛效益评测。",
+  "environment": {
+    "node": "v24.19.0",
+    "platform": "win32",
+    "arch": "x64",
+    "cpu": "Intel(R) Core(TM) Ultra 7 270K Plus"
+  },
+  "limits": [
+    "业务人员、容量、道路速度均为演练设定；真实路网场景只代表道路几何快照，不代表实时通行。",
+    "基线为明示规则的模拟策略，不代表人工调度实测。",
+    "等待指标只计已安排人员，必须与覆盖人数、未安排人员并列阅读。",
+    "规模超过 8 组采用有界启发式，不保证全局最优；单次调度每车一趟，未安排人员需增援或另行组织。",
+    "耗时受机器、浏览器、后台负载影响；这里是 Node 环境的本次测量。"
+  ],
+  "cases": [
+    {
+      "id": "normal",
+      "name": "初始接送",
+      "inputHash": "52cf414c75c60ed801bbb3b2c876b33f8547e543a7635e73945fc6265b67e2aa",
+      "groups": 6,
+      "people": 15,
+      "sourceMode": "synthetic-topology",
+      "optimized": {
+        "algorithm": "ruian-candidate-search-3.0",
+        "servedPeople": 15,
+        "totalPeople": 15,
+        "unassignedPeople": 0,
+        "urgentPeople": 2,
+        "assistedPeople": 5,
+        "weightedWait": 351,
+        "finishMinute": 38,
+        "driveMinutes": 86,
+        "complete": true,
+        "unassigned": [],
+        "validationErrors": [],
+        "timing": {
+          "minMs": 40.82,
+          "medianMs": 41.58,
+          "maxMs": 42.65,
+          "repetitions": 3
+        }
+      },
+      "baseline": {
+        "algorithm": "risk-nearest-feasible-3.0",
+        "servedPeople": 12,
+        "totalPeople": 15,
+        "unassignedPeople": 3,
+        "urgentPeople": 2,
+        "assistedPeople": 5,
+        "weightedWait": 289,
+        "finishMinute": 36,
+        "driveMinutes": 82,
+        "complete": false,
+        "unassigned": [
+          {
+            "id": "H6",
+            "name": "演练家庭 06",
+            "people": 3,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          }
+        ],
+        "validationErrors": [],
+        "timing": {
+          "minMs": 0.12,
+          "medianMs": 0.13,
+          "maxMs": 0.21,
+          "repetitions": 3
+        }
+      },
+      "comparison": {
+        "sameSnapshot": true,
+        "rows": [
+          {
+            "vehicleId": "V1",
+            "vehicleName": "1 号车",
+            "baseline": {
+              "people": 5,
+              "ids": [
+                "H1",
+                "H2"
+              ],
+              "stops": [
+                "H1",
+                "H2"
+              ],
+              "shelterId": "S1",
+              "finish": 36,
+              "drive": 28,
+              "holding": false
+            },
+            "optimized": {
+              "people": 6,
+              "ids": [
+                "H2",
+                "H6"
+              ],
+              "stops": [
+                "H2",
+                "H6"
+              ],
+              "shelterId": "S1",
+              "finish": 34,
+              "drive": 26,
+              "holding": false
+            }
+          },
+          {
+            "vehicleId": "V2",
+            "vehicleName": "2 号车",
+            "baseline": {
+              "people": 3,
+              "ids": [
+                "H4",
+                "H5"
+              ],
+              "stops": [
+                "H4",
+                "H5"
+              ],
+              "shelterId": "S2",
+              "finish": 36,
+              "drive": 29,
+              "holding": false
+            },
+            "optimized": {
+              "people": 5,
+              "ids": [
+                "H3",
+                "H5"
+              ],
+              "stops": [
+                "H3",
+                "H5"
+              ],
+              "shelterId": "S2",
+              "finish": 33,
+              "drive": 29,
+              "holding": false
+            }
+          },
+          {
+            "vehicleId": "V3",
+            "vehicleName": "3 号车",
+            "baseline": {
+              "people": 4,
+              "ids": [
+                "H3"
+              ],
+              "stops": [
+                "H3"
+              ],
+              "shelterId": "S2",
+              "finish": 27,
+              "drive": 25,
+              "holding": false
+            },
+            "optimized": {
+              "people": 4,
+              "ids": [
+                "H1",
+                "H4"
+              ],
+              "stops": [
+                "H1",
+                "H4"
+              ],
+              "shelterId": "S2",
+              "finish": 38,
+              "drive": 31,
+              "holding": false
+            }
+          }
+        ],
+        "shelters": [
+          {
+            "id": "S1",
+            "name": "演练安置点 A",
+            "capacity": 10,
+            "occupied": 0,
+            "baseline": 5,
+            "optimized": 6
+          },
+          {
+            "id": "S2",
+            "name": "演练安置点 B",
+            "capacity": 12,
+            "occupied": 0,
+            "baseline": 7,
+            "optimized": 9
+          }
+        ],
+        "baselineUnassigned": [
+          {
+            "id": "H6",
+            "name": "演练家庭 06",
+            "people": 3,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          }
+        ],
+        "optimizedUnassigned": [],
+        "priorityWait": {
+          "baseline": 95,
+          "optimized": 87,
+          "unit": "人·分钟",
+          "definition": "已安排高风险人数与实际需协助人数的并集等待，同人不重复；须同时比较未安排人数"
+        },
+        "assistedWait": {
+          "baseline": 81,
+          "optimized": 73,
+          "unit": "人·分钟"
+        },
+        "urgentWait": {
+          "baseline": 14,
+          "optimized": 14,
+          "unit": "人·分钟"
+        }
+      },
+      "explanations": [],
+      "interpretation": "本情景全部可安排；仅反映所列演练输入。"
+    },
+    {
+      "id": "road-closure",
+      "name": "道路中断",
+      "inputHash": "686d304712a7a445ad56b38b1dcb6f0a04fce4c13ec2766e2beb7e55862f05a9",
+      "groups": 6,
+      "people": 15,
+      "sourceMode": "synthetic-topology",
+      "optimized": {
+        "algorithm": "ruian-candidate-search-3.0",
+        "servedPeople": 15,
+        "totalPeople": 15,
+        "unassignedPeople": 0,
+        "urgentPeople": 2,
+        "assistedPeople": 5,
+        "weightedWait": 399,
+        "finishMinute": 49,
+        "driveMinutes": 93,
+        "complete": true,
+        "unassigned": [],
+        "validationErrors": [],
+        "timing": {
+          "minMs": 40.33,
+          "medianMs": 40.87,
+          "maxMs": 41.36,
+          "repetitions": 3
+        }
+      },
+      "baseline": {
+        "algorithm": "risk-nearest-feasible-3.0",
+        "servedPeople": 12,
+        "totalPeople": 15,
+        "unassignedPeople": 3,
+        "urgentPeople": 2,
+        "assistedPeople": 5,
+        "weightedWait": 348,
+        "finishMinute": 43,
+        "driveMinutes": 95,
+        "complete": false,
+        "unassigned": [
+          {
+            "id": "H6",
+            "name": "演练家庭 06",
+            "people": 3,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          }
+        ],
+        "validationErrors": [],
+        "timing": {
+          "minMs": 0.12,
+          "medianMs": 0.17,
+          "maxMs": 0.21,
+          "repetitions": 3
+        }
+      },
+      "comparison": {
+        "sameSnapshot": true,
+        "rows": [
+          {
+            "vehicleId": "V1",
+            "vehicleName": "1 号车",
+            "baseline": {
+              "people": 5,
+              "ids": [
+                "H1",
+                "H2"
+              ],
+              "stops": [
+                "H1",
+                "H2"
+              ],
+              "shelterId": "S1",
+              "finish": 36,
+              "drive": 28,
+              "holding": false
+            },
+            "optimized": {
+              "people": 6,
+              "ids": [
+                "H2",
+                "H4",
+                "H5"
+              ],
+              "stops": [
+                "H2",
+                "H4",
+                "H5"
+              ],
+              "shelterId": "S2",
+              "finish": 49,
+              "drive": 36,
+              "holding": false
+            }
+          },
+          {
+            "vehicleId": "V2",
+            "vehicleName": "2 号车",
+            "baseline": {
+              "people": 3,
+              "ids": [
+                "H4",
+                "H5"
+              ],
+              "stops": [
+                "H4",
+                "H5"
+              ],
+              "shelterId": "S2",
+              "finish": 43,
+              "drive": 36,
+              "holding": false
+            },
+            "optimized": {
+              "people": 5,
+              "ids": [
+                "H1",
+                "H6"
+              ],
+              "stops": [
+                "H1",
+                "H6"
+              ],
+              "shelterId": "S1",
+              "finish": 30,
+              "drive": 26,
+              "holding": false
+            }
+          },
+          {
+            "vehicleId": "V3",
+            "vehicleName": "3 号车",
+            "baseline": {
+              "people": 4,
+              "ids": [
+                "H3"
+              ],
+              "stops": [
+                "H3"
+              ],
+              "shelterId": "S2",
+              "finish": 33,
+              "drive": 31,
+              "holding": false
+            },
+            "optimized": {
+              "people": 4,
+              "ids": [
+                "H3"
+              ],
+              "stops": [
+                "H3"
+              ],
+              "shelterId": "S2",
+              "finish": 33,
+              "drive": 31,
+              "holding": false
+            }
+          }
+        ],
+        "shelters": [
+          {
+            "id": "S1",
+            "name": "演练安置点 A",
+            "capacity": 10,
+            "occupied": 0,
+            "baseline": 5,
+            "optimized": 5
+          },
+          {
+            "id": "S2",
+            "name": "演练安置点 B",
+            "capacity": 12,
+            "occupied": 0,
+            "baseline": 7,
+            "optimized": 10
+          }
+        ],
+        "baselineUnassigned": [
+          {
+            "id": "H6",
+            "name": "演练家庭 06",
+            "people": 3,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          }
+        ],
+        "optimizedUnassigned": [],
+        "priorityWait": {
+          "baseline": 109,
+          "optimized": 97,
+          "unit": "人·分钟",
+          "definition": "已安排高风险人数与实际需协助人数的并集等待，同人不重复；须同时比较未安排人数"
+        },
+        "assistedWait": {
+          "baseline": 95,
+          "optimized": 83,
+          "unit": "人·分钟"
+        },
+        "urgentWait": {
+          "baseline": 14,
+          "optimized": 14,
+          "unit": "人·分钟"
+        }
+      },
+      "explanations": [],
+      "interpretation": "本情景全部可安排；仅反映所列演练输入。"
+    },
+    {
+      "id": "village-growth",
+      "name": "村级新增 12 人",
+      "inputHash": "e5320ad18787d7652501692db6f0538f6a44fe63ba9a30031fd783b149dc2fe8",
+      "groups": 11,
+      "people": 27,
+      "sourceMode": "synthetic-topology",
+      "optimized": {
+        "algorithm": "ruian-bounded-insertion-heuristic-3.4",
+        "servedPeople": 15,
+        "totalPeople": 27,
+        "unassignedPeople": 12,
+        "urgentPeople": 2,
+        "assistedPeople": 7,
+        "weightedWait": 370,
+        "finishMinute": 41,
+        "driveMinutes": 88,
+        "complete": false,
+        "unassigned": [
+          {
+            "id": "H6",
+            "name": "演练家庭 06",
+            "people": 3,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "VG1",
+            "name": "演示村 A · VR1 第 1 组",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "VG3",
+            "name": "演示村 A · VR1 第 3 组",
+            "people": 4,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "VG4",
+            "name": "演示村 A · VR1 第 4 组",
+            "people": 4,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          }
+        ],
+        "validationErrors": [],
+        "timing": {
+          "minMs": 1.38,
+          "medianMs": 1.65,
+          "maxMs": 1.77,
+          "repetitions": 3
+        }
+      },
+      "baseline": {
+        "algorithm": "risk-nearest-feasible-3.0",
+        "servedPeople": 11,
+        "totalPeople": 27,
+        "unassignedPeople": 16,
+        "urgentPeople": 2,
+        "assistedPeople": 7,
+        "weightedWait": 273,
+        "finishMinute": 36,
+        "driveMinutes": 79,
+        "complete": false,
+        "unassigned": [
+          {
+            "id": "H3",
+            "name": "演练家庭 03",
+            "people": 4,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "H6",
+            "name": "演练家庭 06",
+            "people": 3,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "VG1",
+            "name": "演示村 A · VR1 第 1 组",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "VG3",
+            "name": "演示村 A · VR1 第 3 组",
+            "people": 4,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "VG4",
+            "name": "演示村 A · VR1 第 4 组",
+            "people": 4,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          }
+        ],
+        "validationErrors": [],
+        "timing": {
+          "minMs": 0.12,
+          "medianMs": 0.13,
+          "maxMs": 0.18,
+          "repetitions": 3
+        }
+      },
+      "comparison": {
+        "sameSnapshot": true,
+        "rows": [
+          {
+            "vehicleId": "V1",
+            "vehicleName": "1 号车",
+            "baseline": {
+              "people": 5,
+              "ids": [
+                "H1",
+                "H2"
+              ],
+              "stops": [
+                "H1",
+                "H2"
+              ],
+              "shelterId": "S1",
+              "finish": 36,
+              "drive": 28,
+              "holding": false
+            },
+            "optimized": {
+              "people": 6,
+              "ids": [
+                "H2",
+                "VG2",
+                "VG5"
+              ],
+              "stops": [
+                "H2",
+                "VG2",
+                "VG5"
+              ],
+              "shelterId": "S1",
+              "finish": 41,
+              "drive": 28,
+              "holding": false
+            }
+          },
+          {
+            "vehicleId": "V2",
+            "vehicleName": "2 号车",
+            "baseline": {
+              "people": 3,
+              "ids": [
+                "H4",
+                "H5"
+              ],
+              "stops": [
+                "H4",
+                "H5"
+              ],
+              "shelterId": "S2",
+              "finish": 36,
+              "drive": 29,
+              "holding": false
+            },
+            "optimized": {
+              "people": 5,
+              "ids": [
+                "H3",
+                "H5"
+              ],
+              "stops": [
+                "H3",
+                "H5"
+              ],
+              "shelterId": "S2",
+              "finish": 33,
+              "drive": 29,
+              "holding": false
+            }
+          },
+          {
+            "vehicleId": "V3",
+            "vehicleName": "3 号车",
+            "baseline": {
+              "people": 3,
+              "ids": [
+                "VG2",
+                "VG5"
+              ],
+              "stops": [
+                "VG2",
+                "VG5"
+              ],
+              "shelterId": "S1",
+              "finish": 29,
+              "drive": 22,
+              "holding": false
+            },
+            "optimized": {
+              "people": 4,
+              "ids": [
+                "H1",
+                "H4"
+              ],
+              "stops": [
+                "H1",
+                "H4"
+              ],
+              "shelterId": "S2",
+              "finish": 38,
+              "drive": 31,
+              "holding": false
+            }
+          }
+        ],
+        "shelters": [
+          {
+            "id": "S1",
+            "name": "演练安置点 A",
+            "capacity": 10,
+            "occupied": 0,
+            "baseline": 8,
+            "optimized": 6
+          },
+          {
+            "id": "S2",
+            "name": "演练安置点 B",
+            "capacity": 12,
+            "occupied": 0,
+            "baseline": 3,
+            "optimized": 9
+          }
+        ],
+        "baselineUnassigned": [
+          {
+            "id": "H3",
+            "name": "演练家庭 03",
+            "people": 4,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "H6",
+            "name": "演练家庭 06",
+            "people": 3,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "VG1",
+            "name": "演示村 A · VR1 第 1 组",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "VG3",
+            "name": "演示村 A · VR1 第 3 组",
+            "people": 4,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "VG4",
+            "name": "演示村 A · VR1 第 4 组",
+            "people": 4,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          }
+        ],
+        "optimizedUnassigned": [
+          {
+            "id": "H6",
+            "name": "演练家庭 06",
+            "people": 3,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "VG1",
+            "name": "演示村 A · VR1 第 1 组",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "VG3",
+            "name": "演示村 A · VR1 第 3 组",
+            "people": 4,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "VG4",
+            "name": "演示村 A · VR1 第 4 组",
+            "people": 4,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          }
+        ],
+        "priorityWait": {
+          "baseline": 109,
+          "optimized": 125,
+          "unit": "人·分钟",
+          "definition": "已安排高风险人数与实际需协助人数的并集等待，同人不重复；须同时比较未安排人数"
+        },
+        "assistedWait": {
+          "baseline": 95,
+          "optimized": 111,
+          "unit": "人·分钟"
+        },
+        "urgentWait": {
+          "baseline": 14,
+          "optimized": 14,
+          "unit": "人·分钟"
+        }
+      },
+      "explanations": [
+        {
+          "id": "H6",
+          "name": "演练家庭 06",
+          "people": 3,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "joint-capacity",
+          "next": "本组单独可适配，但与其他人员竞争有限座位、轮椅位或接收容量；优先级策略选择后仍需增援。"
+        },
+        {
+          "id": "VG1",
+          "name": "演示村 A · VR1 第 1 组",
+          "people": 1,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "joint-capacity",
+          "next": "本组单独可适配，但与其他人员竞争有限座位、轮椅位或接收容量；优先级策略选择后仍需增援。"
+        },
+        {
+          "id": "VG3",
+          "name": "演示村 A · VR1 第 3 组",
+          "people": 4,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "joint-capacity",
+          "next": "本组单独可适配，但与其他人员竞争有限座位、轮椅位或接收容量；优先级策略选择后仍需增援。"
+        },
+        {
+          "id": "VG4",
+          "name": "演示村 A · VR1 第 4 组",
+          "people": 4,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "joint-capacity",
+          "next": "本组单独可适配，但与其他人员竞争有限座位、轮椅位或接收容量；优先级策略选择后仍需增援。"
+        }
+      ],
+      "interpretation": "本情景仍有未安排人员；保留缺口，不把部分方案宣称为全部解决。"
+    },
+    {
+      "id": "resource-shortage",
+      "name": "车辆故障",
+      "inputHash": "091c2640c62513a4bf738511d037688aac609fd213a1fe2fcfa869b285e8a0c8",
+      "groups": 6,
+      "people": 15,
+      "sourceMode": "synthetic-topology",
+      "optimized": {
+        "algorithm": "ruian-candidate-search-3.0",
+        "servedPeople": 9,
+        "totalPeople": 15,
+        "unassignedPeople": 6,
+        "urgentPeople": 2,
+        "assistedPeople": 2,
+        "weightedWait": 228,
+        "finishMinute": 38,
+        "driveMinutes": 60,
+        "complete": false,
+        "unassigned": [
+          {
+            "id": "H2",
+            "name": "演练家庭 02",
+            "people": 3,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "H6",
+            "name": "演练家庭 06",
+            "people": 3,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          }
+        ],
+        "validationErrors": [],
+        "timing": {
+          "minMs": 2.61,
+          "medianMs": 2.89,
+          "maxMs": 3.19,
+          "repetitions": 3
+        }
+      },
+      "baseline": {
+        "algorithm": "risk-nearest-feasible-3.0",
+        "servedPeople": 8,
+        "totalPeople": 15,
+        "unassignedPeople": 7,
+        "urgentPeople": 2,
+        "assistedPeople": 2,
+        "weightedWait": 212,
+        "finishMinute": 36,
+        "driveMinutes": 55,
+        "complete": false,
+        "unassigned": [
+          {
+            "id": "H2",
+            "name": "演练家庭 02",
+            "people": 3,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "H3",
+            "name": "演练家庭 03",
+            "people": 4,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          }
+        ],
+        "validationErrors": [],
+        "timing": {
+          "minMs": 0.08,
+          "medianMs": 0.08,
+          "maxMs": 0.12,
+          "repetitions": 3
+        }
+      },
+      "comparison": {
+        "sameSnapshot": true,
+        "rows": [
+          {
+            "vehicleId": "V1",
+            "vehicleName": "1 号车",
+            "baseline": {
+              "people": 0,
+              "ids": [],
+              "stops": [],
+              "shelterId": null,
+              "finish": 0,
+              "drive": 0,
+              "holding": false
+            },
+            "optimized": {
+              "people": 0,
+              "ids": [],
+              "stops": [],
+              "shelterId": null,
+              "finish": 0,
+              "drive": 0,
+              "holding": false
+            }
+          },
+          {
+            "vehicleId": "V2",
+            "vehicleName": "2 号车",
+            "baseline": {
+              "people": 5,
+              "ids": [
+                "H1",
+                "H6"
+              ],
+              "stops": [
+                "H1",
+                "H6"
+              ],
+              "shelterId": "S1",
+              "finish": 30,
+              "drive": 26,
+              "holding": false
+            },
+            "optimized": {
+              "people": 5,
+              "ids": [
+                "H3",
+                "H5"
+              ],
+              "stops": [
+                "H3",
+                "H5"
+              ],
+              "shelterId": "S2",
+              "finish": 33,
+              "drive": 29,
+              "holding": false
+            }
+          },
+          {
+            "vehicleId": "V3",
+            "vehicleName": "3 号车",
+            "baseline": {
+              "people": 3,
+              "ids": [
+                "H4",
+                "H5"
+              ],
+              "stops": [
+                "H4",
+                "H5"
+              ],
+              "shelterId": "S2",
+              "finish": 36,
+              "drive": 29,
+              "holding": false
+            },
+            "optimized": {
+              "people": 4,
+              "ids": [
+                "H1",
+                "H4"
+              ],
+              "stops": [
+                "H1",
+                "H4"
+              ],
+              "shelterId": "S2",
+              "finish": 38,
+              "drive": 31,
+              "holding": false
+            }
+          }
+        ],
+        "shelters": [
+          {
+            "id": "S1",
+            "name": "演练安置点 A",
+            "capacity": 10,
+            "occupied": 0,
+            "baseline": 5,
+            "optimized": 0
+          },
+          {
+            "id": "S2",
+            "name": "演练安置点 B",
+            "capacity": 12,
+            "occupied": 0,
+            "baseline": 3,
+            "optimized": 9
+          }
+        ],
+        "baselineUnassigned": [
+          {
+            "id": "H2",
+            "name": "演练家庭 02",
+            "people": 3,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "H3",
+            "name": "演练家庭 03",
+            "people": 4,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          }
+        ],
+        "optimizedUnassigned": [
+          {
+            "id": "H2",
+            "name": "演练家庭 02",
+            "people": 3,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "H6",
+            "name": "演练家庭 06",
+            "people": 3,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          }
+        ],
+        "priorityWait": {
+          "baseline": 50,
+          "optimized": 66,
+          "unit": "人·分钟",
+          "definition": "已安排高风险人数与实际需协助人数的并集等待，同人不重复；须同时比较未安排人数"
+        },
+        "assistedWait": {
+          "baseline": 36,
+          "optimized": 52,
+          "unit": "人·分钟"
+        },
+        "urgentWait": {
+          "baseline": 14,
+          "optimized": 14,
+          "unit": "人·分钟"
+        }
+      },
+      "explanations": [
+        {
+          "id": "H2",
+          "name": "演练家庭 02",
+          "people": 3,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "vehicle-fit",
+          "next": "协调具备轮椅位且座位足够的车辆；不能自动拆分同行组。"
+        },
+        {
+          "id": "H6",
+          "name": "演练家庭 06",
+          "people": 3,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "joint-capacity",
+          "next": "本组单独可适配，但与其他人员竞争有限座位、轮椅位或接收容量；优先级策略选择后仍需增援。"
+        }
+      ],
+      "interpretation": "本情景仍有未安排人员；保留缺口，不把部分方案宣称为全部解决。"
+    },
+    {
+      "id": "shelter-loss",
+      "name": "安置点停用",
+      "inputHash": "fd9b74b1e821a3b3bad20fc719cb9023de09f1ff93f5a4ff3e412bebaf6420ff",
+      "groups": 6,
+      "people": 15,
+      "sourceMode": "synthetic-topology",
+      "optimized": {
+        "algorithm": "ruian-candidate-search-3.0",
+        "servedPeople": 12,
+        "totalPeople": 15,
+        "unassignedPeople": 3,
+        "urgentPeople": 2,
+        "assistedPeople": 5,
+        "weightedWait": 270,
+        "finishMinute": 38,
+        "driveMinutes": 85,
+        "complete": false,
+        "unassigned": [
+          {
+            "id": "H6",
+            "name": "演练家庭 06",
+            "people": 3,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          }
+        ],
+        "validationErrors": [],
+        "timing": {
+          "minMs": 7.15,
+          "medianMs": 7.23,
+          "maxMs": 7.93,
+          "repetitions": 3
+        }
+      },
+      "baseline": {
+        "algorithm": "risk-nearest-feasible-3.0",
+        "servedPeople": 12,
+        "totalPeople": 15,
+        "unassignedPeople": 3,
+        "urgentPeople": 2,
+        "assistedPeople": 5,
+        "weightedWait": 289,
+        "finishMinute": 39,
+        "driveMinutes": 85,
+        "complete": false,
+        "unassigned": [
+          {
+            "id": "H6",
+            "name": "演练家庭 06",
+            "people": 3,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          }
+        ],
+        "validationErrors": [],
+        "timing": {
+          "minMs": 0.09,
+          "medianMs": 0.1,
+          "maxMs": 0.14,
+          "repetitions": 3
+        }
+      },
+      "comparison": {
+        "sameSnapshot": true,
+        "rows": [
+          {
+            "vehicleId": "V1",
+            "vehicleName": "1 号车",
+            "baseline": {
+              "people": 5,
+              "ids": [
+                "H1",
+                "H2"
+              ],
+              "stops": [
+                "H1",
+                "H2"
+              ],
+              "shelterId": "S2",
+              "finish": 39,
+              "drive": 31,
+              "holding": false
+            },
+            "optimized": {
+              "people": 3,
+              "ids": [
+                "H2"
+              ],
+              "stops": [
+                "H2"
+              ],
+              "shelterId": "S2",
+              "finish": 31,
+              "drive": 25,
+              "holding": false
+            }
+          },
+          {
+            "vehicleId": "V2",
+            "vehicleName": "2 号车",
+            "baseline": {
+              "people": 3,
+              "ids": [
+                "H4",
+                "H5"
+              ],
+              "stops": [
+                "H4",
+                "H5"
+              ],
+              "shelterId": "S2",
+              "finish": 36,
+              "drive": 29,
+              "holding": false
+            },
+            "optimized": {
+              "people": 5,
+              "ids": [
+                "H3",
+                "H5"
+              ],
+              "stops": [
+                "H3",
+                "H5"
+              ],
+              "shelterId": "S2",
+              "finish": 33,
+              "drive": 29,
+              "holding": false
+            }
+          },
+          {
+            "vehicleId": "V3",
+            "vehicleName": "3 号车",
+            "baseline": {
+              "people": 4,
+              "ids": [
+                "H3"
+              ],
+              "stops": [
+                "H3"
+              ],
+              "shelterId": "S2",
+              "finish": 27,
+              "drive": 25,
+              "holding": false
+            },
+            "optimized": {
+              "people": 4,
+              "ids": [
+                "H1",
+                "H4"
+              ],
+              "stops": [
+                "H1",
+                "H4"
+              ],
+              "shelterId": "S2",
+              "finish": 38,
+              "drive": 31,
+              "holding": false
+            }
+          }
+        ],
+        "shelters": [
+          {
+            "id": "S1",
+            "name": "演练安置点 A",
+            "capacity": 10,
+            "occupied": 0,
+            "baseline": 0,
+            "optimized": 0
+          },
+          {
+            "id": "S2",
+            "name": "演练安置点 B",
+            "capacity": 12,
+            "occupied": 0,
+            "baseline": 12,
+            "optimized": 12
+          }
+        ],
+        "baselineUnassigned": [
+          {
+            "id": "H6",
+            "name": "演练家庭 06",
+            "people": 3,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          }
+        ],
+        "optimizedUnassigned": [
+          {
+            "id": "H6",
+            "name": "演练家庭 06",
+            "people": 3,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          }
+        ],
+        "priorityWait": {
+          "baseline": 95,
+          "optimized": 87,
+          "unit": "人·分钟",
+          "definition": "已安排高风险人数与实际需协助人数的并集等待，同人不重复；须同时比较未安排人数"
+        },
+        "assistedWait": {
+          "baseline": 81,
+          "optimized": 73,
+          "unit": "人·分钟"
+        },
+        "urgentWait": {
+          "baseline": 14,
+          "optimized": 14,
+          "unit": "人·分钟"
+        }
+      },
+      "explanations": [
+        {
+          "id": "H6",
+          "name": "演练家庭 06",
+          "people": 3,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "joint-capacity",
+          "next": "本组单独可适配，但与其他人员竞争有限座位、轮椅位或接收容量；优先级策略选择后仍需增援。"
+        }
+      ],
+      "interpretation": "本情景仍有未安排人员；保留缺口，不把部分方案宣称为全部解决。"
+    },
+    {
+      "id": "ruian-roads",
+      "name": "瑞安真实路网",
+      "inputHash": "5ab3b69557d4cdfbc750bfe7d0e5d9e0746255e1daddbc8610d1896f27488398",
+      "groups": 6,
+      "people": 15,
+      "sourceMode": "osm-road-network",
+      "optimized": {
+        "algorithm": "ruian-candidate-search-3.0",
+        "servedPeople": 15,
+        "totalPeople": 15,
+        "unassignedPeople": 0,
+        "urgentPeople": 2,
+        "assistedPeople": 5,
+        "weightedWait": 332,
+        "finishMinute": 43,
+        "driveMinutes": 74,
+        "complete": true,
+        "unassigned": [],
+        "validationErrors": [],
+        "timing": {
+          "minMs": 51.55,
+          "medianMs": 52.97,
+          "maxMs": 53.72,
+          "repetitions": 3
+        }
+      },
+      "baseline": {
+        "algorithm": "risk-nearest-feasible-3.0",
+        "servedPeople": 12,
+        "totalPeople": 15,
+        "unassignedPeople": 3,
+        "urgentPeople": 2,
+        "assistedPeople": 5,
+        "weightedWait": 302,
+        "finishMinute": 39,
+        "driveMinutes": 72,
+        "complete": false,
+        "unassigned": [
+          {
+            "id": "H6",
+            "name": "演练家庭 06",
+            "people": 3,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          }
+        ],
+        "validationErrors": [],
+        "timing": {
+          "minMs": 1.25,
+          "medianMs": 1.25,
+          "maxMs": 1.36,
+          "repetitions": 3
+        }
+      },
+      "comparison": {
+        "sameSnapshot": true,
+        "rows": [
+          {
+            "vehicleId": "V1",
+            "vehicleName": "1 号车",
+            "baseline": {
+              "people": 5,
+              "ids": [
+                "H1",
+                "H2"
+              ],
+              "stops": [
+                "H1",
+                "H2"
+              ],
+              "shelterId": "S2",
+              "finish": 38,
+              "drive": 30,
+              "holding": false
+            },
+            "optimized": {
+              "people": 6,
+              "ids": [
+                "H2",
+                "H1",
+                "H5"
+              ],
+              "stops": [
+                "H2",
+                "H1",
+                "H5"
+              ],
+              "shelterId": "S1",
+              "finish": 43,
+              "drive": 33,
+              "holding": false
+            }
+          },
+          {
+            "vehicleId": "V2",
+            "vehicleName": "2 号车",
+            "baseline": {
+              "people": 3,
+              "ids": [
+                "H4",
+                "H5"
+              ],
+              "stops": [
+                "H4",
+                "H5"
+              ],
+              "shelterId": "S1",
+              "finish": 39,
+              "drive": 32,
+              "holding": false
+            },
+            "optimized": {
+              "people": 5,
+              "ids": [
+                "H6",
+                "H4"
+              ],
+              "stops": [
+                "H6",
+                "H4"
+              ],
+              "shelterId": "S2",
+              "finish": 38,
+              "drive": 31,
+              "holding": false
+            }
+          },
+          {
+            "vehicleId": "V3",
+            "vehicleName": "3 号车",
+            "baseline": {
+              "people": 4,
+              "ids": [
+                "H3"
+              ],
+              "stops": [
+                "H3"
+              ],
+              "shelterId": "S2",
+              "finish": 12,
+              "drive": 10,
+              "holding": false
+            },
+            "optimized": {
+              "people": 4,
+              "ids": [
+                "H3"
+              ],
+              "stops": [
+                "H3"
+              ],
+              "shelterId": "S2",
+              "finish": 12,
+              "drive": 10,
+              "holding": false
+            }
+          }
+        ],
+        "shelters": [
+          {
+            "id": "S1",
+            "name": "演练接收点 A",
+            "capacity": 10,
+            "occupied": 0,
+            "baseline": 3,
+            "optimized": 6
+          },
+          {
+            "id": "S2",
+            "name": "演练接收点 B",
+            "capacity": 12,
+            "occupied": 0,
+            "baseline": 9,
+            "optimized": 9
+          }
+        ],
+        "baselineUnassigned": [
+          {
+            "id": "H6",
+            "name": "演练家庭 06",
+            "people": 3,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          }
+        ],
+        "optimizedUnassigned": [],
+        "priorityWait": {
+          "baseline": 107,
+          "optimized": 103,
+          "unit": "人·分钟",
+          "definition": "已安排高风险人数与实际需协助人数的并集等待，同人不重复；须同时比较未安排人数"
+        },
+        "assistedWait": {
+          "baseline": 87,
+          "optimized": 67,
+          "unit": "人·分钟"
+        },
+        "urgentWait": {
+          "baseline": 20,
+          "optimized": 36,
+          "unit": "人·分钟"
+        }
+      },
+      "explanations": [],
+      "interpretation": "本情景全部可安排；仅反映所列演练输入。"
+    }
+  ],
+  "scale": [
+    {
+      "id": "scale-20",
+      "name": "20 组规模演练",
+      "inputHash": "fc2047ad5249391e0b0283ffcd73a7625bdefe40f33402b3741a078ac0936271",
+      "groups": 20,
+      "people": 20,
+      "sourceMode": "synthetic-topology",
+      "optimized": {
+        "algorithm": "ruian-bounded-insertion-heuristic-3.4",
+        "servedPeople": 15,
+        "totalPeople": 20,
+        "unassignedPeople": 5,
+        "urgentPeople": 4,
+        "assistedPeople": 3,
+        "weightedWait": 498,
+        "finishMinute": 67,
+        "driveMinutes": 112,
+        "complete": false,
+        "unassigned": [
+          {
+            "id": "LOAD4",
+            "name": "规模演练组 4",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD5",
+            "name": "规模演练组 5",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD7",
+            "name": "规模演练组 7",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD9",
+            "name": "规模演练组 9",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD18",
+            "name": "规模演练组 18",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          }
+        ],
+        "validationErrors": [],
+        "timing": {
+          "minMs": 2.55,
+          "medianMs": 3.21,
+          "maxMs": 4.29,
+          "repetitions": 3
+        }
+      },
+      "baseline": {
+        "algorithm": "risk-nearest-feasible-3.0",
+        "servedPeople": 15,
+        "totalPeople": 20,
+        "unassignedPeople": 5,
+        "urgentPeople": 4,
+        "assistedPeople": 3,
+        "weightedWait": 847,
+        "finishMinute": 103,
+        "driveMinutes": 215,
+        "complete": false,
+        "unassigned": [
+          {
+            "id": "LOAD4",
+            "name": "规模演练组 4",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD5",
+            "name": "规模演练组 5",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD7",
+            "name": "规模演练组 7",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD9",
+            "name": "规模演练组 9",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD18",
+            "name": "规模演练组 18",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          }
+        ],
+        "validationErrors": [],
+        "timing": {
+          "minMs": 0.28,
+          "medianMs": 0.29,
+          "maxMs": 0.47,
+          "repetitions": 3
+        }
+      },
+      "comparison": {
+        "sameSnapshot": true,
+        "rows": [
+          {
+            "vehicleId": "V1",
+            "vehicleName": "1 号车",
+            "baseline": {
+              "people": 6,
+              "ids": [
+                "LOAD1",
+                "LOAD6",
+                "LOAD8",
+                "LOAD12",
+                "LOAD13",
+                "LOAD14"
+              ],
+              "stops": [
+                "LOAD1",
+                "LOAD6",
+                "LOAD8",
+                "LOAD12",
+                "LOAD13",
+                "LOAD14"
+              ],
+              "shelterId": "S1",
+              "finish": 103,
+              "drive": 84,
+              "holding": false
+            },
+            "optimized": {
+              "people": 6,
+              "ids": [
+                "LOAD19",
+                "LOAD13",
+                "LOAD1",
+                "LOAD2",
+                "LOAD14",
+                "LOAD8"
+              ],
+              "stops": [
+                "LOAD19",
+                "LOAD13",
+                "LOAD1",
+                "LOAD2",
+                "LOAD14",
+                "LOAD8"
+              ],
+              "shelterId": "S1",
+              "finish": 47,
+              "drive": 28,
+              "holding": false
+            }
+          },
+          {
+            "vehicleId": "V2",
+            "vehicleName": "2 号车",
+            "baseline": {
+              "people": 5,
+              "ids": [
+                "LOAD11",
+                "LOAD10",
+                "LOAD17",
+                "LOAD20",
+                "LOAD3"
+              ],
+              "stops": [
+                "LOAD11",
+                "LOAD10",
+                "LOAD17",
+                "LOAD20",
+                "LOAD3"
+              ],
+              "shelterId": "S2",
+              "finish": 81,
+              "drive": 71,
+              "holding": false
+            },
+            "optimized": {
+              "people": 5,
+              "ids": [
+                "LOAD3",
+                "LOAD15",
+                "LOAD16",
+                "LOAD10",
+                "LOAD20"
+              ],
+              "stops": [
+                "LOAD3",
+                "LOAD15",
+                "LOAD16",
+                "LOAD10",
+                "LOAD20"
+              ],
+              "shelterId": "S2",
+              "finish": 67,
+              "drive": 54,
+              "holding": false
+            }
+          },
+          {
+            "vehicleId": "V3",
+            "vehicleName": "3 号车",
+            "baseline": {
+              "people": 4,
+              "ids": [
+                "LOAD16",
+                "LOAD15",
+                "LOAD19",
+                "LOAD2"
+              ],
+              "stops": [
+                "LOAD16",
+                "LOAD15",
+                "LOAD19",
+                "LOAD2"
+              ],
+              "shelterId": "S2",
+              "finish": 71,
+              "drive": 60,
+              "holding": false
+            },
+            "optimized": {
+              "people": 4,
+              "ids": [
+                "LOAD6",
+                "LOAD12",
+                "LOAD11",
+                "LOAD17"
+              ],
+              "stops": [
+                "LOAD6",
+                "LOAD12",
+                "LOAD11",
+                "LOAD17"
+              ],
+              "shelterId": "S2",
+              "finish": 38,
+              "drive": 30,
+              "holding": false
+            }
+          }
+        ],
+        "shelters": [
+          {
+            "id": "S1",
+            "name": "演练安置点 A",
+            "capacity": 10,
+            "occupied": 0,
+            "baseline": 6,
+            "optimized": 6
+          },
+          {
+            "id": "S2",
+            "name": "演练安置点 B",
+            "capacity": 12,
+            "occupied": 0,
+            "baseline": 9,
+            "optimized": 9
+          }
+        ],
+        "baselineUnassigned": [
+          {
+            "id": "LOAD4",
+            "name": "规模演练组 4",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD5",
+            "name": "规模演练组 5",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD7",
+            "name": "规模演练组 7",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD9",
+            "name": "规模演练组 9",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD18",
+            "name": "规模演练组 18",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          }
+        ],
+        "optimizedUnassigned": [
+          {
+            "id": "LOAD4",
+            "name": "规模演练组 4",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD5",
+            "name": "规模演练组 5",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD7",
+            "name": "规模演练组 7",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD9",
+            "name": "规模演练组 9",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD18",
+            "name": "规模演练组 18",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          }
+        ],
+        "priorityWait": {
+          "baseline": 138,
+          "optimized": 116,
+          "unit": "人·分钟",
+          "definition": "已安排高风险人数与实际需协助人数的并集等待，同人不重复；须同时比较未安排人数"
+        },
+        "assistedWait": {
+          "baseline": 75,
+          "optimized": 54,
+          "unit": "人·分钟"
+        },
+        "urgentWait": {
+          "baseline": 70,
+          "optimized": 73,
+          "unit": "人·分钟"
+        }
+      },
+      "explanations": [
+        {
+          "id": "LOAD4",
+          "name": "规模演练组 4",
+          "people": 1,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "joint-capacity",
+          "next": "本组单独可适配，但与其他人员竞争有限座位、轮椅位或接收容量；优先级策略选择后仍需增援。"
+        },
+        {
+          "id": "LOAD5",
+          "name": "规模演练组 5",
+          "people": 1,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "joint-capacity",
+          "next": "本组单独可适配，但与其他人员竞争有限座位、轮椅位或接收容量；优先级策略选择后仍需增援。"
+        },
+        {
+          "id": "LOAD7",
+          "name": "规模演练组 7",
+          "people": 1,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "joint-capacity",
+          "next": "本组单独可适配，但与其他人员竞争有限座位、轮椅位或接收容量；优先级策略选择后仍需增援。"
+        },
+        {
+          "id": "LOAD9",
+          "name": "规模演练组 9",
+          "people": 1,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "joint-capacity",
+          "next": "本组单独可适配，但与其他人员竞争有限座位、轮椅位或接收容量；优先级策略选择后仍需增援。"
+        },
+        {
+          "id": "LOAD18",
+          "name": "规模演练组 18",
+          "people": 1,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "joint-capacity",
+          "next": "本组单独可适配，但与其他人员竞争有限座位、轮椅位或接收容量；优先级策略选择后仍需增援。"
+        }
+      ],
+      "interpretation": "本情景仍有未安排人员；保留缺口，不把部分方案宣称为全部解决。"
+    },
+    {
+      "id": "scale-60",
+      "name": "60 组规模演练",
+      "inputHash": "c95f256d6103fc32676187452cf434b82313d8b0ed5f7f330d4ab6b0da972e00",
+      "groups": 60,
+      "people": 60,
+      "sourceMode": "synthetic-topology",
+      "optimized": {
+        "algorithm": "ruian-bounded-insertion-heuristic-3.4",
+        "servedPeople": 15,
+        "totalPeople": 60,
+        "unassignedPeople": 45,
+        "urgentPeople": 12,
+        "assistedPeople": 5,
+        "weightedWait": 895,
+        "finishMinute": 77,
+        "driveMinutes": 123,
+        "complete": false,
+        "unassigned": [
+          {
+            "id": "LOAD2",
+            "name": "规模演练组 2",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD3",
+            "name": "规模演练组 3",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD4",
+            "name": "规模演练组 4",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD5",
+            "name": "规模演练组 5",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD7",
+            "name": "规模演练组 7",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD8",
+            "name": "规模演练组 8",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD9",
+            "name": "规模演练组 9",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD10",
+            "name": "规模演练组 10",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD12",
+            "name": "规模演练组 12",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD13",
+            "name": "规模演练组 13",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD14",
+            "name": "规模演练组 14",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD17",
+            "name": "规模演练组 17",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD18",
+            "name": "规模演练组 18",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD19",
+            "name": "规模演练组 19",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD20",
+            "name": "规模演练组 20",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD23",
+            "name": "规模演练组 23",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD24",
+            "name": "规模演练组 24",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD25",
+            "name": "规模演练组 25",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD27",
+            "name": "规模演练组 27",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD28",
+            "name": "规模演练组 28",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD30",
+            "name": "规模演练组 30",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD32",
+            "name": "规模演练组 32",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD33",
+            "name": "规模演练组 33",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD34",
+            "name": "规模演练组 34",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD35",
+            "name": "规模演练组 35",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD37",
+            "name": "规模演练组 37",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD38",
+            "name": "规模演练组 38",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD39",
+            "name": "规模演练组 39",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD40",
+            "name": "规模演练组 40",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD42",
+            "name": "规模演练组 42",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD43",
+            "name": "规模演练组 43",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD44",
+            "name": "规模演练组 44",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD45",
+            "name": "规模演练组 45",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD47",
+            "name": "规模演练组 47",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD48",
+            "name": "规模演练组 48",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD49",
+            "name": "规模演练组 49",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD50",
+            "name": "规模演练组 50",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD52",
+            "name": "规模演练组 52",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD53",
+            "name": "规模演练组 53",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD54",
+            "name": "规模演练组 54",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD55",
+            "name": "规模演练组 55",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD57",
+            "name": "规模演练组 57",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD58",
+            "name": "规模演练组 58",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD59",
+            "name": "规模演练组 59",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD60",
+            "name": "规模演练组 60",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          }
+        ],
+        "validationErrors": [],
+        "timing": {
+          "minMs": 4.54,
+          "medianMs": 4.7,
+          "maxMs": 4.8,
+          "repetitions": 3
+        }
+      },
+      "baseline": {
+        "algorithm": "risk-nearest-feasible-3.0",
+        "servedPeople": 14,
+        "totalPeople": 60,
+        "unassignedPeople": 46,
+        "urgentPeople": 12,
+        "assistedPeople": 4,
+        "weightedWait": 1420,
+        "finishMinute": 102,
+        "driveMinutes": 204,
+        "complete": false,
+        "unassigned": [
+          {
+            "id": "LOAD2",
+            "name": "规模演练组 2",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD3",
+            "name": "规模演练组 3",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD4",
+            "name": "规模演练组 4",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD5",
+            "name": "规模演练组 5",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD7",
+            "name": "规模演练组 7",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD8",
+            "name": "规模演练组 8",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD9",
+            "name": "规模演练组 9",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD10",
+            "name": "规模演练组 10",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD12",
+            "name": "规模演练组 12",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD13",
+            "name": "规模演练组 13",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD14",
+            "name": "规模演练组 14",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD17",
+            "name": "规模演练组 17",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD18",
+            "name": "规模演练组 18",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD19",
+            "name": "规模演练组 19",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD20",
+            "name": "规模演练组 20",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD23",
+            "name": "规模演练组 23",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD24",
+            "name": "规模演练组 24",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD25",
+            "name": "规模演练组 25",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD27",
+            "name": "规模演练组 27",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD28",
+            "name": "规模演练组 28",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD29",
+            "name": "规模演练组 29",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD30",
+            "name": "规模演练组 30",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD32",
+            "name": "规模演练组 32",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD33",
+            "name": "规模演练组 33",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD34",
+            "name": "规模演练组 34",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD35",
+            "name": "规模演练组 35",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD37",
+            "name": "规模演练组 37",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD38",
+            "name": "规模演练组 38",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD39",
+            "name": "规模演练组 39",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD40",
+            "name": "规模演练组 40",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD42",
+            "name": "规模演练组 42",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD43",
+            "name": "规模演练组 43",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD44",
+            "name": "规模演练组 44",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD45",
+            "name": "规模演练组 45",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD47",
+            "name": "规模演练组 47",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD48",
+            "name": "规模演练组 48",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD49",
+            "name": "规模演练组 49",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD50",
+            "name": "规模演练组 50",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD52",
+            "name": "规模演练组 52",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD53",
+            "name": "规模演练组 53",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD54",
+            "name": "规模演练组 54",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD55",
+            "name": "规模演练组 55",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD57",
+            "name": "规模演练组 57",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD58",
+            "name": "规模演练组 58",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD59",
+            "name": "规模演练组 59",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD60",
+            "name": "规模演练组 60",
+            "people": 1,
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          }
+        ],
+        "validationErrors": [],
+        "timing": {
+          "minMs": 0.47,
+          "medianMs": 0.58,
+          "maxMs": 0.6,
+          "repetitions": 3
+        }
+      },
+      "comparison": {
+        "sameSnapshot": true,
+        "rows": [
+          {
+            "vehicleId": "V1",
+            "vehicleName": "1 号车",
+            "baseline": {
+              "people": 5,
+              "ids": [
+                "LOAD1",
+                "LOAD26",
+                "LOAD46",
+                "LOAD6",
+                "LOAD22"
+              ],
+              "stops": [
+                "LOAD1",
+                "LOAD26",
+                "LOAD46",
+                "LOAD6",
+                "LOAD22"
+              ],
+              "shelterId": "S1",
+              "finish": 102,
+              "drive": 85,
+              "holding": false
+            },
+            "optimized": {
+              "people": 6,
+              "ids": [
+                "LOAD56",
+                "LOAD26",
+                "LOAD31",
+                "LOAD1",
+                "LOAD15",
+                "LOAD29"
+              ],
+              "stops": [
+                "LOAD56",
+                "LOAD26",
+                "LOAD31",
+                "LOAD1",
+                "LOAD15",
+                "LOAD29"
+              ],
+              "shelterId": "S1",
+              "finish": 77,
+              "drive": 55,
+              "holding": false
+            }
+          },
+          {
+            "vehicleId": "V2",
+            "vehicleName": "2 号车",
+            "baseline": {
+              "people": 5,
+              "ids": [
+                "LOAD36",
+                "LOAD31",
+                "LOAD51",
+                "LOAD56",
+                "LOAD15"
+              ],
+              "stops": [
+                "LOAD36",
+                "LOAD31",
+                "LOAD51",
+                "LOAD56",
+                "LOAD15"
+              ],
+              "shelterId": "S1",
+              "finish": 91,
+              "drive": 75,
+              "holding": false
+            },
+            "optimized": {
+              "people": 5,
+              "ids": [
+                "LOAD51",
+                "LOAD21",
+                "LOAD46",
+                "LOAD16",
+                "LOAD11"
+              ],
+              "stops": [
+                "LOAD51",
+                "LOAD21",
+                "LOAD46",
+                "LOAD16",
+                "LOAD11"
+              ],
+              "shelterId": "S2",
+              "finish": 40,
+              "drive": 30,
+              "holding": false
+            }
+          },
+          {
+            "vehicleId": "V3",
+            "vehicleName": "3 号车",
+            "baseline": {
+              "people": 4,
+              "ids": [
+                "LOAD11",
+                "LOAD16",
+                "LOAD21",
+                "LOAD41"
+              ],
+              "stops": [
+                "LOAD11",
+                "LOAD16",
+                "LOAD21",
+                "LOAD41"
+              ],
+              "shelterId": "S2",
+              "finish": 52,
+              "drive": 44,
+              "holding": false
+            },
+            "optimized": {
+              "people": 4,
+              "ids": [
+                "LOAD6",
+                "LOAD36",
+                "LOAD41",
+                "LOAD22"
+              ],
+              "stops": [
+                "LOAD6",
+                "LOAD36",
+                "LOAD41",
+                "LOAD22"
+              ],
+              "shelterId": "S2",
+              "finish": 52,
+              "drive": 38,
+              "holding": false
+            }
+          }
+        ],
+        "shelters": [
+          {
+            "id": "S1",
+            "name": "演练安置点 A",
+            "capacity": 10,
+            "occupied": 0,
+            "baseline": 10,
+            "optimized": 6
+          },
+          {
+            "id": "S2",
+            "name": "演练安置点 B",
+            "capacity": 12,
+            "occupied": 0,
+            "baseline": 4,
+            "optimized": 9
+          }
+        ],
+        "baselineUnassigned": [
+          {
+            "id": "LOAD2",
+            "name": "规模演练组 2",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD3",
+            "name": "规模演练组 3",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD4",
+            "name": "规模演练组 4",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD5",
+            "name": "规模演练组 5",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD7",
+            "name": "规模演练组 7",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD8",
+            "name": "规模演练组 8",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD9",
+            "name": "规模演练组 9",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD10",
+            "name": "规模演练组 10",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD12",
+            "name": "规模演练组 12",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD13",
+            "name": "规模演练组 13",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD14",
+            "name": "规模演练组 14",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD17",
+            "name": "规模演练组 17",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD18",
+            "name": "规模演练组 18",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD19",
+            "name": "规模演练组 19",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD20",
+            "name": "规模演练组 20",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD23",
+            "name": "规模演练组 23",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD24",
+            "name": "规模演练组 24",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD25",
+            "name": "规模演练组 25",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD27",
+            "name": "规模演练组 27",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD28",
+            "name": "规模演练组 28",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD29",
+            "name": "规模演练组 29",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD30",
+            "name": "规模演练组 30",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD32",
+            "name": "规模演练组 32",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD33",
+            "name": "规模演练组 33",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD34",
+            "name": "规模演练组 34",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD35",
+            "name": "规模演练组 35",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD37",
+            "name": "规模演练组 37",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD38",
+            "name": "规模演练组 38",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD39",
+            "name": "规模演练组 39",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD40",
+            "name": "规模演练组 40",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD42",
+            "name": "规模演练组 42",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD43",
+            "name": "规模演练组 43",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD44",
+            "name": "规模演练组 44",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD45",
+            "name": "规模演练组 45",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD47",
+            "name": "规模演练组 47",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD48",
+            "name": "规模演练组 48",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD49",
+            "name": "规模演练组 49",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD50",
+            "name": "规模演练组 50",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD52",
+            "name": "规模演练组 52",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD53",
+            "name": "规模演练组 53",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD54",
+            "name": "规模演练组 54",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD55",
+            "name": "规模演练组 55",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD57",
+            "name": "规模演练组 57",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD58",
+            "name": "规模演练组 58",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD59",
+            "name": "规模演练组 59",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD60",
+            "name": "规模演练组 60",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          }
+        ],
+        "optimizedUnassigned": [
+          {
+            "id": "LOAD2",
+            "name": "规模演练组 2",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD3",
+            "name": "规模演练组 3",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD4",
+            "name": "规模演练组 4",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD5",
+            "name": "规模演练组 5",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD7",
+            "name": "规模演练组 7",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD8",
+            "name": "规模演练组 8",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD9",
+            "name": "规模演练组 9",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD10",
+            "name": "规模演练组 10",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD12",
+            "name": "规模演练组 12",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD13",
+            "name": "规模演练组 13",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD14",
+            "name": "规模演练组 14",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD17",
+            "name": "规模演练组 17",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD18",
+            "name": "规模演练组 18",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD19",
+            "name": "规模演练组 19",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD20",
+            "name": "规模演练组 20",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD23",
+            "name": "规模演练组 23",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD24",
+            "name": "规模演练组 24",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD25",
+            "name": "规模演练组 25",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD27",
+            "name": "规模演练组 27",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD28",
+            "name": "规模演练组 28",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD30",
+            "name": "规模演练组 30",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD32",
+            "name": "规模演练组 32",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD33",
+            "name": "规模演练组 33",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD34",
+            "name": "规模演练组 34",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD35",
+            "name": "规模演练组 35",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD37",
+            "name": "规模演练组 37",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD38",
+            "name": "规模演练组 38",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD39",
+            "name": "规模演练组 39",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD40",
+            "name": "规模演练组 40",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD42",
+            "name": "规模演练组 42",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD43",
+            "name": "规模演练组 43",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD44",
+            "name": "规模演练组 44",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD45",
+            "name": "规模演练组 45",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD47",
+            "name": "规模演练组 47",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD48",
+            "name": "规模演练组 48",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD49",
+            "name": "规模演练组 49",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD50",
+            "name": "规模演练组 50",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD52",
+            "name": "规模演练组 52",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD53",
+            "name": "规模演练组 53",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD54",
+            "name": "规模演练组 54",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD55",
+            "name": "规模演练组 55",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD57",
+            "name": "规模演练组 57",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD58",
+            "name": "规模演练组 58",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD59",
+            "name": "规模演练组 59",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          },
+          {
+            "id": "LOAD60",
+            "name": "规模演练组 60",
+            "people": 1,
+            "stage": "waiting",
+            "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足"
+          }
+        ],
+        "priorityWait": {
+          "baseline": 523,
+          "optimized": 342,
+          "unit": "人·分钟",
+          "definition": "已安排高风险人数与实际需协助人数的并集等待，同人不重复；须同时比较未安排人数"
+        },
+        "assistedWait": {
+          "baseline": 163,
+          "optimized": 159,
+          "unit": "人·分钟"
+        },
+        "urgentWait": {
+          "baseline": 374,
+          "optimized": 211,
+          "unit": "人·分钟"
+        }
+      },
+      "explanations": [
+        {
+          "id": "LOAD2",
+          "name": "规模演练组 2",
+          "people": 1,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "joint-capacity",
+          "next": "本组单独可适配，但与其他人员竞争有限座位、轮椅位或接收容量；优先级策略选择后仍需增援。"
+        },
+        {
+          "id": "LOAD3",
+          "name": "规模演练组 3",
+          "people": 1,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "joint-capacity",
+          "next": "本组单独可适配，但与其他人员竞争有限座位、轮椅位或接收容量；优先级策略选择后仍需增援。"
+        },
+        {
+          "id": "LOAD4",
+          "name": "规模演练组 4",
+          "people": 1,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "joint-capacity",
+          "next": "本组单独可适配，但与其他人员竞争有限座位、轮椅位或接收容量；优先级策略选择后仍需增援。"
+        },
+        {
+          "id": "LOAD5",
+          "name": "规模演练组 5",
+          "people": 1,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "joint-capacity",
+          "next": "本组单独可适配，但与其他人员竞争有限座位、轮椅位或接收容量；优先级策略选择后仍需增援。"
+        },
+        {
+          "id": "LOAD7",
+          "name": "规模演练组 7",
+          "people": 1,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "joint-capacity",
+          "next": "本组单独可适配，但与其他人员竞争有限座位、轮椅位或接收容量；优先级策略选择后仍需增援。"
+        },
+        {
+          "id": "LOAD8",
+          "name": "规模演练组 8",
+          "people": 1,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "joint-capacity",
+          "next": "本组单独可适配，但与其他人员竞争有限座位、轮椅位或接收容量；优先级策略选择后仍需增援。"
+        },
+        {
+          "id": "LOAD9",
+          "name": "规模演练组 9",
+          "people": 1,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "joint-capacity",
+          "next": "本组单独可适配，但与其他人员竞争有限座位、轮椅位或接收容量；优先级策略选择后仍需增援。"
+        },
+        {
+          "id": "LOAD10",
+          "name": "规模演练组 10",
+          "people": 1,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "joint-capacity",
+          "next": "本组单独可适配，但与其他人员竞争有限座位、轮椅位或接收容量；优先级策略选择后仍需增援。"
+        },
+        {
+          "id": "LOAD12",
+          "name": "规模演练组 12",
+          "people": 1,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "joint-capacity",
+          "next": "本组单独可适配，但与其他人员竞争有限座位、轮椅位或接收容量；优先级策略选择后仍需增援。"
+        },
+        {
+          "id": "LOAD13",
+          "name": "规模演练组 13",
+          "people": 1,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "joint-capacity",
+          "next": "本组单独可适配，但与其他人员竞争有限座位、轮椅位或接收容量；优先级策略选择后仍需增援。"
+        },
+        {
+          "id": "LOAD14",
+          "name": "规模演练组 14",
+          "people": 1,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "joint-capacity",
+          "next": "本组单独可适配，但与其他人员竞争有限座位、轮椅位或接收容量；优先级策略选择后仍需增援。"
+        },
+        {
+          "id": "LOAD17",
+          "name": "规模演练组 17",
+          "people": 1,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "joint-capacity",
+          "next": "本组单独可适配，但与其他人员竞争有限座位、轮椅位或接收容量；优先级策略选择后仍需增援。"
+        },
+        {
+          "id": "LOAD18",
+          "name": "规模演练组 18",
+          "people": 1,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "joint-capacity",
+          "next": "本组单独可适配，但与其他人员竞争有限座位、轮椅位或接收容量；优先级策略选择后仍需增援。"
+        },
+        {
+          "id": "LOAD19",
+          "name": "规模演练组 19",
+          "people": 1,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "joint-capacity",
+          "next": "本组单独可适配，但与其他人员竞争有限座位、轮椅位或接收容量；优先级策略选择后仍需增援。"
+        },
+        {
+          "id": "LOAD20",
+          "name": "规模演练组 20",
+          "people": 1,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "joint-capacity",
+          "next": "本组单独可适配，但与其他人员竞争有限座位、轮椅位或接收容量；优先级策略选择后仍需增援。"
+        },
+        {
+          "id": "LOAD23",
+          "name": "规模演练组 23",
+          "people": 1,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "joint-capacity",
+          "next": "本组单独可适配，但与其他人员竞争有限座位、轮椅位或接收容量；优先级策略选择后仍需增援。"
+        },
+        {
+          "id": "LOAD24",
+          "name": "规模演练组 24",
+          "people": 1,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "joint-capacity",
+          "next": "本组单独可适配，但与其他人员竞争有限座位、轮椅位或接收容量；优先级策略选择后仍需增援。"
+        },
+        {
+          "id": "LOAD25",
+          "name": "规模演练组 25",
+          "people": 1,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "joint-capacity",
+          "next": "本组单独可适配，但与其他人员竞争有限座位、轮椅位或接收容量；优先级策略选择后仍需增援。"
+        },
+        {
+          "id": "LOAD27",
+          "name": "规模演练组 27",
+          "people": 1,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "joint-capacity",
+          "next": "本组单独可适配，但与其他人员竞争有限座位、轮椅位或接收容量；优先级策略选择后仍需增援。"
+        },
+        {
+          "id": "LOAD28",
+          "name": "规模演练组 28",
+          "people": 1,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "joint-capacity",
+          "next": "本组单独可适配，但与其他人员竞争有限座位、轮椅位或接收容量；优先级策略选择后仍需增援。"
+        },
+        {
+          "id": "LOAD30",
+          "name": "规模演练组 30",
+          "people": 1,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "joint-capacity",
+          "next": "本组单独可适配，但与其他人员竞争有限座位、轮椅位或接收容量；优先级策略选择后仍需增援。"
+        },
+        {
+          "id": "LOAD32",
+          "name": "规模演练组 32",
+          "people": 1,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "joint-capacity",
+          "next": "本组单独可适配，但与其他人员竞争有限座位、轮椅位或接收容量；优先级策略选择后仍需增援。"
+        },
+        {
+          "id": "LOAD33",
+          "name": "规模演练组 33",
+          "people": 1,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "joint-capacity",
+          "next": "本组单独可适配，但与其他人员竞争有限座位、轮椅位或接收容量；优先级策略选择后仍需增援。"
+        },
+        {
+          "id": "LOAD34",
+          "name": "规模演练组 34",
+          "people": 1,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "joint-capacity",
+          "next": "本组单独可适配，但与其他人员竞争有限座位、轮椅位或接收容量；优先级策略选择后仍需增援。"
+        },
+        {
+          "id": "LOAD35",
+          "name": "规模演练组 35",
+          "people": 1,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "joint-capacity",
+          "next": "本组单独可适配，但与其他人员竞争有限座位、轮椅位或接收容量；优先级策略选择后仍需增援。"
+        },
+        {
+          "id": "LOAD37",
+          "name": "规模演练组 37",
+          "people": 1,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "joint-capacity",
+          "next": "本组单独可适配，但与其他人员竞争有限座位、轮椅位或接收容量；优先级策略选择后仍需增援。"
+        },
+        {
+          "id": "LOAD38",
+          "name": "规模演练组 38",
+          "people": 1,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "joint-capacity",
+          "next": "本组单独可适配，但与其他人员竞争有限座位、轮椅位或接收容量；优先级策略选择后仍需增援。"
+        },
+        {
+          "id": "LOAD39",
+          "name": "规模演练组 39",
+          "people": 1,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "joint-capacity",
+          "next": "本组单独可适配，但与其他人员竞争有限座位、轮椅位或接收容量；优先级策略选择后仍需增援。"
+        },
+        {
+          "id": "LOAD40",
+          "name": "规模演练组 40",
+          "people": 1,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "joint-capacity",
+          "next": "本组单独可适配，但与其他人员竞争有限座位、轮椅位或接收容量；优先级策略选择后仍需增援。"
+        },
+        {
+          "id": "LOAD42",
+          "name": "规模演练组 42",
+          "people": 1,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "joint-capacity",
+          "next": "本组单独可适配，但与其他人员竞争有限座位、轮椅位或接收容量；优先级策略选择后仍需增援。"
+        },
+        {
+          "id": "LOAD43",
+          "name": "规模演练组 43",
+          "people": 1,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "joint-capacity",
+          "next": "本组单独可适配，但与其他人员竞争有限座位、轮椅位或接收容量；优先级策略选择后仍需增援。"
+        },
+        {
+          "id": "LOAD44",
+          "name": "规模演练组 44",
+          "people": 1,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "joint-capacity",
+          "next": "本组单独可适配，但与其他人员竞争有限座位、轮椅位或接收容量；优先级策略选择后仍需增援。"
+        },
+        {
+          "id": "LOAD45",
+          "name": "规模演练组 45",
+          "people": 1,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "joint-capacity",
+          "next": "本组单独可适配，但与其他人员竞争有限座位、轮椅位或接收容量；优先级策略选择后仍需增援。"
+        },
+        {
+          "id": "LOAD47",
+          "name": "规模演练组 47",
+          "people": 1,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "joint-capacity",
+          "next": "本组单独可适配，但与其他人员竞争有限座位、轮椅位或接收容量；优先级策略选择后仍需增援。"
+        },
+        {
+          "id": "LOAD48",
+          "name": "规模演练组 48",
+          "people": 1,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "joint-capacity",
+          "next": "本组单独可适配，但与其他人员竞争有限座位、轮椅位或接收容量；优先级策略选择后仍需增援。"
+        },
+        {
+          "id": "LOAD49",
+          "name": "规模演练组 49",
+          "people": 1,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "joint-capacity",
+          "next": "本组单独可适配，但与其他人员竞争有限座位、轮椅位或接收容量；优先级策略选择后仍需增援。"
+        },
+        {
+          "id": "LOAD50",
+          "name": "规模演练组 50",
+          "people": 1,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "joint-capacity",
+          "next": "本组单独可适配，但与其他人员竞争有限座位、轮椅位或接收容量；优先级策略选择后仍需增援。"
+        },
+        {
+          "id": "LOAD52",
+          "name": "规模演练组 52",
+          "people": 1,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "joint-capacity",
+          "next": "本组单独可适配，但与其他人员竞争有限座位、轮椅位或接收容量；优先级策略选择后仍需增援。"
+        },
+        {
+          "id": "LOAD53",
+          "name": "规模演练组 53",
+          "people": 1,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "joint-capacity",
+          "next": "本组单独可适配，但与其他人员竞争有限座位、轮椅位或接收容量；优先级策略选择后仍需增援。"
+        },
+        {
+          "id": "LOAD54",
+          "name": "规模演练组 54",
+          "people": 1,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "joint-capacity",
+          "next": "本组单独可适配，但与其他人员竞争有限座位、轮椅位或接收容量；优先级策略选择后仍需增援。"
+        },
+        {
+          "id": "LOAD55",
+          "name": "规模演练组 55",
+          "people": 1,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "joint-capacity",
+          "next": "本组单独可适配，但与其他人员竞争有限座位、轮椅位或接收容量；优先级策略选择后仍需增援。"
+        },
+        {
+          "id": "LOAD57",
+          "name": "规模演练组 57",
+          "people": 1,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "joint-capacity",
+          "next": "本组单独可适配，但与其他人员竞争有限座位、轮椅位或接收容量；优先级策略选择后仍需增援。"
+        },
+        {
+          "id": "LOAD58",
+          "name": "规模演练组 58",
+          "people": 1,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "joint-capacity",
+          "next": "本组单独可适配，但与其他人员竞争有限座位、轮椅位或接收容量；优先级策略选择后仍需增援。"
+        },
+        {
+          "id": "LOAD59",
+          "name": "规模演练组 59",
+          "people": 1,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "joint-capacity",
+          "next": "本组单独可适配，但与其他人员竞争有限座位、轮椅位或接收容量；优先级策略选择后仍需增援。"
+        },
+        {
+          "id": "LOAD60",
+          "name": "规模演练组 60",
+          "people": 1,
+          "stage": "waiting",
+          "reason": "当前车辆适配、座位、安置容量或开放路网不能同时满足",
+          "code": "joint-capacity",
+          "next": "本组单独可适配，但与其他人员竞争有限座位、轮椅位或接收容量；优先级策略选择后仍需增援。"
+        }
+      ],
+      "interpretation": "本情景仍有未安排人员；保留缺口，不把部分方案宣称为全部解决。"
+    }
+  ],
+  "passedConstraintChecks": true,
+  "unresolvedCases": [
+    {
+      "id": "village-growth",
+      "name": "村级新增 12 人",
+      "unassignedPeople": 12
+    },
+    {
+      "id": "resource-shortage",
+      "name": "车辆故障",
+      "unassignedPeople": 6
+    },
+    {
+      "id": "shelter-loss",
+      "name": "安置点停用",
+      "unassignedPeople": 3
+    }
+  ]
+}

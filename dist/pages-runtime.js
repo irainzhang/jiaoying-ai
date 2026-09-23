@@ -60,7 +60,7 @@
     let indexedDB;try{indexedDB=env.indexedDB;}catch(_){}
     const storage=options.storage||createIndexedDBStorage(indexedDB,key);
     const integrations=options.integrations||{};
-    const capabilities={realtimeEvents:true,villageReporting:true,version:'3.4-pages',stateRestore:true,persistentStorage:true,browserOnly:true,crossDeviceSync:false};
+    const capabilities={realtimeEvents:true,villageReporting:true,version:'3.5-pages',operations:true,stateRestore:true,persistentStorage:true,browserOnly:true,crossDeviceSync:false};
     const transport={preferred:'browser-storage',eventsUrl:'/api/v3/events',eventName:'state',pollIntervalMs:1200};
     const listeners=new Set(),streams=new Set();let lastError='',channel=null;
     try{if(typeof env.BroadcastChannel==='function')channel=new env.BroadcastChannel(key);}catch(_){}
@@ -73,12 +73,12 @@
       // Only an opaque notification is placed in localStorage, never exercise data.
       if(!channel)try{env.localStorage.setItem(key+':change',env.crypto.randomUUID());}catch(_){}
     }
-    function initial(){const exercise=Exercise.create();exercise.action('generate');return {format:1,session:env.crypto.randomUUID(),data:exercise.data,seen:[]};}
+    function initial(){const exercise=Exercise.create();exercise.action('generate');return {format:1,session:env.crypto.randomUUID(),data:exercise.data,savedAt:new Date().toISOString(),seen:[]};}
     function check(record){
       if(!record||record.format!==1||typeof record.session!=='string'||!record.session||!record.data||!Number.isInteger(record.data.revision)||!Array.isArray(record.seen))throw new Error('已保存的演练格式无法读取；为保护记录，没有自动覆盖。');
       return record;
     }
-    function snapshot(record){const data=copy(record.data);return {session:record.session,data,metrics:Exercise.metrics(data),villageLedger:Exercise.villageMetrics(data),blockedVehicles:data.activePlan?.routes.filter(route=>Exercise.blockedRoute(data,route)).map(route=>route.vehicleId)||[],integrations:integrations.integrationStatus||{},transport,capabilities};}
+    function snapshot(record){const data=copy(record.data);return {session:record.session,data,savedAt:record.savedAt||null,diagnostics:Exercise.diagnostics?.(data),metrics:Exercise.metrics(data),villageLedger:Exercise.villageMetrics(data),blockedVehicles:data.activePlan?.routes.filter(route=>Exercise.blockedRoute(data,route)).map(route=>route.vehicleId)||[],integrations:integrations.integrationStatus||{},transport,capabilities};}
     async function read(signal){
       const value=await storage.transact(existing=>{const record=existing?check(existing):initial();return {record,changed:!existing,value:snapshot(record)};},signal);
       lastError='';return value;
@@ -92,7 +92,7 @@
       if(!input.payload||typeof input.payload!=='object'||Array.isArray(input.payload))return {changed:false,...result(400,{error:'操作内容无效'})};
       let exercise;
       try{exercise=Exercise.create(record.data);exercise.action(input.action,input.payload);}catch(error){return {changed:false,...result(422,{error:error.message})};}
-      record.data=exercise.data;record.seen.push([input.requestId,digest]);record.seen=record.seen.slice(-500);
+      record.data=exercise.data;record.savedAt=new Date().toISOString();record.seen.push([input.requestId,digest]);record.seen=record.seen.slice(-500);
       return {changed:true,...result(200,snapshot(record))};
     }
     async function mutate(input,signal){
@@ -118,9 +118,10 @@
         if(url.pathname==='/api/v3/action'&&method==='POST'){
           const contentType=new (options.Headers||env.Headers)(init.headers||{}).get('content-type');
           if(!contentType?.startsWith('application/json'))return response(result(415,{error:'需要 JSON 请求'}));
-          if(typeof init.body!=='string'||new TextEncoder().encode(init.body).length>16384)return response(result(413,{error:'请求过长或格式无效'}));
+          if(typeof init.body!=='string'||new TextEncoder().encode(init.body).length>6*1024*1024)return response(result(413,{error:'请求过长或格式无效'}));
           let value;try{value=JSON.parse(init.body);}catch(_){return response(result(400,{error:'JSON 格式无效'}));}
           if(!value||typeof value!=='object'||Array.isArray(value)||typeof value.action!=='string'||typeof value.requestId!=='string'||!value.requestId||value.requestId.length>100)return response(result(400,{error:'操作参数无效'}));
+          if(value.action!=='restore'&&new TextEncoder().encode(init.body).length>16384)return response(result(413,{error:'请求过长或格式无效'}));
           return response(await mutate(value,init.signal));
         }
         return response(result(404,{error:'接口不存在或请求方法不支持'}));

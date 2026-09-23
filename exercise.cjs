@@ -2,6 +2,7 @@
 // Server-owned synthetic exercise. No weather/model/notification service is called.
 const E=require('./dist/engine.js');
 const V=require('./village-ledger.cjs');
+const R=require('./resilience.cjs');
 const clone=E.clone;
 const ALGORITHM='ruian-candidate-search-3.0';
 const BASELINE='risk-nearest-feasible-3.0';
@@ -20,7 +21,7 @@ function initial(){
   scenario.nodes.find(n=>n.id==='S1').label='安置点 A';scenario.nodes.find(n=>n.id==='S2').label='安置点 B';
   scenario.households.forEach(h=>{h.node=h.id;h.risk=h.priority;h.riskBase=h.risk;h.name='演练家庭 '+h.id.slice(1).padStart(2,'0');h.response='待联系';});
   scenario.nodes.filter(n=>n.kind==='home').forEach(n=>n.label=scenario.households.find(h=>h.id===n.id).name);
-  const d={schema:'jiaoying-v3',revision:1,inputVersion:1,executionVersion:1,algorithm:ALGORITHM,phase:'preparation',scenario,stage:{},contacts:{},fleet:{},occupancy:{S1:0,S2:0},reports:[],fieldEvents:[],taskAcks:{},history:[],log:[],plan:null,baseline:null,alternative:null,activePlan:null,planSnapshot:null,planCounter:0,weather:{sourceMode:'simulation',level:1,rainfall:20,unit:'mm',window:'演练最近1小时累计',updatedAt:now(),trigger:'初始演练条件'},lastAnnouncement:'瑞安合成演练已就绪。6 户 15 人，3 辆车，2 个安置点。'};
+  const d={schema:'jiaoying-v3',exerciseId:'EX-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8),createdAt:now(),scenarioPreset:'normal',followups:{},revision:1,inputVersion:1,executionVersion:1,algorithm:ALGORITHM,phase:'preparation',scenario,stage:{},contacts:{},fleet:{},occupancy:{S1:0,S2:0},reports:[],fieldEvents:[],taskAcks:{},history:[],log:[],plan:null,baseline:null,alternative:null,activePlan:null,planSnapshot:null,planCounter:0,weather:{sourceMode:'simulation',level:1,rainfall:20,unit:'mm',window:'演练最近1小时累计',updatedAt:now(),trigger:'初始演练条件'},lastAnnouncement:'瑞安合成演练已就绪。6 户 15 人，3 辆车，2 个安置点。'};
   for(const h of scenario.households){d.stage[h.id]='waiting';d.contacts[h.id]={ack:false,contacted:false};}
   for(const v of scenario.vehicles)d.fleet[v.id]={node:v.start,minute:0,onboard:[],delivered:[],finished:false};
   d.log.push({id:1,time:now(),type:'init',message:d.lastAnnouncement});return V.ensure(d);
@@ -86,7 +87,7 @@ function validate(i,p){
     bad(v.available&&!f.finished,'车辆不可用');const sh=s.shelters.find(x=>x.id===r.shelterId);bad(sh?.available,'安置点不可用');let node=f.node,minute=f.minute;const ids=[...f.onboard];
     for(let k=0;k<r.stops.length;k++){const st=r.stops[k],h=s.households.find(x=>x.id===st.id);if(!h){errors.push('接人对象不存在');continue;}bad(i.stage[h.id]==='waiting','重复接已上车或已完成人员');ids.push(h.id);const seg=r.segments[k];bad(seg?.from===node&&seg?.to===h.node,'接人路段次序不符');minute+=seg?.minutes||0;bad(st.arrival===minute&&st.people===h.people,'到户时间或人数不符');minute+=h.service;bad(st.depart===minute,'接人用时不符');node=h.node;}
     const tail=r.segments.at(-1);bad(r.segments.length===r.stops.length+1&&tail?.from===node&&tail?.to===r.shelterId,'送达尾程缺失');minute+=tail?.minutes||0;bad(minute===r.finish,'送达时间不符');
-    for(const seg of r.segments){bad(seg.nodes?.[0]===seg.from&&seg.nodes?.at(-1)===seg.to&&seg.edges?.length===seg.nodes.length-1,'路径结构无效');let minutes=0;for(let k=0;k<(seg.edges||[]).length;k++){const edge=s.edges.find(e=>e.id===seg.edges[k]);bad(edge?.open,'包含封闭道路');if(edge){bad((edge.from===seg.nodes[k]&&edge.to===seg.nodes[k+1])||(edge.to===seg.nodes[k]&&edge.from===seg.nodes[k+1]),'路径不连续');minutes+=edge.minutes;}}bad(minutes===seg.minutes,'路段时间无效');}
+    for(const seg of r.segments){bad(seg.nodes?.[0]===seg.from&&seg.nodes?.at(-1)===seg.to&&seg.edges?.length===seg.nodes.length-1,'路径结构无效');let minutes=0;for(let k=0;k<(seg.edges||[]).length;k++){const edge=s.edges.find(e=>e.id===seg.edges[k]);bad(edge?.open,'包含封闭道路');if(edge){bad((edge.from===seg.nodes[k]&&edge.to===seg.nodes[k+1])||(!edge.directed&&edge.to===seg.nodes[k]&&edge.from===seg.nodes[k+1]),'路径不连续');minutes+=edge.minutes;}}bad(minutes===seg.minutes,'路段时间无效');}
     bad(JSON.stringify(ids)===JSON.stringify(r.passengerIds),'乘员清单不符');let people=0,chairs=0;for(const id of ids){const h=s.households.find(x=>x.id===id);bad(Boolean(h),'人员不存在');if(!h)continue;bad(!seen.has(id),'人员重复分配');seen.add(id);people+=h.people;chairs+=h.wheelchairPeople??Number(h.wheelchair);}
     bad(people===r.people&&people<=v.capacity,'座位人数不符或超载');bad(chairs<=Number(v.wheelchair),'轮椅位超限');loads[r.shelterId]=(loads[r.shelterId]||0)+people;
   }
@@ -97,29 +98,37 @@ function validate(i,p){
   bad(sum([...seen],id=>s.households.find(h=>h.id===id).people)===p.servedPeople,'服务人数不一致');bad(vehicles.size===s.vehicles.length,'缺少车辆状态');return [...new Set(errors)];
 }
 function metrics(d){const hs=d.scenario.households.filter(h=>d.stage[h.id]!=='superseded'),held=sum(V.unplannedRequests(d),h=>h.people);return {people:sum(hs,h=>h.people)+held,waiting:sum(hs.filter(h=>d.stage[h.id]==='waiting'),h=>h.people)+held,unplannedPeople:held,pendingVillagePeople:sum(V.villageMetrics(d),v=>v.pendingPeople),boarded:sum(hs.filter(h=>d.stage[h.id]==='boarded'),h=>h.people),arrived:sum(hs.filter(h=>d.stage[h.id]==='arrived'),h=>h.people),verified:sum(hs.filter(h=>d.stage[h.id]==='verified'),h=>h.people),highRisk:sum(hs.filter(h=>h.risk===3),h=>h.people),capacity:sum(d.scenario.shelters.filter(s=>s.available),s=>Math.max(0,s.capacity-(d.occupancy[s.id]||0))),pendingReports:d.reports.filter(r=>r.status==='pending').length+(d.villageReports||[]).filter(r=>r.status==='pending').length};}
-function blockedRoute(d,r){if(!r||r.holding)return true;const f=d.fleet[r.vehicleId];if(f.finished)return false;if(r.passengerIds.some(id=>d.stage[id]==='superseded'))return true;const pending=r.stops.filter(st=>d.stage[st.id]==='waiting');const first=pending.length?r.stops.indexOf(pending[0]):r.stops.length;return r.segments.slice(first).some(seg=>seg.edges.some(id=>!d.scenario.edges.find(e=>e.id===id)?.open));}
-function restore(initialData){
-  const object=x=>!!x&&typeof x==='object'&&!Array.isArray(x);
-  assert(object(initialData)&&initialData.schema==='jiaoying-v3','恢复数据必须为 jiaoying-v3 演练数据');
-  const d=clone(initialData),s=d.scenario;
-  assert(object(s)&&['nodes','edges','households','vehicles','shelters'].every(k=>Array.isArray(s[k])&&s[k].length&&s[k].every(x=>object(x)&&typeof x.id==='string')),'恢复数据缺少有效的演练对象');
-  for(const key of ['nodes','edges','households','vehicles','shelters'])assert(new Set(s[key].map(x=>x.id)).size===s[key].length,'恢复数据存在重复对象');
-  assert(['revision','inputVersion','executionVersion'].every(k=>Number.isInteger(d[k])&&d[k]>=1)&&Number.isInteger(d.planCounter)&&d.planCounter>=0,'恢复数据版本无效');
-  assert(['preparation','executing'].includes(d.phase)&&['stage','contacts','fleet','occupancy','weather'].every(k=>object(d[k]))&&['reports','history','log'].every(k=>Array.isArray(d[k])),'恢复数据状态结构无效');
-  assert(s.households.every(h=>['waiting','boarded','arrived','verified','superseded'].includes(d.stage[h.id])&&object(d.contacts[h.id])&&typeof d.contacts[h.id].contacted==='boolean'&&Number.isInteger(h.people)&&h.people>0),'恢复数据人员状态无效');
-  assert(s.vehicles.every(v=>object(d.fleet[v.id])&&Array.isArray(d.fleet[v.id].onboard)&&Array.isArray(d.fleet[v.id].delivered)&&typeof d.fleet[v.id].finished==='boolean'&&s.nodes.some(n=>n.id===d.fleet[v.id].node)&&Number.isFinite(d.fleet[v.id].minute)&&d.fleet[v.id].minute>=0),'恢复数据车辆状态无效');
-  assert(s.shelters.every(sh=>Number.isInteger(d.occupancy[sh.id])&&d.occupancy[sh.id]>=0),'恢复数据安置人数无效');
-  assert(['plan','baseline','alternative','activePlan'].every(k=>d[k]===null||(object(d[k])&&Array.isArray(d[k].routes)&&Array.isArray(d[k].servedIds))),'恢复数据方案结构无效');
+function blockedRoute(d,r){
+  if(!r||r.holding)return true;
+  const f=d.fleet[r.vehicleId],v=d.scenario.vehicles.find(v=>v.id===r.vehicleId);
+  if(!f||!v)return true;if(f.finished)return false;
+  if(r.people&&(!v.available||!d.scenario.shelters.find(sh=>sh.id===r.shelterId)?.available))return true;
+  const sh=d.scenario.shelters.find(sh=>sh.id===r.shelterId);
+  if(r.people&&d.activePlan&&(v.resourceChangeVersion>d.activePlan.inputVersion||sh?.resourceChangeVersion>d.activePlan.inputVersion))return true;
+  if(r.passengerIds.some(id=>d.stage[id]==='superseded'))return true;
+  const pending=r.stops.filter(st=>d.stage[st.id]==='waiting');const first=pending.length?r.stops.indexOf(pending[0]):r.stops.length;
+  return r.segments.slice(first).some(seg=>seg.edges.some(id=>!d.scenario.edges.find(e=>e.id===id)?.open));
+}
+function restore(initialData,{external=false}={}){
+  R.validateState(initialData);const d=clone(initialData);
   if(d.fieldEvents===undefined)d.fieldEvents=[];
   if(d.taskAcks===undefined)d.taskAcks={};
-  assert(Array.isArray(d.fieldEvents)&&d.fieldEvents.every(e=>object(e)&&typeof e.id==='string')&&object(d.taskAcks),'恢复数据现场记录无效');
-  d.fieldEvents=d.fieldEvents.slice(0,100);
-  return V.ensure(d);
+  if(d.followups===undefined)d.followups={};
+  if(d.createdAt===undefined)d.createdAt=d.log.find(x=>x.type==='init')?.time||d.log.at(-1)?.time||'2026-09-23T00:00:00.000Z';
+  if(d.exerciseId===undefined)d.exerciseId='EX-legacy-'+String(d.createdAt).replace(/[^0-9]/g,'').slice(0,17);
+  V.ensure(d);V.checkLimits(d,0);
+  if(external&&d.plan){
+    assert(d.planSnapshot&&d.plan.inputVersion===d.inputVersion&&d.plan.executionVersion===d.executionVersion,'恢复草案输入版本不符');
+    assert(JSON.stringify(d.planSnapshot.scenario)===JSON.stringify(d.scenario)&&JSON.stringify(d.planSnapshot.stage)===JSON.stringify(d.stage)&&JSON.stringify(d.planSnapshot.fleet)===JSON.stringify(d.fleet)&&JSON.stringify(d.planSnapshot.occupancy)===JSON.stringify(d.occupancy),'恢复草案与输入快照不符');
+    for(const p of [d.plan,d.baseline,d.alternative].filter(Boolean))assert(!validate(snapshot(d),p).length,'恢复草案约束校验失败');
+  }
+  return d;
 }
+function diagnostics(d){return R.diagnostics(d,{E,snapshot,validate,blockedRoute});}
 function create(initialData=null){
   let d=initialData===null?initial():restore(initialData);
   function log(message,type='action'){d.log.unshift({id:(d.log[0]?.id||0)+1,time:now(),type,message});d.log=d.log.slice(0,150);}
-  function fieldEvent(event){const record={id:'F'+(d.revision+1),time:now(),...event};d.fieldEvents.unshift(record);d.fieldEvents=d.fieldEvents.slice(0,100);return record;}
+  function fieldEvent(event){const base='F'+(d.revision+1);let id=base,n=1;while(d.fieldEvents.some(e=>e.id===id))id=base+'-'+(++n);const record={id,time:now(),...event};d.fieldEvents.unshift(record);d.fieldEvents=d.fieldEvents.slice(0,100);return record;}
   function inputSource(value,fallback){const source=value===undefined?fallback:value;assert(['quick','voice','text','manual'].includes(source),'现场输入来源无效');return source;}
   function invalidate(reason){d.inputVersion++;d.plan=null;d.baseline=null;d.alternative=null;d.planSnapshot=null;log(reason,'input');}
   function generate(reason='人工重新计算'){
@@ -129,7 +138,7 @@ function create(initialData=null){
   }
   function fresh(){return !!d.plan&&d.plan.inputVersion===d.inputVersion&&d.plan.executionVersion===d.executionVersion;}
   function advanceVehicle(vehicleId,expectedStage=null,householdId=null){
-    assert(d.phase==='executing','请先开始模拟执行');const r=d.activePlan?.routes.find(r=>r.vehicleId===vehicleId),f=d.fleet[vehicleId];assert(r&&f&&!f.finished&&r.people,'该车辆没有可推进任务');assert(!r.passengerIds.some(id=>d.stage[id]==='superseded'),'本路线的人员批次已更正，请重新计算并确认方案后继续');assert(!blockedRoute(d,r),'剩余路线包含已确认封闭道路，暂停推进；请先重规划并确认');
+    assert(d.phase==='executing','请先开始模拟执行');const r=d.activePlan?.routes.find(r=>r.vehicleId===vehicleId),f=d.fleet[vehicleId];assert(r&&f&&!f.finished&&r.people,'该车辆没有可推进任务');assert(!r.passengerIds.some(id=>d.stage[id]==='superseded'),'本路线的人员批次已更正，请重新计算并确认方案后继续');assert(!blockedRoute(d,r),'车辆、安置点或剩余道路已不可用，暂停推进；请先协调资源、重规划并确认');
     const st=r.stops.find(st=>d.stage[st.id]==='waiting');
     if(expectedStage==='board')assert(st&&st.id===householdId,'上车登记必须对应本车下一待接家庭，不可跳站或重复登记');
     if(expectedStage==='arrive')assert(!st,'仍有待接家庭，不能提前登记到达');
@@ -143,6 +152,44 @@ function create(initialData=null){
     const before=clone(d);
     try{
       if(name==='reset'){const revision=d.revision;d=initial();d.revision=revision;log('人工重置演练，两个网页同步恢复初始数据。');}
+      else if(name==='scenario'){
+        assert(R.catalog.some(x=>x.id===p.id),'示范情景不存在');const revision=d.revision;d=initial();d.revision=revision;d.scenarioPreset=p.id;
+        if(p.id==='ruian-roads')require('./geo-scenario.cjs').apply(d);
+        if(p.id==='road-closure'){d.scenario.edges.find(e=>e.id==='east').open=false;d.reports.unshift({id:'R1',kind:'road',location:'east',text:'标准情景：东桥经演练核实中断',people:0,status:'accepted',reporter:'情景演示',inputSource:'manual',createdAt:now(),reviewedAt:now(),note:'标准情景条件，不代表实时路况'});}
+        if(p.id==='resource-shortage'){d.scenario.vehicles[0].available=false;d.scenario.vehicles[0].unavailableReason='标准情景：车辆故障，等待维修或增援';}
+        if(p.id==='shelter-loss'){d.scenario.shelters[0].available=false;d.scenario.shelters[0].unavailableReason='标准情景：安置点暂停接收，需协调其他容量';}
+        if(p.id==='village-growth'){
+          const ctx={now,log,invalidate,generate,fieldEvent};
+          V.handle(d,'village-report',{villageId:'VA',mode:'increment',people:12,pickupId:'P-A1',assistancePeople:3,wheelchairPeople:1,groupPolicy:'splittable',text:'演示村 A 新增 12 人，其中 3 人需要协助，包含 1 名轮椅人员；允许分组接送。',reporter:'情景演示',source:'manual'},ctx);
+          V.handle(d,'village-review',{id:d.villageReports[0].id,decision:'accept',note:'标准演练情景已核对人数、集合点和分组要求'},ctx);
+        }else generate('加载示范情景：'+R.catalog.find(x=>x.id===p.id).name);
+        log('已创建新的独立演练 '+d.exerciseId+'；原演练只在先前导出文件中保留。','scenario');
+      }
+      else if(name==='restore'){
+        const imported=p.data?.schema?p.data:p.data?.data;assert(imported,'请选择完整的演练 JSON 导出文件');
+        const restored=restore(imported,{external:true}),revision=d.revision;
+        assert(restored.phase==='executing'||Object.values(restored.stage).every(st=>!['boarded','arrived','verified'].includes(st)),'准备阶段不能包含已上车或到达执行记录');
+        // External imports never authorize an imported route for execution.
+        // Boarding/delivery ledgers stay intact and the new candidate is computed locally.
+        d=restored;d.revision=revision;d.plan=null;d.baseline=null;d.alternative=null;d.activePlan=null;d.planSnapshot=null;d.history=[];d.taskAcks={};d.inputVersion++;d.executionVersion++;
+        d.importedAt=now();d.importedRevision=imported.revision;generate('导入校验通过；已撤销导入文件中的发布状态，保留车载与到达记录');
+        log('文件恢复完成：保留人员执行台账，所有剩余安排须重新人工确认。','restore');
+      }
+      else if(name==='resource-event'){
+        assert(['vehicle','shelter'].includes(p.kind),'资源事件类型无效');assert(typeof p.available==='boolean','请明确资源是否可用');
+        const item=d.scenario[p.kind==='vehicle'?'vehicles':'shelters'].find(x=>x.id===p.id);assert(item,'资源不存在');const reason=text(p.reason,300,'核实依据');
+        assert(item.available!==p.available,'资源状态没有变化，无需重复提交');item.available=p.available;item.unavailableReason=p.available?'':reason;item.availabilityUpdatedAt=now();
+        invalidate(item.name+(p.available?'已核实恢复可用':'已核实不可用')+'：'+reason);item.resourceChangeVersion=d.inputVersion;generate('资源状态变化：'+item.name);
+        const key=p.kind+':'+item.id;d.followups=d.followups||{};if(!p.available)d.followups[key]={key,owner:'待指派',note:reason,dueAt:null,status:'open',updatedAt:now()};
+      }
+      else if(name==='followup'){
+        const key=text(p.key,80,'跟进对象');assert(/^[A-Za-z0-9][A-Za-z0-9_.:-]*$/.test(key)&&!['__proto__','constructor','prototype'].includes(key),'跟进对象编号无效');
+        d.followups=d.followups||{};assert(diagnostics(d).coordination.some(x=>x.key===key)||d.followups[key],'当前没有此待办对象');
+        assert(['open','working','resolved'].includes(p.status),'跟进状态无效');const owner=text(p.owner,40,'责任人'),note=text(p.note,500,'处理说明');
+        const dueAt=p.dueAt===null||p.dueAt===''||p.dueAt===undefined?null:p.dueAt;assert(dueAt===null||typeof dueAt==='string'&&Number.isFinite(Date.parse(dueAt)),'请填写有效的跟进时间');
+        assert(d.followups[key]||Object.keys(d.followups).length<500,'跟进事项达到演示上限');d.followups[key]={key,owner,note,dueAt:dueAt?new Date(dueAt).toISOString():null,status:p.status,updatedAt:now()};
+        log(owner+' 更新 '+key+' 跟进：'+note+'；未自动改变道路、转移或安全核验状态。','followup');d.lastAnnouncement=d.log[0].message;
+      }
       else if(V.handle(d,name,p,{now,log,invalidate,generate,fieldEvent})){}
       else if(name==='generate')generate();
       else if(name==='weather'){
@@ -221,4 +268,4 @@ function create(initialData=null){
   }
   return {get data(){return clone(d);},action,fresh};
 }
-module.exports={create,initial,snapshot,solve,baseline,validate,metrics,villageMetrics:V.villageMetrics,blockedRoute,ALGORITHM,BASELINE};
+module.exports={create,initial,snapshot,solve,baseline,validate,metrics,diagnostics,restore,scenarioCatalog:R.catalog,villageMetrics:V.villageMetrics,blockedRoute,ALGORITHM,BASELINE};
