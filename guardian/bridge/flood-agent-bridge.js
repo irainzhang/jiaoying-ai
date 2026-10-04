@@ -162,7 +162,7 @@
 
       /**
        * 请求子页面打开人工确认框。宿主不能批准，不能代填确认人。
-       * 操作人必须在子页面填写姓名并亲自点击；工具与参数以待确认请求为准。
+       * 操作人必须在子页面亲自点击，姓名选填；工具与参数以待确认请求为准。
        */
       confirm: function (token, actor, tool, params) {
         return command({ kind: 'confirm', token: token });

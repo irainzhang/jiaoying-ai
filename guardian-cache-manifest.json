@@ -1,5 +1,5 @@
 {
-  "build": "80b5ecd5dbc015cf0872",
+  "build": "228302440c491dba7fc9",
   "files": [
     "assets/evaluation.json",
     "assets/logo-lockup.png",
@@ -12,6 +12,7 @@
     "assets/maps/source-metadata.json",
     "assets/maps/validation.json",
     "capabilities.js",
+    "command-flow.css",
     "command-intake.js",
     "command-theme.css",
     "engine.js",
@@ -82,6 +83,7 @@
     "start-page.css",
     "start-page.js",
     "start.html",
+    "transport-map.js",
     "vendor/leaflet/LICENSE",
     "vendor/leaflet/leaflet.css",
     "vendor/leaflet/leaflet.js",
@@ -89,6 +91,8 @@
     "village-workspace.css",
     "village-workspace.js",
     "voice-input.js",
+    "weather-panel.css",
+    "weather-panel.js",
     "workspace-app.js",
     "workspace.css"
   ]

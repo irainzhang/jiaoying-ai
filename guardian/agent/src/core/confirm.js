@@ -94,8 +94,7 @@
         delete pending[token];
         return { ok: false, message: '确认请求已过期或方案依据已变化，请重新核对后申请确认。' };
       }
-      var by = typeof actor === 'string' ? actor.trim() : '';
-      if (!by) return { ok: false, message: '请填写确认人，不能只填写空格。' };
+      var by = (typeof actor === 'string' ? actor.trim() : '') || '演练值守';
       if (!humanClick(event)) return { ok: false, message: '必须在人工确认框中亲自点击确认；禁止程序自动批准。' };
       req.status = 'approved';
       req.approvedBy = by;

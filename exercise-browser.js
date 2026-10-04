@@ -1,5 +1,94 @@
 /* Generated from the same audited exercise modules as the local server. */
 (()=>{'use strict';const factories=Object.create(null),cache={'./dist/engine.js':{exports:window.JiaoyingEngine}};
+factories["./intake-location.cjs"]=function(module,exports,require){
+'use strict';
+// Local matching only. This module never geocodes a name or invents a road.
+const assert=(ok,message)=>{if(!ok)throw new Error(message);};
+const MAX_DISTANCE_M=500,MAX_VILLAGES=503,MAX_PICKUPS=1000;
+const norm=s=>String(s||'').normalize('NFKC').trim().replace(/\s+/g,'').toUpperCase();
+const label=(value,title)=>{assert(typeof value==='string'&&value.trim()&&value.length<=100&&!/[\u0000-\u001f]/.test(value),title+'不能为空且不能超过100字');return value.trim();};
+const validId=s=>typeof s==='string'&&/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,79}$/.test(s)&&!['constructor','prototype','__proto__'].includes(s);
+const coordinate=(lon,lat)=>typeof lon==='number'&&Number.isFinite(lon)&&lon>=-180&&lon<=180&&typeof lat==='number'&&Number.isFinite(lat)&&lat>=-90&&lat<=90;
+const present=n=>n!==undefined&&n!==null&&n!=='';
+function distance(a,b){const rad=x=>x*Math.PI/180,dlat=rad(b.latitude-a.latitude),dlon=rad(b.longitude-a.longitude),q=Math.sin(dlat/2)**2+Math.cos(rad(a.latitude))*Math.cos(rad(b.latitude))*Math.sin(dlon/2)**2;return 6371000*2*Math.atan2(Math.sqrt(q),Math.sqrt(Math.max(0,1-q)));}
+function roadNode(s,node){return s.edges.some(e=>e.open&&(e.from===node.id||e.to===node.id));}
+function resolve(s,p={}){
+  const geo=s.region?.mapKind==='osm-road-network',hasCoords=present(p.longitude)||present(p.latitude),nodeId=p.nodeId||p.locationNodeId||null;
+  if(hasCoords){assert(coordinate(p.longitude,p.latitude),'经纬度须同时提供有效数字，使用WGS84坐标');assert(p.coordinateSystem==='WGS84','仅支持明确标注的WGS84坐标，不自动转换其他坐标系');assert(geo,'当前为合成示意地图；请先点击“启用瑞安道路地图”，保留现有需求后再导入经纬度');}
+  const base={longitude:hasCoords?p.longitude:null,latitude:hasCoords?p.latitude:null,coordinateSystem:hasCoords?'WGS84':null,locationNodeId:null,locationStatus:'pending',locationDistanceM:null,locationReason:'未提供可确认的位置，请选择路网节点或补充WGS84经纬度',locationSource:'unlocated'};
+  let node=nodeId?s.nodes.find(n=>n.id===nodeId):null;
+  if(nodeId)assert(node,'所选接人路网节点不存在');
+  if(hasCoords){
+    const b=s.region.bounds;
+    if(!Array.isArray(b)||p.longitude<b[0]||p.latitude<b[1]||p.longitude>b[2]||p.latitude>b[3])return {...base,locationReason:'坐标在当前有限瑞安道路数据范围外，保留需求待定位，不生成虚构路线',locationSource:'uploaded-coordinate'};
+    const candidates=s.nodes.filter(n=>coordinate(n.longitude,n.latitude)&&roadNode(s,n));
+    if(!node)node=candidates.sort((a,b)=>distance(p,a)-distance(p,b)||a.id.localeCompare(b.id))[0];
+    const metres=node?distance(p,node):Infinity;
+    if(!node||!roadNode(s,node)||metres>MAX_DISTANCE_M)return {...base,locationReason:'坐标距离可接送道路节点超过500米或节点道路不可用，保留需求待定位',locationSource:'uploaded-coordinate'};
+    return {...base,locationNodeId:node.id,locationStatus:'located',locationDistanceM:Math.round(metres*10)/10,locationReason:'已关联现有道路节点；原坐标至道路节点的接驳路段未建模，需现场核对',locationSource:nodeId?'manual-node':'nearest-road-node'};
+  }
+  if(node){
+    assert(roadNode(s,node),'所选节点没有开放道路，请选择其他节点');
+    return {...base,longitude:geo?node.longitude:null,latitude:geo?node.latitude:null,coordinateSystem:geo?'WGS84':null,locationNodeId:node.id,locationStatus:'located',locationDistanceM:geo?0:null,locationReason:'人工选择现有路网节点，待现场核对接人位置',locationSource:'manual-node'};
+  }
+  return base;
+}
+function nextId(list,prefix){let n=1;while(list.some(x=>x.id===prefix+n))n++;return prefix+n;}
+function prepareRow(d,row){
+  let village=row.villageId?d.villages.find(v=>v.id===row.villageId):null;
+  if(row.villageId)assert(village,'请选择有效的已登记村庄编号');
+  if(!village){const name=label(row.villageName,'村庄名称'),matches=d.villages.filter(v=>norm(v.name)===norm(name));assert(matches.length<2,'村庄名称不唯一，请选村庄编号');village=matches[0];
+    if(!village){assert(d.villages.length<MAX_VILLAGES,'村庄目录已达上限');village={id:nextId(d.villages,'VI'),name,township:'上传地点（待核对行政归属）',synthetic:false,imported:true,pickups:[]};d.villages.push(village);}}
+  let pickup=row.pickupId?village.pickups.find(p=>p.id===row.pickupId):null;
+  if(row.pickupId)assert(pickup,'接人点必须属于当前村庄');
+  const explicitLocation=present(row.longitude)||present(row.latitude)||row.locationNodeId||row.nodeId;
+  if(pickup&&explicitLocation){
+    const selected=row.nodeId||row.locationNodeId;
+    assert(!selected||selected===pickup.node,'选择的路网节点与已登记接人点不一致；更换位置须清空集合点编号并作为新接人点核对');
+    const location=resolve(d.scenario,{...row,nodeId:pickup.node});
+    assert(location.locationStatus==='located'&&location.locationNodeId===pickup.node,'上传坐标与已登记接人点不一致，请使用不同集合点名称并核对位置');
+    if(present(row.longitude)||present(row.latitude))assert(coordinate(pickup.longitude,pickup.latitude)&&distance(row,pickup)<=1,'上传坐标与已登记接人点不一致；请清空集合点编号，以新接人点保留本次坐标');
+  }
+  if(!pickup&&row.pickupName&&!explicitLocation){const matches=village.pickups.filter(p=>norm(p.name)===norm(row.pickupName));assert(matches.length<2,'集合点名称不唯一，请选集合点编号');pickup=matches[0];}
+  if(!pickup&&(row.pickupName||explicitLocation)){
+    const location=resolve(d.scenario,row),name=row.pickupName?label(row.pickupName,'集合点名称'):'上传坐标接人点';
+    const same=village.pickups.find(p=>norm(p.name)===norm(name)&&p.longitude===location.longitude&&p.latitude===location.latitude&&p.node===location.locationNodeId);
+    if(same)pickup=same;else{
+      const all=d.villages.flatMap(v=>v.pickups);assert(all.length<MAX_PICKUPS&&village.pickups.length<100,'集合点目录已达上限');
+      pickup={id:nextId(all,'PI'),name,node:location.locationNodeId,synthetic:false,imported:true,...location};village.pickups.push(pickup);
+    }
+  }
+  return {...row,villageId:village.id,pickupId:pickup?.id||null};
+}
+function metadata(village,pickup){
+  return {villageName:village.name,pickupName:pickup?.name||'',longitude:pickup?.longitude??null,latitude:pickup?.latitude??null,coordinateSystem:pickup?.coordinateSystem||null,
+    locationNodeId:pickup?.node||null,locationStatus:pickup?.node?'located':'pending',locationDistanceM:pickup?.locationDistanceM??null,
+    locationReason:pickup?.locationReason||(pickup?.node?'使用已登记接人点':'接人点待定位'),locationSource:pickup?.locationSource||(pickup?.node?'catalog':'unlocated')};
+}
+function validateCatalog(d){
+  const villages=d.villages,nodes=new Set(d.scenario.nodes.map(n=>n.id));
+  assert(Array.isArray(villages)&&villages.length>=3&&villages.length<=MAX_VILLAGES,'村庄目录数量无效');
+  assert(new Set(villages.map(v=>v.id)).size===villages.length,'村庄编号重复');
+  for(const v of villages){assert(v&&validId(v.id)&&typeof v.name==='string'&&v.name.trim()&&v.name.length<=100&&typeof v.township==='string'&&v.township.length<=100&&Array.isArray(v.pickups)&&v.pickups.length<=100&&(v.pickups.length>0||v.imported===true),'村庄或集合点目录无效');}
+  const pickups=villages.flatMap(v=>v.pickups);
+  assert(pickups.length<=MAX_PICKUPS&&new Set(pickups.map(p=>p.id)).size===pickups.length,'集合点数量或编号无效');
+  for(const p of pickups){
+    assert(p&&validId(p.id)&&typeof p.name==='string'&&p.name.trim()&&p.name.length<=100,'集合点名称或编号无效');
+    assert(nodes.has(p.node)||(p.imported===true&&p.node===null&&p.locationStatus==='pending'&&p.locationNodeId===null),'集合点路网节点无效');
+    if(p.locationStatus!==undefined)assert(['pending','located'].includes(p.locationStatus)&&(p.locationStatus==='located')===nodes.has(p.node)&&p.locationNodeId===p.node,'集合点定位状态不一致');
+    if(p.longitude!==undefined&&p.longitude!==null||p.latitude!==undefined&&p.latitude!==null)assert(coordinate(p.longitude,p.latitude)&&p.coordinateSystem==='WGS84','集合点经纬度或坐标系无效');
+    if(p.locationDistanceM!==undefined&&p.locationDistanceM!==null)assert(Number.isFinite(p.locationDistanceM)&&p.locationDistanceM>=0&&p.locationDistanceM<=MAX_DISTANCE_M,'集合点接驳距离无效');
+    if(p.node&&coordinate(p.longitude,p.latitude)&&d.scenario.region.mapKind==='osm-road-network'){
+      const node=d.scenario.nodes.find(n=>n.id===p.node),metres=distance(p,node),b=d.scenario.region.bounds;
+      assert(metres<=MAX_DISTANCE_M&&(!p.imported||(p.longitude>=b[0]&&p.latitude>=b[1]&&p.longitude<=b[2]&&p.latitude<=b[3])),'集合点坐标与关联道路节点距离或范围不一致');
+      if(p.locationDistanceM!==undefined&&p.locationDistanceM!==null)assert(Math.abs(p.locationDistanceM-metres)<0.2,'集合点接驳距离与坐标不一致');
+    }
+  }
+  return true;
+}
+module.exports={resolve,prepareRow,metadata,validateCatalog,distance,MAX_DISTANCE_M,MAX_VILLAGES,MAX_PICKUPS};
+
+};
 factories["./village-ledger.cjs"]=function(module,exports,require){
 'use strict';
 // These villages and pickup points belong only to the synthetic exercise graph.
@@ -8,17 +97,22 @@ const sum=(xs,f)=>xs.reduce((n,x)=>n+f(x),0);
 const number=(v,min,max,label)=>{assert(Number.isInteger(v)&&v>=min&&v<=max,`${label}须为 ${min}–${max} 的整数`);return v;};
 const clean=(v,max,label,fallback='')=>{const s=v===undefined?fallback:v;assert(typeof s==='string'&&s.trim()&&s.length<=max,`${label}不能为空且不能超过 ${max} 字`);return s.trim();};
 const MAX_PEOPLE=500,MAX_GROUPS=200;
+const L=require('./intake-location.cjs');
 function catalog(){return ['A','B','C'].map((letter,i)=>({id:'V'+letter,name:`演示村 ${letter}`,township:'演示乡镇',synthetic:true,pickups:[1,2].map((n)=>({id:`P-${letter}${n}`,name:n===1?'村委会集合点（演示）':'备用集合点（演示）',node:'H'+(i*2+n),synthetic:true,longitude:null,latitude:null}))}));}
 function ensure(d){
   if(d.villages===undefined)d.villages=catalog();
   if(d.villageReports===undefined)d.villageReports=[];
-  assert(Array.isArray(d.villages)&&d.villages.length===3&&d.villages.every(v=>typeof v.id==='string'&&Array.isArray(v.pickups)&&v.pickups.every(p=>d.scenario.nodes.some(n=>n.id===p.node))),'村级台账示范目录无效');
+  L.validateCatalog(d);
   assert(Array.isArray(d.villageReports)&&d.villageReports.every(r=>r&&typeof r.id==='string'&&d.villages.some(v=>v.id===r.villageId)&&Number.isInteger(r.people)&&r.people>=0&&r.people<=500&&['increment','snapshot','correction'].includes(r.mode)&&['pending','accepted','rejected','superseded'].includes(r.status)&&Array.isArray(r.householdIds)),'村级上报恢复数据无效');
   assert(new Set(d.villageReports.map(r=>r.id)).size===d.villageReports.length,'村级批次编号重复');
   for(const r of d.villageReports){
+    const village=d.villages.find(v=>v.id===r.villageId),pickup=village.pickups.find(p=>p.id===r.pickupId);
+    assert(!r.pickupId||pickup,'村级批次接人点不属于当前村庄');
+    if(r.locationStatus!==undefined){const location=L.metadata(village,pickup);for(const key of ['locationStatus','locationNodeId','longitude','latitude','coordinateSystem'])assert(r[key]===location[key],'村级批次定位信息与集合点不一致');}
+    assert(!r.householdIds.length||pickup?.node,'未定位批次不能生成执行人员组');
     assert(['unknown','splittable','together'].includes(r.groupPolicy)&&[r.assistancePeople,r.wheelchairPeople].every(n=>n===null||(Number.isInteger(n)&&n>=0&&n<=r.people))&&(r.assistancePeople===null||r.wheelchairPeople===null||r.wheelchairPeople<=r.assistancePeople),'村级批次特殊需求人数无效');
     assert(new Set(r.householdIds).size===r.householdIds.length&&r.householdIds.every(id=>d.scenario.households.some(h=>h.id===id&&h.sourceBatchId===r.id&&h.villageId===r.villageId)),'村级批次人员组关联无效');
-    if(r.householdIds.length){const groups=d.scenario.households.filter(h=>r.householdIds.includes(h.id));assert(sum(groups,h=>h.people)===r.people&&sum(groups,h=>h.assistancePeople)===r.assistancePeople&&sum(groups,h=>h.wheelchairPeople)===r.wheelchairPeople,'村级批次人数或特殊需求不守恒');}
+    if(r.householdIds.length){const groups=d.scenario.households.filter(h=>r.householdIds.includes(h.id));assert(sum(groups,h=>h.people)===r.people&&sum(groups,h=>h.assistancePeople)===r.assistancePeople&&sum(groups,h=>h.wheelchairPeople)===r.wheelchairPeople,'村级批次人数或特殊需求不守恒');assert(groups.every(h=>h.node===pickup.node&&h.pickupId===r.pickupId),'村级人员组位置与批次不一致');for(const h of groups)if(h.locationStatus!==undefined)for(const key of ['locationStatus','locationNodeId','longitude','latitude','coordinateSystem'])assert(h[key]===r[key],'村级人员组定位元数据不一致');}
     if(r.status==='superseded')assert(r.supersededBy&&d.villageReports.some(x=>x.id===r.supersededBy&&x.targetId===r.id)&&r.householdIds.every(id=>d.stage[id]==='superseded'),'已更正批次归档关系无效');
     if(effective(r))assert(r.householdIds.every(id=>d.stage[id]!=='superseded')&&(r.people===0||r.householdIds.length>0||r.needsInfo===true),'有效批次人员组状态无效');
   }
@@ -32,7 +126,7 @@ function ensure(d){
 }
 const effective=r=>r.status==='accepted'&&r.mode!=='snapshot'&&!r.supersededBy;
 function unplanned(d){return d.villageReports.filter(r=>effective(r)&&r.people>0&&!r.householdIds.length);}
-function unplannedRequests(d){return unplanned(d).map(r=>({id:'BATCH-'+r.id,batchId:r.id,villageId:r.villageId,name:(d.villages.find(v=>v.id===r.villageId)?.name||r.villageId)+' · '+r.id,people:r.people,stage:'waiting',reason:'已核实，待补接人点、协助人数或分组信息；暂不生成接人路线'}));}
+function unplannedRequests(d){return unplanned(d).map(r=>({id:'BATCH-'+r.id,batchId:r.id,villageId:r.villageId,name:(d.villages.find(v=>v.id===r.villageId)?.name||r.villageId)+' · '+r.id,people:r.people,stage:'waiting',reason:r.locationStatus==='pending'?(r.locationReason+'；已保留待转移人数，定位及必要人员信息核对前暂不生成路线'):'已核实，待补接人点、协助人数或分组信息；暂不生成接人路线'}));}
 function villageMetrics(d){return (d.villages||[]).map(v=>{
   const hs=d.scenario.households.filter(h=>h.villageId===v.id&&d.stage[h.id]!=='superseded'),reports=d.villageReports.filter(r=>r.villageId===v.id),unplannedPeople=sum(unplanned(d).filter(r=>r.villageId===v.id),r=>r.people),count=stage=>sum(hs.filter(h=>d.stage[h.id]===stage),h=>h.people),latest=reports.filter(r=>r.mode==='snapshot'&&r.status==='accepted').sort((a,b)=>Date.parse(b.observedAt)-Date.parse(a.observedAt))[0];
   const waiting=count('waiting')+unplannedPeople;
@@ -45,9 +139,9 @@ function details(d,p,people){
   if(assistancePeople!==null)number(assistancePeople,0,people,'需协助人数');if(wheelchairPeople!==null)number(wheelchairPeople,0,people,'轮椅人数');
   if(assistancePeople!==null&&wheelchairPeople!==null)assert(wheelchairPeople<=assistancePeople,'轮椅人数包含在需协助人数内，不能超过需协助人数');
   const groupPolicy=p.groupPolicy||'unknown';assert(['unknown','splittable','together'].includes(groupPolicy),'分组方式无效');
-  return {pickupId,assistancePeople,wheelchairPeople,groupPolicy};
+  return {pickupId,assistancePeople,wheelchairPeople,groupPolicy,...L.metadata(v,v.pickups.find(x=>x.id===pickupId))};
 }
-function needsInfo(r){return r.people>0&&(!r.pickupId||r.assistancePeople===null||r.wheelchairPeople===null||r.groupPolicy==='unknown');}
+function needsInfo(r){return r.people>0&&(!r.pickupId||r.locationStatus==='pending'||r.assistancePeople===null||r.wheelchairPeople===null||r.groupPolicy==='unknown');}
 function targetFor(d,r){
   const target=d.villageReports.find(x=>x.id===r.targetId);assert(target&&target.villageId===r.villageId&&target.mode!=='snapshot'&&['pending','accepted'].includes(target.status)&&!target.supersededBy,'更正目标已失效，请刷新并选择当前有效批次');
   assert(target.householdIds.every(id=>d.stage[id]==='waiting'),'目标批次已有人员上车、到达或完成，不能通过人数更正覆盖执行记录');return target;
@@ -70,13 +164,37 @@ function materialize(d,r,replace=null){
   if(replace){replace.status='superseded';replace.supersededBy=r.id;replace.supersededAt=r.reviewedAt;for(const id of replace.householdIds)d.stage[id]='superseded';}
   const pickup=d.villages.find(v=>v.id===r.villageId).pickups.find(p=>p.id===r.pickupId),village=d.villages.find(v=>v.id===r.villageId);
   for(const group of groups){let id;do{id='VG'+(++d.villageGroupCounter);}while(d.scenario.households.some(h=>h.id===id));const assistance=group.assistancePeople>0,wheelchair=group.wheelchairPeople>0;
-    d.scenario.households.push({id,node:pickup.node,name:`${village.name} · ${r.id} 第 ${r.householdIds.length+1} 组`,...group,priority:assistance?2:1,risk:2,riskBase:2,assistance,wheelchair,service:wheelchair?6:assistance?5:2,note:`村级批次 ${r.id}；${r.groupPolicy==='together'?'整组同行':'允许分车'}`,response:'新增待联系',villageId:r.villageId,pickupId:r.pickupId,sourceBatchId:r.id,groupPolicy:r.groupPolicy});d.stage[id]='waiting';d.contacts[id]={ack:false,contacted:false};r.householdIds.push(id);
+    d.scenario.households.push({id,node:pickup.node,name:`${village.name} · ${r.id} 第 ${r.householdIds.length+1} 组`,...group,...L.metadata(village,pickup),priority:assistance?2:1,risk:2,riskBase:2,assistance,wheelchair,service:wheelchair?6:assistance?5:2,note:`村级批次 ${r.id}；${r.groupPolicy==='together'?'整组同行':'允许分车'}`,response:'新增待联系',villageId:r.villageId,pickupId:r.pickupId,sourceBatchId:r.id,groupPolicy:r.groupPolicy});d.stage[id]='waiting';d.contacts[id]={ack:false,contacted:false};r.householdIds.push(id);
   }
 }
 function handle(d,name,p,c){
-  if(!['village-report','village-review','village-complete'].includes(name))return false;
+  if(!['village-report','village-review','village-complete','map-demand-locate'].includes(name))return false;
   ensure(d);let r;
-  if(name==='village-report'){
+  if(name==='map-demand-locate'){
+    r=d.villageReports.find(x=>x.id===p.id);assert(r&&effective(r)&&r.needsInfo&&!r.householdIds.length,'仅可给已核实、未生成执行人员组的批次补充位置');
+    assert(!r.locationNodeId,'该批次已定位，请在台账中核对后更正，不覆盖现有接人点');
+    const location=L.resolve(d.scenario,p);assert(location.locationStatus==='located',location.locationReason);
+    const previous={pickupId:r.pickupId,pickupName:r.pickupName||'',longitude:r.longitude??null,latitude:r.latitude??null,reason:r.locationReason||'',at:c.now()};
+    const village=d.villages.find(v=>v.id===r.villageId),existing=village.pickups.find(point=>point.id===r.pickupId);
+    const exclusive=existing&&existing.imported===true&&existing.node===null&&existing.locationStatus==='pending'&&
+      !d.villageReports.some(other=>other.id!==r.id&&other.pickupId===existing.id)&&!d.scenario.households.some(h=>h.pickupId===existing.id);
+    let pickupId;
+    if(exclusive){
+      // Complete a single batch's placeholder in place: its original name remains reusable.
+      Object.assign(existing,location,{node:location.locationNodeId});pickupId=existing.id;
+    }else{
+      // A shared unresolved name is not evidence that every batch is at this position.
+      // Give this batch an explicit name and leave all other batches untouched.
+      const suffix=existing?' · 定位 '+r.id:'';
+      const pickupName=(r.pickupName||'人工定位接人点').slice(0,100-suffix.length)+suffix;
+      const fields=L.prepareRow(d,{villageId:r.villageId,pickupName,nodeId:location.locationNodeId,
+        ...(location.coordinateSystem?{longitude:location.longitude,latitude:location.latitude,coordinateSystem:location.coordinateSystem}:{})});
+      pickupId=fields.pickupId;
+    }
+    Object.assign(r,details(d,{...r,pickupId},r.people));r.locationHistory=[...(r.locationHistory||[]),previous].slice(-20);r.locationNote=clean(p.note,300,'定位说明','指挥员在地图核对并确认接人位置');r.locatedAt=c.now();
+    r.status='pending';materialize(d,r);r.status='accepted';c.invalidate(r.id+' 接人位置已人工确认');c.generate(r.id+' 地图补定位');
+    d.lastAnnouncement=r.id+' 接人位置已确认'+(r.needsInfo?'，仍需补齐人员协助或分组信息':'，已重新计算转移草案')+'；需人工确认后发布。';c.log(d.lastAnnouncement,'village');
+  }else if(name==='village-report'){
     assert(['increment','snapshot','correction'].includes(p.mode),'请选择新增、待转移总量或更正口径');const people=number(p.people,p.mode==='increment'?1:0,500,'本次人数');const extra=details(d,p,people);
     const source=p.source||'manual';assert(['quick','voice','text','manual'].includes(source),'现场输入来源无效');
     r={id:'VR'+(d.villageReportCounter+1),villageId:p.villageId,mode:p.mode,people,...extra,targetId:p.mode==='correction'?clean(p.targetId,40,'更正目标'):null,scope:p.mode==='snapshot'?p.scope:null,observedAt:p.mode==='snapshot'?p.observedAt:null,text:clean(p.text,2000,'现场原话',`${p.mode==='increment'?'新增':p.mode==='correction'?'更正为':'当前待转移共'} ${people} 人`),reporter:clean(p.reporter,40,'上报人','现场演示员'),source,inputSource:source,status:'pending',householdIds:[],needsInfo:needsInfo({people,...extra}),createdAt:c.now(),note:'',inputVersion:d.inputVersion,duplicateAcknowledged:p.duplicateAcknowledged===true};
@@ -328,10 +446,7 @@ function validateState(d){
   for(const [key,max] of Object.entries(maxRows))if(d[key]!==undefined)assert(Array.isArray(d[key])&&d[key].length<=max&&d[key].every(object),'恢复记录结构无效或超过限额：'+key);
   assert(['reports','history','log'].every(k=>Array.isArray(d[k])),'恢复数据记录缺失');
   if(d.villages!==undefined){
-    assert(Array.isArray(d.villages)&&d.villages.length===3&&d.villages.every(v=>object(v)&&validId(v.id)&&typeof v.name==='string'&&v.name.length<=100&&typeof v.township==='string'&&v.township.length<=100&&Array.isArray(v.pickups)&&v.pickups.length>0&&v.pickups.length<=30),'恢复村庄或集合点目录无效');
-    assert(new Set(d.villages.map(v=>v.id)).size===d.villages.length,'恢复村庄编号重复');
-    const pickups=d.villages.flatMap(v=>v.pickups);
-    assert(pickups.every(p=>object(p)&&validId(p.id)&&nodes.has(p.node)&&typeof p.name==='string'&&p.name.length<=100)&&new Set(pickups.map(p=>p.id)).size===pickups.length,'恢复集合点内容或编号无效');
+    require('./intake-location.cjs').validateCatalog(d);
   }
   if(d.villageReports!==undefined)assert(d.villageReports.every(r=>validId(r.id)&&Array.isArray(r.householdIds)&&r.householdIds.length<=200&&r.householdIds.every(validId)),'恢复村级批次编号或人员组目录无效');
   assert(s.households.every(h=>['waiting','boarded','arrived','verified','superseded'].includes(d.stage[h.id])&&object(d.contacts[h.id])&&typeof d.contacts[h.id].contacted==='boolean'&&typeof d.contacts[h.id].ack==='boolean'),'恢复人员阶段或联系记录无效');
@@ -446,7 +561,32 @@ function apply(d){
   return d;
 }
 
-module.exports={apply,metadata:clone(network.metadata)};
+function convert(d){
+  const assert=(ok,message)=>{if(!ok)throw new Error(message);};
+  assert(d.scenario.region.mapKind!=='osm-road-network','当前已经是瑞安道路地图，无需重复转换');
+  assert(d.phase==='preparation'&&!d.activePlan&&!d.history.length&&
+    Object.values(d.stage).every(stage=>stage==='waiting'||stage==='superseded')&&
+    Object.values(d.contacts).every(c=>!c.ack&&!c.contacted)&&
+    Object.values(d.fleet).every(f=>!f.onboard.length&&!f.delivered.length&&!f.finished&&f.minute===0),
+    '已有发布或执行进度，不能转换地图；请保留当前演练，另建瑞安道路演练');
+  const nodes=new Set(network.nodes.map(n=>n.id));
+  assert(d.scenario.edges.every(e=>e.open)&&d.reports.every(r=>r.kind!=='road'&&nodes.has(r.location)),
+    '已有道路变化或无法对应的位置反馈，不能无损转换；请另建瑞安道路演练');
+  assert(d.scenario.households.every(h=>nodes.has(h.node))&&d.scenario.vehicles.every(v=>nodes.has(v.start)&&nodes.has(d.fleet[v.id].node))&&d.scenario.shelters.every(s=>nodes.has(s.id))&&
+    d.villages.every(v=>v.pickups.every(p=>!p.node||nodes.has(p.node))),
+    '现有需求或资源位置无法对应真实道路节点，不能无损转换；请先核对位置或另建演练');
+  const s=d.scenario;s.name=network.region.name;s.region=clone(network.region);s.nodes=clone(network.nodes);s.edges=clone(network.edges);s.geographicMetadata=clone(network.metadata);
+  for(const village of d.villages)for(const pickup of village.pickups){
+    if(!pickup.node)continue;const node=s.nodes.find(n=>n.id===pickup.node);
+    Object.assign(pickup,{longitude:node.longitude,latitude:node.latitude,coordinateSystem:'WGS84',locationNodeId:node.id,locationStatus:'located',locationDistanceM:0,locationSource:'catalog',locationReason:'原演练集合点对应公开道路节点；接送用途仍为演练设定',osmNodeId:node.osmNodeId,sourceUrl:node.sourceUrl});
+  }
+  const L=require('./intake-location.cjs');
+  for(const r of d.villageReports){const v=d.villages.find(v=>v.id===r.villageId);Object.assign(r,L.metadata(v,v.pickups.find(p=>p.id===r.pickupId)));}
+  for(const h of s.households){const v=d.villages.find(v=>v.id===h.villageId);if(v)Object.assign(h,L.metadata(v,v.pickups.find(p=>p.id===h.pickupId)));}
+  d.scenarioPreset='ruian-roads';
+  return d;
+}
+module.exports={apply,convert,metadata:clone(network.metadata)};
 
 };
 factories["./exercise.cjs"]=function(module,exports,require){
@@ -455,6 +595,7 @@ factories["./exercise.cjs"]=function(module,exports,require){
 const E=require('./dist/engine.js');
 const V=require('./village-ledger.cjs');
 const R=require('./resilience.cjs');
+const L=require('./intake-location.cjs');
 const clone=E.clone;
 const ALGORITHM='ruian-candidate-search-3.0';
 const BASELINE='risk-nearest-feasible-3.0';
@@ -661,7 +802,7 @@ function create(initialData=null){
           try{
             assert(row&&typeof row==='object'&&!Array.isArray(row),'人员任务行无效');
             assert(row.mode===undefined||row.mode==='increment','快捷建任务仅新增人员；总量与更正请使用村级核对');
-            const fields=Object.fromEntries(['villageId','pickupId','people','assistancePeople','wheelchairPeople','groupPolicy','text','reporter'].filter(key=>row[key]!==undefined).map(key=>[key,row[key]]));
+            const fields=L.prepareRow(d,Object.fromEntries(['villageId','villageName','pickupId','pickupName','longitude','latitude','coordinateSystem','locationNodeId','people','assistancePeople','wheelchairPeople','groupPolicy','text','reporter'].filter(key=>row[key]!==undefined).map(key=>[key,row[key]])));
             V.handle(d,'village-report',{...fields,mode:'increment',source,reporter:row.reporter===undefined?reporter:row.reporter,duplicateAcknowledged:p.duplicateAcknowledged===true},context);
             const record=d.villageReports[0];Object.assign(record,origin);
             V.handle(d,'village-review',{id:record.id,decision:'accept',note:'指挥端批量核对：'+note},context);
@@ -675,10 +816,17 @@ function create(initialData=null){
         log(d.lastAnnouncement,'command-intake');
       }
       else if(V.handle(d,name,p,{now,log,invalidate,generate,fieldEvent})){}
+      else if(name==='enable-road-map'){
+        require('./geo-scenario.cjs').convert(d);invalidate('指挥员显式启用瑞安道路地图，保留原有需求台账');generate('无损转换瑞安道路地图');
+        d.lastAnnouncement='已启用瑞安道路地图；原有需求、人员组与台账全部保留，草案已重算，请核对位置后发布。';log(d.lastAnnouncement,'map');
+      }
       else if(name==='generate')generate();
       else if(name==='weather'){
-        assert(['small','strong','extreme','normal'].includes(p.preset),'天气情景无效');const table={normal:[20,1],small:[25,1],strong:[60,2],extreme:[100,3]},[rain,level]=table[p.preset],old=d.weather.level;
-        d.weather={...d.weather,rainfall:rain,level,updatedAt:now(),trigger:level===old?'同级小幅变化，维持当前方案':'演练等级变化，触发复核'};
+        const table={normal:[20,1],small:[25,1],strong:[60,2],extreme:[100,3]};let rain,level;
+        if(p.rainfall!==undefined){rain=integer(p.rainfall,0,300,'演练一小时累计雨量');level=rain>=80?3:rain>=50?2:1;}
+        else{assert(['small','strong','extreme','normal'].includes(p.preset),'天气情景无效');[rain,level]=table[p.preset];}
+        const old=d.weather.level;
+        d.weather={...d.weather,sourceMode:'simulation',rainfall:rain,level,unit:'mm',window:'演练最近1小时累计',updatedAt:now(),trigger:level===old?'同级小幅变化，维持当前方案':'演练等级变化，触发复核'};
         if(level!==old){invalidate('演练天气等级 '+old+' → '+level+'；仅触发评估，不推断道路积水或自动封路');generate('天气演练等级变化');}else{d.lastAnnouncement='演练一小时累计雨量更新为 '+rain+' 毫米，未跨演练等级，维持当前方案。';log(d.lastAnnouncement,'weather');}
       }
       else if(name==='report'){
@@ -701,8 +849,9 @@ function create(initialData=null){
         else {r.status='resolved';r.resolution=note;r.resolvedAt=now();log(r.id+' 协调完成：'+note,'review');}
       }
       else if(name==='confirm'){
-        assert(fresh(),'草案依据已变化，请重新计算');const selected=p.alternative?d.alternative:d.plan;assert(selected,'没有备选方案');assert(selected.servedPeople>0,'没有可执行安排，请先协调资源');assert(!validate(snapshot(d),selected).length,'方案校验未通过');if(!selected.complete)assert(text(p.note,300,'未安排人员协调措施').length>=5,'请填写至少 5 字的协调措施');
-        if(d.activePlan)d.history.unshift(clone(d.activePlan));d.history=d.history.slice(0,20);d.activePlan={...clone(selected),publishedAt:now(),note:p.note||'',confirmedRevision:d.revision+1};d.lastAnnouncement='方案 '+selected.id+' 已人工确认并模拟发布，安排 '+selected.servedPeople+' 人。';log(d.lastAnnouncement,'publish');
+        assert(fresh(),'草案依据已变化，请重新计算');const selected=p.alternative?d.alternative:d.plan;assert(selected,'没有备选方案');assert(selected.servedPeople>0,'没有可执行安排，请先协调资源');assert(!validate(snapshot(d),selected).length,'方案校验未通过');
+        const confirmationNote=p.note===undefined||p.note===''?'指挥员人工确认方案 '+selected.id+'；未安排人员及原因保留在待协调清单，须继续跟进':text(p.note,300,'确认说明');
+        if(d.activePlan)d.history.unshift(clone(d.activePlan));d.history=d.history.slice(0,20);d.activePlan={...clone(selected),publishedAt:now(),note:confirmationNote,confirmedRevision:d.revision+1};d.lastAnnouncement='方案 '+selected.id+' 已人工确认并模拟发布，安排 '+selected.servedPeople+' 人。';log(d.lastAnnouncement,'publish');
       }
       else if(name==='contact'){
         assert(Array.isArray(p.ids)&&p.ids.length>0&&p.ids.length<=V.MAX_GROUPS,'请选择联系对象');for(const id of p.ids){assert(d.contacts[id],'家庭不存在');d.contacts[id]={ack:true,contacted:true};}log('人工登记演练任务已接收、家庭已联系：'+p.ids.join('、'),'contact');
