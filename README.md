@@ -1,5 +1,7 @@
 # 叫应 AI · 瑞安转移协同演练 V3.7.0
 
+2026-10-04 新增「城市韧性守护」独立演练面板，入口在头部原「AI 对话」旁。面板顶部「自己接入 API」说明对应 `dist/guardian/agent/api-config.js`；默认离线，代理端点尚待实现，真实密钥只放后端 `.env`。操作、缓存与接入边界见 [守护面板接入说明](docs/城市韧性守护接入与API配置.md)。本页以下原 V3.7 清单描述的是叫应主系统，守护面板暂未接入其状态或任务。
+
 当前版本：2026-09-23。能力目录以 [dist/capabilities.js](dist/capabilities.js) 为准；本文件由 node scripts/update-version-docs.mjs 生成。旧 V3.4 会议核对文件是历史记录。
 
 公开入口：[演练与功能清单](https://irainzhang.github.io/jiaoying-ai/start.html?v=3.7) · [指挥台](https://irainzhang.github.io/jiaoying-ai/?v=3.7#command) · [现场执行端](https://irainzhang.github.io/jiaoying-ai/?v=3.7#field)。同一浏览器的两个标签页共享记录，不同设备、浏览器和隐私窗口不共享。业务内容保存在访客浏览器，不上传 GitHub。

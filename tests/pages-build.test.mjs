@@ -1,11 +1,33 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
-import {readFile,access} from 'node:fs/promises';
-import {resolve} from 'node:path';
+import {readFile,access,mkdtemp,mkdir,writeFile,rm} from 'node:fs/promises';
+import {resolve,dirname} from 'node:path';
 import {buildPages,output} from '../scripts/build-pages.mjs';
 await buildPages();
 const read=name=>readFile(resolve(output,name),'utf8');
+
+test('stale assets and vendor output files never enter the publication or offline manifests',async t=>{
+  const tempRoot=resolve(output,'..');
+  const folder=await mkdtemp(resolve(tempRoot,'guardian-publish-test-'));
+  // Only this fresh, isolated test directory can be removed; never the shared preview.
+  t.after(async()=>{assert.equal(dirname(folder),tempRoot);await rm(folder,{recursive:true,force:true});});
+  const isolated=resolve(folder,'release'),manifestPath=resolve(folder,'manifest.json');
+  const stale=['assets/removed-private-draft.json','vendor/unused/old-debug.js'];
+  for(const path of stale){await mkdir(dirname(resolve(isolated,path)),{recursive:true});await writeFile(resolve(isolated,path),'stale test fixture');}
+  await buildPages({outputDirectory:isolated,manifestPath});
+  const manifest=JSON.parse(await readFile(manifestPath,'utf8'));
+  const offline=JSON.parse(await readFile(resolve(isolated,'guardian-cache-manifest.json'),'utf8'));
+  for(const path of stale){
+    assert.equal(manifest.files.includes(path),false,path+' must not be published');
+    assert.equal(offline.files.includes(path),false,path+' must not be cached');
+    assert.equal(await readFile(resolve(isolated,path),'utf8'),'stale test fixture','build excludes old output without deleting it');
+  }
+  for(const path of ['assets/logo-mark.png','assets/maps/SOURCES.md','vendor/leaflet/leaflet.js','vendor/leaflet/LICENSE']){
+    assert.ok(manifest.files.includes(path),path+' remains in the current source allowlist');
+    assert.deepEqual(await readFile(resolve(isolated,path)),await readFile(new URL('../dist/'+path,import.meta.url)));
+  }
+});
 
 test('published build loads the real solver and supports its dynamic large-dispatch module',async()=>{
   const context=vm.createContext({window:{},console});
@@ -32,12 +54,28 @@ test('public pages retain repo-relative links and every referenced script and st
     for(const [,script] of html.matchAll(/<script>([\s\S]*?)<\/script>/g))new vm.Script(script);
   }
   const index=await read('index.html');
+  assert.equal((index.match(/guardian\/mount\.js\?v=1/g)||[]).length,1);
+  assert.ok(index.indexOf('workspace-app.js')<index.indexOf('guardian/mount.js'));
   assert.ok(index.indexOf('exercise-browser.js')<index.indexOf('pages-runtime.js'));
   assert.ok(index.indexOf('pages-runtime.js')<index.indexOf('workspace-app.js'));
   const start=await read('start.html');
   assert.match(start,/不同设备、浏览器或隐私窗口不共享数据/);
   assert.match(start,/capabilities.js/);
   const catalog=await read('capabilities.js');assert.equal((catalog.match(/id:'O\d+'/g)||[]).length,18);
+});
+
+test('guardian and the host shell are fully listed for offline installation without backend or secrets',async()=>{
+  const manifest=JSON.parse(await read('guardian-cache-manifest.json'));
+  assert.ok(manifest.files.includes('index.html'));
+  for(const path of ['guardian/mount.js','guardian/bridge/flood-agent-bridge.js','guardian/agent/embed.html','guardian/agent/api-config.js','guardian/agent/assets/kb-bundle.js','guardian/agent/assets/skills-bundle.js'])assert.ok(manifest.files.includes(path),path);
+  for(const path of manifest.files){assert.doesNotMatch(path,/^(?:https?:|\/)|(?:^|\/)(?:api|tests|tmp|\.env)(?:\/|$)/);await access(resolve(output,path));}
+  for(const name of ['index.html','embed.html']){
+    const html=await read('guardian/agent/'+name);assert.doesNotMatch(html,/<script[^>]+type=["']module/);
+    assert.ok(html.indexOf('api-config.js')>html.indexOf('ruian-scenario.js'));
+    assert.ok(html.indexOf('api-config.js')<html.indexOf('src/core/bus.js'));
+    for(const [,asset] of html.matchAll(/(?:src|href)="([^"#]+\.(?:js|css))(?:\?[^"#]*)?"/g))assert.ok(manifest.files.includes('guardian/agent/'+asset),asset);
+  }
+  const worker=await read('guardian-offline-sw.js');assert.doesNotMatch(worker,/__GUARDIAN_BUILD__/);assert.ok(worker.includes(manifest.build));
 });
 
 test('publication allowlist excludes local snapshots, credentials, transcripts and unused legacy app',async()=>{
