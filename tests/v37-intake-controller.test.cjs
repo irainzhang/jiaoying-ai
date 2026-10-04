@@ -12,8 +12,8 @@ const E=require('../exercise.cjs');
 function harness(role='command'){
   const listeners={},requests=[],storage=new Map(),classes={add(){},remove(){},toggle(){}};
   const element=()=>({textContent:'',innerHTML:'',classList:classes,addEventListener(){},close(){},focus(){}});
-  const elements={toast:element(),dialog:element()};let voiceOptions,voiceActive=false;
-  const context={document:{getElementById:id=>elements[id]||null,querySelector:()=>null,querySelectorAll:()=>[],
+  const elements={toast:element(),dialog:element(),'intake-field-errors':element()};let voiceOptions,voiceActive=false,renderAttempts=0;
+  const context={document:{getElementById:id=>{if(id==='content')renderAttempts++;return elements[id]||null;},querySelector:()=>null,querySelectorAll:()=>[],
     addEventListener:(type,fn)=>(listeners[type]||=[]).push(fn),createElement:element,body:{classList:classes}},
     location:{hash:'#'+role,pathname:'/jiaoying-ai/'},history:{replaceState(_s,_t,hash){context.location.hash=hash;}},
     isSecureContext:true,addEventListener(){},scrollTo(){},requestAnimationFrame:fn=>fn(),
@@ -27,14 +27,19 @@ function harness(role='command'){
   for(const name of ['village-assistant.js','village-workspace.js','command-intake.js','intake-file.js','quick-context.js'])vm.runInContext(fs.readFileSync(path.join(__dirname,'../dist',name),'utf8'),context,{filename:name});
   const bootstrap='render();poll();setInterval(poll,1200);';
   const bridge=`window.testIntake={seed(next){state=next;connected=true;draftLoaded=true;},
-    inspect(){return {intake,quickText,quickSource,quickDraft,quickReceipt,quickSelection,commandSection,fieldSection,busy,revision:d().revision};},
+    inspect(){return {intake,quickText,quickSource,quickDraft,quickReceipt,quickSelection,commandSection,fieldSection,mapMode,mapLocation,busy,revision:d().revision};},
     intakeAction,quickAction,readIntakeFile,acceptState,clickAction,navigate,currentQuickScope};`;
   const source=fs.readFileSync(path.join(__dirname,'../dist/workspace-app.js'),'utf8');assert.ok(source.includes(bootstrap));
   vm.runInContext(source.replace(bootstrap,bridge),context,{filename:'workspace-app.js'});
   const controller=context.testIntake;
-  return {controller,requests,storage,
+  return {controller,requests,storage,elements,get renderAttempts(){return renderAttempts;},
     input(id,value){for(const fn of listeners.input||[])fn({target:{id,value,dataset:{}}});},
     change(id,value,checked=false){for(const fn of listeners.change||[])fn({target:{id,value,checked,dataset:{}}});},
+    changeDraft(row,key,value){for(const fn of listeners.change||[])fn({target:{id:'',value,dataset:{row:String(row),intakeField:key}}});},
+    inputDraft(row,key,value){for(const fn of listeners.input||[])fn({target:{id:'',value,dataset:{row:String(row),intakeField:key}}});},
+    // Candidate is the read-only output of RuianMap's callback. Applying it still
+    // goes through the shipped human confirmation handler below.
+    candidate(value){assert.ok(controller.inspect().mapLocation);controller.inspect().mapLocation.candidate=value;},
     click(ac,extra={}){return controller.clickAction({dataset:{ac,...extra},disabled:false});},
     async voice(target,text){await controller.clickAction({dataset:{ac:'voice',target},disabled:false});voiceOptions.onText(text);voiceActive=false;voiceOptions.onChange();},
     async complete(index,fixture){const request=requests[index],body=JSON.parse(request.options.body);fixture.store.action(body.action,body.payload);request.resolve({ok:true,json:async()=>fixture.snapshot()});return body;}
@@ -140,4 +145,66 @@ test('explicitly selected or spoken replacement locations remain selected after 
     h.input('quick-text',spoken?'演示村 B 在村委会集合点新增三人':'新增三人');await h.controller.quickAction('quick-parse');assert.equal(h.controller.inspect().quickDraft.proposal.payload.pickupId,'P-B1');
     const pending=h.controller.quickAction('quick-submit');await h.complete(0,f);await pending;const after=h.controller.currentQuickScope();assert.equal(after.source,'selection');assert.equal(after.villageId,'VB');assert.equal(after.pickupId,'P-B1');
   }
+});
+
+test('manual intake edits replace the idempotency key without rerendering the form and invalid values never reach the server',async()=>{
+  const h=harness(),f=fixture();h.controller.seed(f.snapshot());await h.controller.readIntakeFile(file());
+  const beforeRender=h.renderAttempts,beforeId=h.controller.inspect().intake.draft.requestId;
+  h.changeDraft(0,'assistancePeople','2.5');
+  assert.equal(h.renderAttempts,beforeRender);assert.notEqual(h.controller.inspect().intake.draft.requestId,beforeId);
+  assert.match(h.elements['intake-field-errors'].textContent,/整数/);await assert.rejects(h.controller.intakeAction('intake-submit'),/整数/);assert.equal(h.requests.length,0);
+  h.changeDraft(0,'assistancePeople','1');h.changeDraft(0,'wheelchairPeople','2');
+  await assert.rejects(h.controller.intakeAction('intake-submit'),/轮椅人数不能超过/);assert.equal(h.requests.length,0);
+  h.changeDraft(0,'wheelchairPeople','');assert.equal(h.controller.inspect().intake.draft.rows[0].wheelchairPeople,null);
+});
+
+test('typing a preview count then immediately submitting uses the edited value without waiting for blur',async()=>{
+  const h=harness(),f=fixture();h.controller.seed(f.snapshot());await h.controller.readIntakeFile(file());
+  h.inputDraft(0,'assistancePeople','2');const pending=h.controller.intakeAction('intake-submit');
+  assert.equal(JSON.parse(h.requests[0].options.body).payload.rows[0].assistancePeople,2);
+  await h.complete(0,f);await pending;assert.equal(f.store.data.villageReports.find(r=>r.villageId==='VA').assistancePeople,2);
+});
+
+test('refreshing a stale CSV draft preserves manually supplemented counts, grouping and selected location',async()=>{
+  const h=harness(),f=fixture();f.store.action('scenario',{id:'ruian-roads'});h.controller.seed(f.snapshot());await h.controller.readIntakeFile(file());
+  h.changeDraft(0,'assistancePeople','2');h.changeDraft(0,'groupPolicy','together');
+  await h.click('map-locate-draft',{id:'0'});const node=f.store.data.scenario.nodes.find(n=>n.id==='H2');
+  h.candidate({nodeId:node.id,longitude:node.longitude+.0001,latitude:node.latitude,nodeLongitude:node.longitude,nodeLatitude:node.latitude});await h.click('map-location-confirm');
+  const old=h.controller.inspect().intake.draft,fields=JSON.stringify(old.rows),requestId=old.requestId;
+  f.store.action('weather',{preset:'small'});h.controller.acceptState(f.snapshot());await h.controller.intakeAction('intake-refresh');
+  const next=h.controller.inspect().intake.draft;assert.equal(JSON.stringify(next.rows),fields);assert.notEqual(next.requestId,requestId);assert.equal(next.revision,f.store.data.revision);assert.equal(h.controller.inspect().mapLocation,null);assert.equal(h.requests.length,0);
+});
+
+test('map selection is tied to its draft key, forces the geographic view and clears the old pickup when the anchor changes',async()=>{
+  const h=harness(),f=fixture();f.store.action('scenario',{id:'ruian-roads'});h.controller.seed(f.snapshot());await h.controller.readIntakeFile(file());
+  await h.click('map-mode',{id:'exercise'});assert.equal(h.controller.inspect().mapMode,'exercise');
+  await h.click('map-locate-draft',{id:'0'});const initial=h.controller.inspect();assert.equal(initial.mapMode,'geographic');assert.equal(initial.mapLocation.draftRequestId,initial.intake.draft.requestId);
+  const node=f.store.data.scenario.nodes.find(n=>n.id==='H2');h.candidate({nodeId:node.id,longitude:120.64,latitude:27.78,nodeLongitude:node.longitude,nodeLatitude:node.latitude});await h.click('map-location-confirm');
+  const row=h.controller.inspect().intake.draft.rows[0];assert.equal(row.pickupId,'');assert.match(row.pickupName,/新接人点 H2/);assert.equal(row.locationNodeId,'H2');assert.equal(row.longitude,node.longitude);assert.equal(row.latitude,node.latitude);assert.equal(row.coordinateSystem,'WGS84');assert.equal(h.requests.length,0);
+  await h.click('map-locate-draft',{id:'0'});h.candidate({nodeId:'H1',longitude:120.64,latitude:27.78});h.changeDraft(0,'assistancePeople','2');
+  await assert.rejects(h.click('map-location-confirm'),/上传草稿已变化/);assert.equal(row.locationNodeId,'H2');
+  h.controller.navigate('plan');assert.equal(h.controller.inspect().mapLocation,null);
+});
+
+test('bulk standard-person defaults never erase an explicit wheelchair need with a zero assistance count',async()=>{
+  const h=harness(),f=fixture();h.controller.seed(f.snapshot());await h.controller.readIntakeFile(file('村庄,集合点,人数,需协助人数,轮椅人数,同行关系\n演示村 A,P-A1,3,,1,\n演示村 B,P-B1,2,,,'));
+  assert.equal(h.controller.inspect().intake.draft.errors.length,0);await h.click('intake-bulk-standard');
+  const rows=h.controller.inspect().intake.draft.rows;assert.equal(rows[0].wheelchairPeople,1);assert.equal(rows[0].assistancePeople,null);assert.equal(rows[0].groupPolicy,'splittable');assert.equal(rows[1].assistancePeople,0);assert.equal(rows[1].wheelchairPeople,0);assert.equal(h.requests.length,0);
+});
+
+test('uploaded new village and pickup names, original coordinates and coordinate system survive the request payload',async()=>{
+  const h=harness(),f=fixture();f.store.action('scenario',{id:'ruian-roads'});h.controller.seed(f.snapshot());
+  await h.controller.readIntakeFile(file('村庄,集合点,人数,需协助人数,轮椅人数,同行关系,经度,纬度,坐标系\n新增演练村,活动室门口,2,0,0,可分组,120.6445,27.7841,WGS84'));
+  assert.equal(h.controller.inspect().intake.draft.errors.length,0);const before=h.controller.inspect().intake.draft.rows[0];
+  const pending=h.controller.intakeAction('intake-submit'),body=JSON.parse(h.requests[0].options.body),row=body.payload.rows[0];
+  assert.equal(row.villageName,'新增演练村');assert.equal(row.pickupName,'活动室门口');assert.equal(row.longitude,120.6445);assert.equal(row.latitude,27.7841);assert.equal(row.coordinateSystem,'WGS84');assert.equal(row.people,before.people);
+  assert.equal(body.expectedRevision,f.store.data.revision);assert.equal(body.session,'intake-controller-test');assert.equal(body.payload.source,'file');
+  await h.complete(0,f);await pending;assert.equal(f.store.data.activePlan,null);
+});
+
+test('weather demo sends the selected rainfall with current revision/session and leaves publication unchanged',async()=>{
+  const h=harness(),f=fixture();h.controller.seed(f.snapshot());const revision=f.store.data.revision;
+  const pending=h.click('weather-demo',{rain:'120'}),body=JSON.parse(h.requests[0].options.body);
+  assert.equal(body.action,'weather');assert.equal(body.payload.rainfall,120);assert.equal(body.expectedRevision,revision);assert.equal(body.session,'intake-controller-test');assert.ok(body.requestId);
+  await h.complete(0,f);await pending;assert.equal(f.store.data.weather.rainfall,120);assert.equal(f.store.data.activePlan,null);
 });

@@ -1,29 +1,36 @@
 import {writeFile} from 'node:fs/promises';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url),c=require('../dist/capabilities.js');
-const rows=c.entries.map(x=>`| ${x.id} | ${x.name} | ${x.status} | ${x.detail} |`).join('\n');
+const release=c.version.split('.').slice(0,2).join('.');
+const tableCell=value=>String(value).replace(/\|/g,'\\|').replace(/\r?\n/g,' ');
+const rows=c.entries.map(x=>`| ${[x.id,x.name,x.status,x.detail].map(tableCell).join(' | ')} |`).join('\n');
+// Keep the product narrative here so regeneration retains the Guardian and V3.8 boundaries.
 const text=`# ${c.title} V${c.version}
 
-当前版本：${c.date}。能力目录以 [dist/capabilities.js](dist/capabilities.js) 为准；本文件由 node scripts/update-version-docs.mjs 生成。旧 V3.4 会议核对文件是历史记录。
+${c.date} 更新。V${release} 主线是 **上传需求 → 地图核对与补定位 → 点击发布 → 现场回执**。支持 Excel / CSV 名单，预览中集中补充协助与分组信息；位置不明的人员保留待办，不虚构路线。发布只需核对后点击，不再要求手输姓名或指定确认文字；Guardian 的选填操作人默认记录为「演练值守」。
 
-公开入口：[演练与功能清单](https://irainzhang.github.io/jiaoying-ai/start.html?v=3.7) · [指挥台](https://irainzhang.github.io/jiaoying-ai/?v=3.7#command) · [现场执行端](https://irainzhang.github.io/jiaoying-ai/?v=3.7#field)。同一浏览器的两个标签页共享记录，不同设备、浏览器和隐私窗口不共享。业务内容保存在访客浏览器，不上传 GitHub。
+地图附近增加模拟雨情卡，可切换 20 / 50 / 80 mm 最近 1 小时累计量，观察安排复核。演练等级不是官方预警，雨量变化不直接推断积水深度或自动封路。运输位置随现场回执更新；地图播放只是路线演示，不是真实 GPS，也不会代填上车或到达回执。后续天气事件方案见 [V3.8 天气与运输联动设计](docs/V3.8天气与运输联动设计.md)。
 
-本轮暂不接入 DeepSeek、Agent 与彩云实况。语音识别由浏览器提供，可能联网；字段整理使用规则，调度实际计算。公开预案是流程参考，非本系统官方授权或某条道路的安全批准。
+头部「城市韧性守护」保留为独立演练面板，与叫应主系统的数据、人数和发布结果仍未融合。面板顶部「自己接入 API」对应 \`dist/guardian/agent/api-config.js\`；默认离线，真实模型、真实天气与推荐的后端转发端点均未接通。将来接入时，真实密钥只放后端 \`.env\`。详见 [守护面板接入说明](docs/城市韧性守护接入与API配置.md)。
+
+公开入口：[演练与功能清单](https://irainzhang.github.io/jiaoying-ai/start.html?v=${release}) · [指挥台](https://irainzhang.github.io/jiaoying-ai/?v=${release}#command) · [现场执行端](https://irainzhang.github.io/jiaoying-ai/?v=${release}#field)。同一浏览器的两个标签页共享主系统记录，不同设备、浏览器和隐私窗口不共享。业务内容保存在访客浏览器，不上传 GitHub。
+
+语音识别由浏览器提供，可能联网；字段整理使用规则，调度实际计算。公开预案是流程参考，非本系统官方授权或某条道路的安全批准。能力目录见 [dist/capabilities.js](dist/capabilities.js)。本文件由 \`node scripts/update-version-docs.mjs\` 生成，版本、能力表和运行限制与能力目录同步；较早会议核对与验收文件保留为历史记录。
 
 ## 三分钟演示
 
-1. 指挥台“快捷建任务”下载当前村庄的 CSV 模板，或选择 .xlsx / .csv 名单；也可语音或文字输入“演示村 A，在村委会集合点，新增6人，其中1人需协助，轮椅0人，可以分组”。
-2. 集中核对每条需求，确认这批需求并生成安排。名单在浏览器内读取；有格式错误时整批不提交，缺失的接送信息保留待补。只使用模拟姓名。
-3. “安排转移”查看路线、逐车安排和未安排原因，核对后人工确认模拟发布。生成草案不会自动替换正在执行的方案。
+1. 指挥台下载带定位列的模板，或上传 .xlsx / .csv 名单；也可语音或文字输入一批需求。仅使用演练人员信息。
+2. 在预览中核对人数、协助与分组，查看地图标记；没有位置的需求先保留待定位，再从地图核对接人点。名单在浏览器内读取，有格式错误时整批不提交。
+3. 导入后查看路线、逐车安排和未安排原因，核对后点击发布，无需输入姓名或确认文字。生成草案不会自动替换正在执行的方案。
 4. 同浏览器打开现场执行端。“当前任务”选择车辆，按当前下一步接收、联系、上车和到达；指挥台“跟踪完成”查看变化并人工核验到达。
 5. 执行中发现新增人员，在“快速补报”入口说“这里又发现3人，其中1人需要协助”。沿用当前任务接人点或一次选定的位置，整理后一次确认整批补报。指挥台收到待核实记录，未知特需保持待补。
 6. “提交记录”看处理结果；总量、更正和其他现场情况仍保留。AI 对话固定在两端标题区，仍未连接大模型。“更多资料”提供情景、天气演练、依据、评估、复盘和备份，加载情景前先导出需要的记录。
 
-V3.7 新增指挥批量建任务能力，本地需启动 V3.7 后端；GitHub Pages 新静态版可直接演练。原有状态格式兼容，不需要重置演练。详细格式、操作与边界见 [V3.7 快捷建任务与现场执行](docs/V3.7快捷建任务与现场执行.md)。
+当前版本沿用批量建任务与两端反馈，并增加地图定位和雨情视图；本地需要启动当前后端，GitHub Pages 静态版可直接演练。名单基础格式见 [快捷建任务与现场执行](docs/V3.7快捷建任务与现场执行.md)，定位与发布按本页当前流程操作。
 
 名单支持每人一行或按村汇总人数，每次最多 100 条；整场演练最多 500 名有效人员、200 个有效接送组。超限或任一行非法时整批拒绝。未提供的协助、轮椅人数不默认填零；没有姓名且人数为空时不自动按 1 人。
 
-## 按优化清单对照
+## 当前功能与边界
 
 | 编号 | 项目 | 状态 | 完成内容与边界 |
 |---|---|---|---|
@@ -33,7 +40,7 @@ ${rows}
 
 需要 Node.js 22 或更新版本，无 npm 依赖安装步骤。默认启动器名称仍为“启动V3.5演示.cmd”，默认端口 8769；在本目录执行 node server.mjs 也会读取当前后端代码。仅绑定本机，不对局域网开放。
 
-已运行的旧 8769 服务不会因刷新网页而更新，也不会被自动停止或重置。批量建任务要求服务提供 V3.7 能力；旧服务仍运行时，请优先使用新版 GitHub Pages，或使用 JIAOYING_PORT 与 JIAOYING_PERSISTENCE_FILE 在独立端口、独立存档运行当前代码。正常停止旧服务后再启动也可，但应先导出演练记录。
+已运行的旧 8769 服务不会因刷新网页而更新，也不会被自动停止或重置。地图定位与雨情操作需要当前后端；旧服务仍运行时，请优先使用新版 GitHub Pages，或使用 JIAOYING_PORT 与 JIAOYING_PERSISTENCE_FILE 在独立端口、独立存档运行当前代码。正常停止旧服务后再启动也可，但应先导出演练记录。
 
 已提交状态自动保存在 tmp/local-state-v35.json，写盘成功后才返回成功。损坏存档不会被自动覆盖。JIAOYING_PORT 可换端口；JIAOYING_PERSISTENCE_FILE 可指定独立存档；JIAOYING_STATE_FILE 仅用于显式初始化/迁移，常规启动不应反复指定旧快照。
 

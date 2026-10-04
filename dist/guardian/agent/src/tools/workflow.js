@@ -460,7 +460,7 @@
 
       function unpublished() {
         return { ok: false, summary: '任务尚未由人工确认发布，或不属于当前已发布方案；不能推进执行状态。',
-          warnings: ['请先核对当前方案，并在「确认并模拟发布」弹框中填写确认人。执行回执不能代替发布。'],
+          warnings: ['请先核对当前方案，并在「确认并模拟发布」弹框中点击确认；无需填写姓名。执行回执不能代替发布。'],
           actions: [FA.actions.factory.publish(), FA.actions.factory.stateNow()] };
       }
       // This tool must never serve as a second publishing route, including direct handler calls.

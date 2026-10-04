@@ -32,4 +32,29 @@ function apply(d){
   return d;
 }
 
-module.exports={apply,metadata:clone(network.metadata)};
+function convert(d){
+  const assert=(ok,message)=>{if(!ok)throw new Error(message);};
+  assert(d.scenario.region.mapKind!=='osm-road-network','当前已经是瑞安道路地图，无需重复转换');
+  assert(d.phase==='preparation'&&!d.activePlan&&!d.history.length&&
+    Object.values(d.stage).every(stage=>stage==='waiting'||stage==='superseded')&&
+    Object.values(d.contacts).every(c=>!c.ack&&!c.contacted)&&
+    Object.values(d.fleet).every(f=>!f.onboard.length&&!f.delivered.length&&!f.finished&&f.minute===0),
+    '已有发布或执行进度，不能转换地图；请保留当前演练，另建瑞安道路演练');
+  const nodes=new Set(network.nodes.map(n=>n.id));
+  assert(d.scenario.edges.every(e=>e.open)&&d.reports.every(r=>r.kind!=='road'&&nodes.has(r.location)),
+    '已有道路变化或无法对应的位置反馈，不能无损转换；请另建瑞安道路演练');
+  assert(d.scenario.households.every(h=>nodes.has(h.node))&&d.scenario.vehicles.every(v=>nodes.has(v.start)&&nodes.has(d.fleet[v.id].node))&&d.scenario.shelters.every(s=>nodes.has(s.id))&&
+    d.villages.every(v=>v.pickups.every(p=>!p.node||nodes.has(p.node))),
+    '现有需求或资源位置无法对应真实道路节点，不能无损转换；请先核对位置或另建演练');
+  const s=d.scenario;s.name=network.region.name;s.region=clone(network.region);s.nodes=clone(network.nodes);s.edges=clone(network.edges);s.geographicMetadata=clone(network.metadata);
+  for(const village of d.villages)for(const pickup of village.pickups){
+    if(!pickup.node)continue;const node=s.nodes.find(n=>n.id===pickup.node);
+    Object.assign(pickup,{longitude:node.longitude,latitude:node.latitude,coordinateSystem:'WGS84',locationNodeId:node.id,locationStatus:'located',locationDistanceM:0,locationSource:'catalog',locationReason:'原演练集合点对应公开道路节点；接送用途仍为演练设定',osmNodeId:node.osmNodeId,sourceUrl:node.sourceUrl});
+  }
+  const L=require('./intake-location.cjs');
+  for(const r of d.villageReports){const v=d.villages.find(v=>v.id===r.villageId);Object.assign(r,L.metadata(v,v.pickups.find(p=>p.id===r.pickupId)));}
+  for(const h of s.households){const v=d.villages.find(v=>v.id===h.villageId);if(v)Object.assign(h,L.metadata(v,v.pickups.find(p=>p.id===h.pickupId)));}
+  d.scenarioPreset='ruian-roads';
+  return d;
+}
+module.exports={apply,convert,metadata:clone(network.metadata)};

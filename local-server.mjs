@@ -19,7 +19,7 @@ export function createExerciseServer({initialData=null,persistenceFile=null}={})
   function persist(data){if(!persistenceFile)return;const time=new Date().toISOString();mkdirSync(dirname(resolve(persistenceFile)),{recursive:true});writeFileSync(persistenceFile+'.writing',JSON.stringify({format:1,savedAt:time,data}),'utf8');renameSync(persistenceFile+'.writing',persistenceFile);savedAt=time;}
   if(persistenceFile)persist(store.data);
   const transport={preferred:'sse',eventsUrl:'/api/v3/events',eventName:'state',pollIntervalMs:1200};
-  const capabilities={realtimeEvents:true,villageReporting:true,commandIntake:true,version:'3.7',operations:true,stateRestore:true,persistentStorage:!!persistenceFile,crossDeviceSync:false};
+  const capabilities={realtimeEvents:true,villageReporting:true,commandIntake:true,mapDemandLocation:true,roadMapConversion:true,numericRainfall:true,version:'3.7',operations:true,stateRestore:true,persistentStorage:!!persistenceFile,crossDeviceSync:false};
   const state=()=>{const data=store.data;return {session,data,savedAt,diagnostics:Exercise.diagnostics?.(data),metrics:Exercise.metrics(data),villageLedger:Exercise.villageMetrics(data),blockedVehicles:data.activePlan?.routes.filter(r=>Exercise.blockedRoute(data,r)).map(r=>r.vehicleId)||[],integrations:integrationStatus,transport,capabilities};};
   const maxClients=24,maxBufferedBytes=128*1024,heartbeatMs=15000;
   let heartbeat=null;

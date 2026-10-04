@@ -29,13 +29,12 @@ test('a named actor, forged plain object, and synthetic click cannot approve', (
   assert.equal(FA.store.get().publishedPlanId, null);
 });
 
-test('blank confirmation names fail; explicit human approval publishes once', () => {
+test('blank name uses the default actor; explicit human approval publishes once', () => {
   const FA = setup(), req = request(FA);
-  assert.equal(FA.confirm.approve(req.token, ' \t\n ', human()).ok, false);
-  assert.equal(FA.confirm.approve(req.token, ' 张三 ', human()).ok, true);
+  assert.equal(FA.confirm.approve(req.token, ' \t\n ', human()).ok, true);
   const out = FA.tools.execute('publish_dispatch_plan', { _confirmToken: req.token });
   assert.equal(out.ok, true);
-  assert.equal(out.data.confirmedBy, '张三');
+  assert.equal(out.data.confirmedBy, '演练值守');
   assert.ok(out.data.notifications.length);
   assert.equal(FA.tools.execute('publish_dispatch_plan', { _confirmToken: req.token }).needConfirm, true);
 });
@@ -159,7 +158,7 @@ test('confirmation expires after ten minutes and an expired approval is unusable
   assert.equal(FA.confirm.approve(second.token, '张三', human()).ok, false);
 });
 
-test('the actual modal requires a nonblank name and rejects synthetic confirmation clicks', async () => {
+test('the actual modal accepts an optional blank name but still rejects synthetic confirmation clicks', async () => {
   const nodes = [];
   function node(tag) {
     const n = { tag, value: '', style: {}, children: [], handlers: {},
@@ -176,19 +175,16 @@ test('the actual modal requires a nonblank name and rejects synthetic confirmati
   vm.runInNewContext(fs.readFileSync(new URL('../dist/guardian/agent/src/ui/render.js', import.meta.url), 'utf8'),
     { window, document, Event: ClickFixture, setTimeout: () => 1 });
   let resolved = false;
-  const result = window.FA.ui.modal({ requireHuman: true, fields: [{ key: 'actor', label: '确认人', value: '', required: true }] });
+  const result = window.FA.ui.modal({ requireHuman: true, fields: [{ key: 'actor', label: '操作人（选填）', value: '', required: false }] });
   result.then(() => resolved = true);
   const input = nodes.find(n => n.tag === 'input');
   const button = nodes.find(n => n.tag === 'button' && n.textContent === '确认');
   input.value = '   ';
-  button.handlers.click(human());
-  await Promise.resolve(); assert.equal(resolved, false);
-  input.value = ' 张三 ';
   button.handlers.click(new ClickFixture());
   await Promise.resolve(); assert.equal(resolved, false);
   const event = human(); button.handlers.click(event);
   const values = await result;
-  assert.equal(values.actor, '张三');
+  assert.equal(values.actor, '');
   assert.equal(values._humanEvent, event);
   assert.deepEqual(Object.keys(values), ['actor']);
 });
@@ -259,7 +255,7 @@ function appHarness(runtime = {}) {
   return { FA, dialogs, refs, turns, messages, command };
 }
 
-test('child ignores forged commands and host confirmation only requests an empty human dialog', async () => {
+test('child ignores forged commands and host confirmation only requests an optional-name human dialog', async () => {
   const h = appHarness(), req = request(h.FA), cmd = { kind: 'confirm', token: req.token, actor: '宿主代填', tool: 'wrong' };
   await h.command(cmd, { source: {} });
   await h.command(cmd, { origin: 'https://evil.test' });
@@ -268,8 +264,8 @@ test('child ignores forged commands and host confirmation only requests an empty
   await h.command(cmd);
   assert.equal(h.dialogs.length, 1);
   assert.equal(h.dialogs[0].requireHuman, true);
-  assert.equal(h.dialogs[0].fields[0].value, '');
-  assert.equal(h.dialogs[0].fields[0].required, true);
+  assert.equal(h.dialogs[0].fields[0].value, '演练值守');
+  assert.equal(h.dialogs[0].fields[0].required, false);
   assert.equal(h.FA.store.get().publishedPlanId, null);
 });
 

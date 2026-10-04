@@ -36,12 +36,13 @@ test('blank counts without a name, invalid counts, and inconsistent subsets are 
     const out=intake.parseRows([columns,values],context());assert.ok(out.errors.length,JSON.stringify(values));assert.equal(out.rows.length,0);
   }
 });
-test('unknown villages, foreign pickups, unknown grouping and duplicate semantic columns require correction',()=>{
-  for(const values of [['瑞安幸福村','',5,'','',''],['VA','P-B1',5,'','',''],['VA','学校门口',5,'','',''],['VA','',5,'','','自行处理']])assert.ok(intake.parseRows([columns,values],context()).errors.length);
+test('unregistered names remain in pending-location drafts; foreign pickup IDs and invalid grouping are rejected',()=>{
+  for(const values of [['瑞安幸福村','',5,'','',''],['VA','学校门口',5,'','','']]){const out=intake.parseRows([columns,values],context());assert.deepEqual(out.errors,[]);assert.ok(out.warnings.some(w=>w.includes('待定位')));}
+  for(const values of [['VA','P-B1',5,'','',''],['VA','',5,'','','自行处理']])assert.ok(intake.parseRows([columns,values],context()).errors.length);
   assert.ok(intake.parseRows([['村庄','人数','总人数'],['VA',1,2]],context()).errors.some(e=>e.includes('重复')));
 });
 test('row errors retain physical spreadsheet positions and cannot look like full success',()=>{
-  const out=intake.parseRows([[],columns,[],['VA','P-A1',6,0,0,'可拆分'],['坏村','',2,'','','']],context());
+  const out=intake.parseRows([[],columns,[],['VA','P-A1',6,0,0,'可拆分'],['待定位村','',-2,'','','']],context());
   assert.equal(out.rows[0].rowIndex,4);assert.ok(out.errors.some(e=>e.includes('第 5 行')));
   assert.ok(intake.parseRows([['村庄','人数'],['VA',6,'extra']],context()).errors.some(e=>e.includes('超出表头')));
 });

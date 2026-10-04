@@ -199,7 +199,7 @@
 
     function currentActor() {
       var input = document.getElementById('actor');
-      return (input && input.value.trim()) || '演练指挥员';
+      return (input && input.value.trim()) || '演练值守';
     }
 
     function localToolProvider() {
@@ -225,11 +225,11 @@
       return FA.ui.modal({
         title: '人工确认：' + ((def && def.label) || tool),
         html: '<p>' + FA.ui.escapeHtml((req && req.detail) || (def && def.confirmDetail) || '该操作会改变执行状态，需人工确认。') + '</p>' +
-          '<p class="small muted">调度方案需人工确认后执行；确认后系统按方案执行，并可随时回退。确认人将记入轨迹。</p>' +
+          '<p class="small muted">核对方案后点击即可确认，无需输入姓名或确认文字。操作人默认记为“演练值守”，可选填修改；确认记录会保留。</p>' +
           (params && Object.keys(params).length
             ? '<pre class="doc">' + FA.ui.escapeHtml(JSON.stringify(params, null, 2)) + '</pre>'
             : ''),
-        fields: [{ key: 'actor', label: '确认人', value: '', placeholder: '请填写本次确认人', required: true }],
+        fields: [{ key: 'actor', label: '操作人（选填）', value: currentActor(), placeholder: '留空使用“演练值守”', required: false }],
         confirmText: '确认并执行',
         danger: true,
         requireHuman: true
@@ -666,7 +666,7 @@
         '   · 任务：方案落成任务后的执行进度（已通知→已接收→已联系→已上车→已到达）。\n\n' +
         '2. 右栏「规划发布」\n   · 对话框：用自然语言下任务；每条回复都附带可点击的动作按钮。\n' +
         '   · 动作按钮点击即调用工具并改变状态，推动工作流前进。\n' +
-        '   · 发布属于需人工确认的操作：弹层里填写确认人后才执行，智能体不会自行批准。\n\n' +
+        '   · 发布需人工点击确认：核对后点「确认并执行」即可，操作人选填，默认“演练值守”；智能体不会自行批准。\n\n' +
         '3. 演示动线（约 2—3 分钟）\n   ① 点「完整研判」→ 一句话走完七个核心问题；\n' +
         '   ② 点「口播雨量 +20 mm」两次 → 观察动态触发与阈值提示；\n' +
         '   ③ 地图长按某网格提交险情并阻断一条路段 → 看轨迹与状态变化；\n' +

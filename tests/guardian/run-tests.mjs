@@ -482,11 +482,11 @@ check('确认令牌与参数绑定（换参数即失效）', () => {
 check('禁止程序自动确认（必须人工）', () => {
   const req = FA.confirm.request('publish_dispatch_plan', { channel: 'C' }, {});
   const auto = FA.confirm.approve(req.token, null);
-  assert(auto.ok === false, '未署名也能确认，人工闸门失效');
+  assert(auto.ok === false, '未由真实人工点击也能确认，人工闸门失效');
   assert(FA.confirm.allowAutoConfirm === false, 'allowAutoConfirm 应为 false');
   const human = FA.confirm.approve(req.token, '指挥员-张三', new HumanClickFixture());
   assert(human.ok === true, '人工确认失败');
-  return '未署名被拒绝、人工确认通过';
+  return '未由人工点击被拒绝、人工确认通过（姓名选填）';
 });
 
 check('发布流程：确认后才改变任务状态并生成通知文本', () => {

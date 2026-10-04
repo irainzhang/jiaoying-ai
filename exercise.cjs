@@ -3,6 +3,7 @@
 const E=require('./dist/engine.js');
 const V=require('./village-ledger.cjs');
 const R=require('./resilience.cjs');
+const L=require('./intake-location.cjs');
 const clone=E.clone;
 const ALGORITHM='ruian-candidate-search-3.0';
 const BASELINE='risk-nearest-feasible-3.0';
@@ -209,7 +210,7 @@ function create(initialData=null){
           try{
             assert(row&&typeof row==='object'&&!Array.isArray(row),'人员任务行无效');
             assert(row.mode===undefined||row.mode==='increment','快捷建任务仅新增人员；总量与更正请使用村级核对');
-            const fields=Object.fromEntries(['villageId','pickupId','people','assistancePeople','wheelchairPeople','groupPolicy','text','reporter'].filter(key=>row[key]!==undefined).map(key=>[key,row[key]]));
+            const fields=L.prepareRow(d,Object.fromEntries(['villageId','villageName','pickupId','pickupName','longitude','latitude','coordinateSystem','locationNodeId','people','assistancePeople','wheelchairPeople','groupPolicy','text','reporter'].filter(key=>row[key]!==undefined).map(key=>[key,row[key]])));
             V.handle(d,'village-report',{...fields,mode:'increment',source,reporter:row.reporter===undefined?reporter:row.reporter,duplicateAcknowledged:p.duplicateAcknowledged===true},context);
             const record=d.villageReports[0];Object.assign(record,origin);
             V.handle(d,'village-review',{id:record.id,decision:'accept',note:'指挥端批量核对：'+note},context);
@@ -223,10 +224,17 @@ function create(initialData=null){
         log(d.lastAnnouncement,'command-intake');
       }
       else if(V.handle(d,name,p,{now,log,invalidate,generate,fieldEvent})){}
+      else if(name==='enable-road-map'){
+        require('./geo-scenario.cjs').convert(d);invalidate('指挥员显式启用瑞安道路地图，保留原有需求台账');generate('无损转换瑞安道路地图');
+        d.lastAnnouncement='已启用瑞安道路地图；原有需求、人员组与台账全部保留，草案已重算，请核对位置后发布。';log(d.lastAnnouncement,'map');
+      }
       else if(name==='generate')generate();
       else if(name==='weather'){
-        assert(['small','strong','extreme','normal'].includes(p.preset),'天气情景无效');const table={normal:[20,1],small:[25,1],strong:[60,2],extreme:[100,3]},[rain,level]=table[p.preset],old=d.weather.level;
-        d.weather={...d.weather,rainfall:rain,level,updatedAt:now(),trigger:level===old?'同级小幅变化，维持当前方案':'演练等级变化，触发复核'};
+        const table={normal:[20,1],small:[25,1],strong:[60,2],extreme:[100,3]};let rain,level;
+        if(p.rainfall!==undefined){rain=integer(p.rainfall,0,300,'演练一小时累计雨量');level=rain>=80?3:rain>=50?2:1;}
+        else{assert(['small','strong','extreme','normal'].includes(p.preset),'天气情景无效');[rain,level]=table[p.preset];}
+        const old=d.weather.level;
+        d.weather={...d.weather,sourceMode:'simulation',rainfall:rain,level,unit:'mm',window:'演练最近1小时累计',updatedAt:now(),trigger:level===old?'同级小幅变化，维持当前方案':'演练等级变化，触发复核'};
         if(level!==old){invalidate('演练天气等级 '+old+' → '+level+'；仅触发评估，不推断道路积水或自动封路');generate('天气演练等级变化');}else{d.lastAnnouncement='演练一小时累计雨量更新为 '+rain+' 毫米，未跨演练等级，维持当前方案。';log(d.lastAnnouncement,'weather');}
       }
       else if(name==='report'){
@@ -249,8 +257,9 @@ function create(initialData=null){
         else {r.status='resolved';r.resolution=note;r.resolvedAt=now();log(r.id+' 协调完成：'+note,'review');}
       }
       else if(name==='confirm'){
-        assert(fresh(),'草案依据已变化，请重新计算');const selected=p.alternative?d.alternative:d.plan;assert(selected,'没有备选方案');assert(selected.servedPeople>0,'没有可执行安排，请先协调资源');assert(!validate(snapshot(d),selected).length,'方案校验未通过');if(!selected.complete)assert(text(p.note,300,'未安排人员协调措施').length>=5,'请填写至少 5 字的协调措施');
-        if(d.activePlan)d.history.unshift(clone(d.activePlan));d.history=d.history.slice(0,20);d.activePlan={...clone(selected),publishedAt:now(),note:p.note||'',confirmedRevision:d.revision+1};d.lastAnnouncement='方案 '+selected.id+' 已人工确认并模拟发布，安排 '+selected.servedPeople+' 人。';log(d.lastAnnouncement,'publish');
+        assert(fresh(),'草案依据已变化，请重新计算');const selected=p.alternative?d.alternative:d.plan;assert(selected,'没有备选方案');assert(selected.servedPeople>0,'没有可执行安排，请先协调资源');assert(!validate(snapshot(d),selected).length,'方案校验未通过');
+        const confirmationNote=p.note===undefined||p.note===''?'指挥员人工确认方案 '+selected.id+'；未安排人员及原因保留在待协调清单，须继续跟进':text(p.note,300,'确认说明');
+        if(d.activePlan)d.history.unshift(clone(d.activePlan));d.history=d.history.slice(0,20);d.activePlan={...clone(selected),publishedAt:now(),note:confirmationNote,confirmedRevision:d.revision+1};d.lastAnnouncement='方案 '+selected.id+' 已人工确认并模拟发布，安排 '+selected.servedPeople+' 人。';log(d.lastAnnouncement,'publish');
       }
       else if(name==='contact'){
         assert(Array.isArray(p.ids)&&p.ids.length>0&&p.ids.length<=V.MAX_GROUPS,'请选择联系对象');for(const id of p.ids){assert(d.contacts[id],'家庭不存在');d.contacts[id]={ack:true,contacted:true};}log('人工登记演练任务已接收、家庭已联系：'+p.ids.join('、'),'contact');

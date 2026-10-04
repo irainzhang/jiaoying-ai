@@ -82,10 +82,7 @@ function validateState(d){
   for(const [key,max] of Object.entries(maxRows))if(d[key]!==undefined)assert(Array.isArray(d[key])&&d[key].length<=max&&d[key].every(object),'恢复记录结构无效或超过限额：'+key);
   assert(['reports','history','log'].every(k=>Array.isArray(d[k])),'恢复数据记录缺失');
   if(d.villages!==undefined){
-    assert(Array.isArray(d.villages)&&d.villages.length===3&&d.villages.every(v=>object(v)&&validId(v.id)&&typeof v.name==='string'&&v.name.length<=100&&typeof v.township==='string'&&v.township.length<=100&&Array.isArray(v.pickups)&&v.pickups.length>0&&v.pickups.length<=30),'恢复村庄或集合点目录无效');
-    assert(new Set(d.villages.map(v=>v.id)).size===d.villages.length,'恢复村庄编号重复');
-    const pickups=d.villages.flatMap(v=>v.pickups);
-    assert(pickups.every(p=>object(p)&&validId(p.id)&&nodes.has(p.node)&&typeof p.name==='string'&&p.name.length<=100)&&new Set(pickups.map(p=>p.id)).size===pickups.length,'恢复集合点内容或编号无效');
+    require('./intake-location.cjs').validateCatalog(d);
   }
   if(d.villageReports!==undefined)assert(d.villageReports.every(r=>validId(r.id)&&Array.isArray(r.householdIds)&&r.householdIds.length<=200&&r.householdIds.every(validId)),'恢复村级批次编号或人员组目录无效');
   assert(s.households.every(h=>['waiting','boarded','arrived','verified','superseded'].includes(d.stage[h.id])&&object(d.contacts[h.id])&&typeof d.contacts[h.id].contacted==='boolean'&&typeof d.contacts[h.id].ack==='boolean'),'恢复人员阶段或联系记录无效');

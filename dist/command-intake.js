@@ -18,6 +18,9 @@
     wheelchairPeople:['轮椅人数','需轮椅人数','轮椅需求人数','wheelchairpeople','wheelchair'],
     groupPolicy:['同行关系','分组方式','人员关系','能否拆分','grouppolicy'],
     name:['姓名','人员姓名','name'],
+    longitude:['经度','longitude','lng','lon'],
+    latitude:['纬度','latitude','lat'],
+    coordinateSystem:['坐标系','坐标系统','coordinatesystem','crs'],
     text:['备注','说明','原文','text','note']
   };
   const headers = new Map(Object.entries(aliases).flatMap(([key,names]) => names.map(name => [norm(name),key])));
@@ -117,12 +120,22 @@
     for(const item of source) {
       const values=item.values, rowErrors=[],get=key=>cols[key]===undefined?'':values[cols[key]];
       if(values.slice(header.length).some(value=>string(value)))rowErrors.push('存在超出表头的单元格，请检查逗号、引号或列数。');
-      const match=villageFor(string(get('villageId'))||context.villageId,villages);
+      const villageValue=string(get('villageId'))||context.villageId||'';
+      const match=villageFor(villageValue,villages);
       const village=match.length===1?match[0]:null;
-      if(!village)rowErrors.push('村庄“'+string(get('villageId'))+'”未登记或名称不唯一，请使用已登记村名或编号。');
+      if(!villageValue||villageValue.length>100)rowErrors.push('村庄名称不能为空且不能超过100字。');
+      if(match.length>1)rowErrors.push('村庄名称不唯一，请使用已登记编号。');
       const pickupValue=string(get('pickupId'))||context.pickupId||'';
       const point=pickupValue&&village?pickupFor(pickupValue,village):[];
-      if(pickupValue&&point.length!==1)rowErrors.push('集合点“'+pickupValue+'”不属于该村或名称不唯一。');
+      if(pickupValue.length>100)rowErrors.push('集合点名称不能超过100字。');
+      if(point.length>1||pickupValue&&!point.length&&villages.some(v=>(v.pickups||[]).some(p=>p.id===pickupValue)))rowErrors.push('集合点“'+pickupValue+'”不属于该村或名称不唯一。');
+      const lon=string(get('longitude')),lat=string(get('latitude')),hasCoordinates=!!(lon||lat);
+      let longitude=null,latitude=null,coordinateSystem=null;
+      if(hasCoordinates){
+        longitude=Number(lon);latitude=Number(lat);coordinateSystem=norm(get('coordinateSystem'))||'WGS84';
+        if(!lon||!lat||!Number.isFinite(longitude)||!Number.isFinite(latitude)||longitude<-180||longitude>180||latitude<-90||latitude>90)rowErrors.push('经纬度须同时提供有效数字。');
+        if(coordinateSystem!=='WGS84')rowErrors.push('仅接受WGS84经纬度，请先核对或转换坐标系，不能直接使用GCJ02或BD09。');
+      }
       const named=string(get('name'));
       let people;
       if(!string(get('people')) && named)people=1;
@@ -135,10 +148,12 @@
       if(assistancePeople!==null&&wheelchairPeople!==null&&wheelchairPeople>assistancePeople)rowErrors.push('轮椅人数包含在需协助人数内，不能超过需协助人数。');
       const groupPolicy=grouping(get('groupPolicy'),rowErrors);
       if(rowErrors.length){out.errors.push(...rowErrors.map(error=>'第 '+item.rowIndex+' 行：'+error));continue;}
-      const text=[village.name,point[0]?.name||'集合点待补充',named?'姓名：'+named:'','新增 '+people+' 人','需协助 '+(assistancePeople===null?'待核实':assistancePeople+' 人'),'轮椅 '+(wheelchairPeople===null?'待核实':wheelchairPeople+' 人'),'同行关系：'+(string(get('groupPolicy'))||'待核实'),string(get('text'))].filter(Boolean).join('；');
+      const text=[village?.name||villageValue,point[0]?.name||pickupValue||'集合点待补充',named?'姓名：'+named:'','新增 '+people+' 人','需协助 '+(assistancePeople===null?'待核实':assistancePeople+' 人'),'轮椅 '+(wheelchairPeople===null?'待核实':wheelchairPeople+' 人'),'同行关系：'+(string(get('groupPolicy'))||'待核实'),string(get('text'))].filter(Boolean).join('；');
       if(text.length>2000){out.errors.push('第 '+item.rowIndex+' 行：姓名或备注过长，请将记录缩短至 2000 字以内。');continue;}
-      const row={villageId:village.id,pickupId:point[0]?.id||'',people,assistancePeople,wheelchairPeople,groupPolicy,text,rowIndex:item.rowIndex};
+      const row={villageId:village?.id||'',villageName:village?.name||villageValue,pickupId:point[0]?.id||'',pickupName:point[0]?.name||pickupValue,longitude,latitude,coordinateSystem,people,assistancePeople,wheelchairPeople,groupPolicy,text,rowIndex:item.rowIndex};
       row.warnings=warningsFor(row);out.rows.push(row);
+      if(!village)row.warnings.push('保留上传村庄原名；行政归属尚未核验，不自动猜测位置。');
+      if(!point.length)row.warnings.push(hasCoordinates?'经纬度需在瑞安道路地图内核对关联；超出有限路网范围时保留待定位。':'未找到已登记接人位置，先入台账待定位，不生成虚构路线。');
       out.warnings.push(...row.warnings.map(w=>'第 '+item.rowIndex+' 行：'+w));
     }
     return finish(out);

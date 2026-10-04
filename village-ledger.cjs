@@ -5,17 +5,22 @@ const sum=(xs,f)=>xs.reduce((n,x)=>n+f(x),0);
 const number=(v,min,max,label)=>{assert(Number.isInteger(v)&&v>=min&&v<=max,`${label}须为 ${min}–${max} 的整数`);return v;};
 const clean=(v,max,label,fallback='')=>{const s=v===undefined?fallback:v;assert(typeof s==='string'&&s.trim()&&s.length<=max,`${label}不能为空且不能超过 ${max} 字`);return s.trim();};
 const MAX_PEOPLE=500,MAX_GROUPS=200;
+const L=require('./intake-location.cjs');
 function catalog(){return ['A','B','C'].map((letter,i)=>({id:'V'+letter,name:`演示村 ${letter}`,township:'演示乡镇',synthetic:true,pickups:[1,2].map((n)=>({id:`P-${letter}${n}`,name:n===1?'村委会集合点（演示）':'备用集合点（演示）',node:'H'+(i*2+n),synthetic:true,longitude:null,latitude:null}))}));}
 function ensure(d){
   if(d.villages===undefined)d.villages=catalog();
   if(d.villageReports===undefined)d.villageReports=[];
-  assert(Array.isArray(d.villages)&&d.villages.length===3&&d.villages.every(v=>typeof v.id==='string'&&Array.isArray(v.pickups)&&v.pickups.every(p=>d.scenario.nodes.some(n=>n.id===p.node))),'村级台账示范目录无效');
+  L.validateCatalog(d);
   assert(Array.isArray(d.villageReports)&&d.villageReports.every(r=>r&&typeof r.id==='string'&&d.villages.some(v=>v.id===r.villageId)&&Number.isInteger(r.people)&&r.people>=0&&r.people<=500&&['increment','snapshot','correction'].includes(r.mode)&&['pending','accepted','rejected','superseded'].includes(r.status)&&Array.isArray(r.householdIds)),'村级上报恢复数据无效');
   assert(new Set(d.villageReports.map(r=>r.id)).size===d.villageReports.length,'村级批次编号重复');
   for(const r of d.villageReports){
+    const village=d.villages.find(v=>v.id===r.villageId),pickup=village.pickups.find(p=>p.id===r.pickupId);
+    assert(!r.pickupId||pickup,'村级批次接人点不属于当前村庄');
+    if(r.locationStatus!==undefined){const location=L.metadata(village,pickup);for(const key of ['locationStatus','locationNodeId','longitude','latitude','coordinateSystem'])assert(r[key]===location[key],'村级批次定位信息与集合点不一致');}
+    assert(!r.householdIds.length||pickup?.node,'未定位批次不能生成执行人员组');
     assert(['unknown','splittable','together'].includes(r.groupPolicy)&&[r.assistancePeople,r.wheelchairPeople].every(n=>n===null||(Number.isInteger(n)&&n>=0&&n<=r.people))&&(r.assistancePeople===null||r.wheelchairPeople===null||r.wheelchairPeople<=r.assistancePeople),'村级批次特殊需求人数无效');
     assert(new Set(r.householdIds).size===r.householdIds.length&&r.householdIds.every(id=>d.scenario.households.some(h=>h.id===id&&h.sourceBatchId===r.id&&h.villageId===r.villageId)),'村级批次人员组关联无效');
-    if(r.householdIds.length){const groups=d.scenario.households.filter(h=>r.householdIds.includes(h.id));assert(sum(groups,h=>h.people)===r.people&&sum(groups,h=>h.assistancePeople)===r.assistancePeople&&sum(groups,h=>h.wheelchairPeople)===r.wheelchairPeople,'村级批次人数或特殊需求不守恒');}
+    if(r.householdIds.length){const groups=d.scenario.households.filter(h=>r.householdIds.includes(h.id));assert(sum(groups,h=>h.people)===r.people&&sum(groups,h=>h.assistancePeople)===r.assistancePeople&&sum(groups,h=>h.wheelchairPeople)===r.wheelchairPeople,'村级批次人数或特殊需求不守恒');assert(groups.every(h=>h.node===pickup.node&&h.pickupId===r.pickupId),'村级人员组位置与批次不一致');for(const h of groups)if(h.locationStatus!==undefined)for(const key of ['locationStatus','locationNodeId','longitude','latitude','coordinateSystem'])assert(h[key]===r[key],'村级人员组定位元数据不一致');}
     if(r.status==='superseded')assert(r.supersededBy&&d.villageReports.some(x=>x.id===r.supersededBy&&x.targetId===r.id)&&r.householdIds.every(id=>d.stage[id]==='superseded'),'已更正批次归档关系无效');
     if(effective(r))assert(r.householdIds.every(id=>d.stage[id]!=='superseded')&&(r.people===0||r.householdIds.length>0||r.needsInfo===true),'有效批次人员组状态无效');
   }
@@ -29,7 +34,7 @@ function ensure(d){
 }
 const effective=r=>r.status==='accepted'&&r.mode!=='snapshot'&&!r.supersededBy;
 function unplanned(d){return d.villageReports.filter(r=>effective(r)&&r.people>0&&!r.householdIds.length);}
-function unplannedRequests(d){return unplanned(d).map(r=>({id:'BATCH-'+r.id,batchId:r.id,villageId:r.villageId,name:(d.villages.find(v=>v.id===r.villageId)?.name||r.villageId)+' · '+r.id,people:r.people,stage:'waiting',reason:'已核实，待补接人点、协助人数或分组信息；暂不生成接人路线'}));}
+function unplannedRequests(d){return unplanned(d).map(r=>({id:'BATCH-'+r.id,batchId:r.id,villageId:r.villageId,name:(d.villages.find(v=>v.id===r.villageId)?.name||r.villageId)+' · '+r.id,people:r.people,stage:'waiting',reason:r.locationStatus==='pending'?(r.locationReason+'；已保留待转移人数，定位及必要人员信息核对前暂不生成路线'):'已核实，待补接人点、协助人数或分组信息；暂不生成接人路线'}));}
 function villageMetrics(d){return (d.villages||[]).map(v=>{
   const hs=d.scenario.households.filter(h=>h.villageId===v.id&&d.stage[h.id]!=='superseded'),reports=d.villageReports.filter(r=>r.villageId===v.id),unplannedPeople=sum(unplanned(d).filter(r=>r.villageId===v.id),r=>r.people),count=stage=>sum(hs.filter(h=>d.stage[h.id]===stage),h=>h.people),latest=reports.filter(r=>r.mode==='snapshot'&&r.status==='accepted').sort((a,b)=>Date.parse(b.observedAt)-Date.parse(a.observedAt))[0];
   const waiting=count('waiting')+unplannedPeople;
@@ -42,9 +47,9 @@ function details(d,p,people){
   if(assistancePeople!==null)number(assistancePeople,0,people,'需协助人数');if(wheelchairPeople!==null)number(wheelchairPeople,0,people,'轮椅人数');
   if(assistancePeople!==null&&wheelchairPeople!==null)assert(wheelchairPeople<=assistancePeople,'轮椅人数包含在需协助人数内，不能超过需协助人数');
   const groupPolicy=p.groupPolicy||'unknown';assert(['unknown','splittable','together'].includes(groupPolicy),'分组方式无效');
-  return {pickupId,assistancePeople,wheelchairPeople,groupPolicy};
+  return {pickupId,assistancePeople,wheelchairPeople,groupPolicy,...L.metadata(v,v.pickups.find(x=>x.id===pickupId))};
 }
-function needsInfo(r){return r.people>0&&(!r.pickupId||r.assistancePeople===null||r.wheelchairPeople===null||r.groupPolicy==='unknown');}
+function needsInfo(r){return r.people>0&&(!r.pickupId||r.locationStatus==='pending'||r.assistancePeople===null||r.wheelchairPeople===null||r.groupPolicy==='unknown');}
 function targetFor(d,r){
   const target=d.villageReports.find(x=>x.id===r.targetId);assert(target&&target.villageId===r.villageId&&target.mode!=='snapshot'&&['pending','accepted'].includes(target.status)&&!target.supersededBy,'更正目标已失效，请刷新并选择当前有效批次');
   assert(target.householdIds.every(id=>d.stage[id]==='waiting'),'目标批次已有人员上车、到达或完成，不能通过人数更正覆盖执行记录');return target;
@@ -67,13 +72,37 @@ function materialize(d,r,replace=null){
   if(replace){replace.status='superseded';replace.supersededBy=r.id;replace.supersededAt=r.reviewedAt;for(const id of replace.householdIds)d.stage[id]='superseded';}
   const pickup=d.villages.find(v=>v.id===r.villageId).pickups.find(p=>p.id===r.pickupId),village=d.villages.find(v=>v.id===r.villageId);
   for(const group of groups){let id;do{id='VG'+(++d.villageGroupCounter);}while(d.scenario.households.some(h=>h.id===id));const assistance=group.assistancePeople>0,wheelchair=group.wheelchairPeople>0;
-    d.scenario.households.push({id,node:pickup.node,name:`${village.name} · ${r.id} 第 ${r.householdIds.length+1} 组`,...group,priority:assistance?2:1,risk:2,riskBase:2,assistance,wheelchair,service:wheelchair?6:assistance?5:2,note:`村级批次 ${r.id}；${r.groupPolicy==='together'?'整组同行':'允许分车'}`,response:'新增待联系',villageId:r.villageId,pickupId:r.pickupId,sourceBatchId:r.id,groupPolicy:r.groupPolicy});d.stage[id]='waiting';d.contacts[id]={ack:false,contacted:false};r.householdIds.push(id);
+    d.scenario.households.push({id,node:pickup.node,name:`${village.name} · ${r.id} 第 ${r.householdIds.length+1} 组`,...group,...L.metadata(village,pickup),priority:assistance?2:1,risk:2,riskBase:2,assistance,wheelchair,service:wheelchair?6:assistance?5:2,note:`村级批次 ${r.id}；${r.groupPolicy==='together'?'整组同行':'允许分车'}`,response:'新增待联系',villageId:r.villageId,pickupId:r.pickupId,sourceBatchId:r.id,groupPolicy:r.groupPolicy});d.stage[id]='waiting';d.contacts[id]={ack:false,contacted:false};r.householdIds.push(id);
   }
 }
 function handle(d,name,p,c){
-  if(!['village-report','village-review','village-complete'].includes(name))return false;
+  if(!['village-report','village-review','village-complete','map-demand-locate'].includes(name))return false;
   ensure(d);let r;
-  if(name==='village-report'){
+  if(name==='map-demand-locate'){
+    r=d.villageReports.find(x=>x.id===p.id);assert(r&&effective(r)&&r.needsInfo&&!r.householdIds.length,'仅可给已核实、未生成执行人员组的批次补充位置');
+    assert(!r.locationNodeId,'该批次已定位，请在台账中核对后更正，不覆盖现有接人点');
+    const location=L.resolve(d.scenario,p);assert(location.locationStatus==='located',location.locationReason);
+    const previous={pickupId:r.pickupId,pickupName:r.pickupName||'',longitude:r.longitude??null,latitude:r.latitude??null,reason:r.locationReason||'',at:c.now()};
+    const village=d.villages.find(v=>v.id===r.villageId),existing=village.pickups.find(point=>point.id===r.pickupId);
+    const exclusive=existing&&existing.imported===true&&existing.node===null&&existing.locationStatus==='pending'&&
+      !d.villageReports.some(other=>other.id!==r.id&&other.pickupId===existing.id)&&!d.scenario.households.some(h=>h.pickupId===existing.id);
+    let pickupId;
+    if(exclusive){
+      // Complete a single batch's placeholder in place: its original name remains reusable.
+      Object.assign(existing,location,{node:location.locationNodeId});pickupId=existing.id;
+    }else{
+      // A shared unresolved name is not evidence that every batch is at this position.
+      // Give this batch an explicit name and leave all other batches untouched.
+      const suffix=existing?' · 定位 '+r.id:'';
+      const pickupName=(r.pickupName||'人工定位接人点').slice(0,100-suffix.length)+suffix;
+      const fields=L.prepareRow(d,{villageId:r.villageId,pickupName,nodeId:location.locationNodeId,
+        ...(location.coordinateSystem?{longitude:location.longitude,latitude:location.latitude,coordinateSystem:location.coordinateSystem}:{})});
+      pickupId=fields.pickupId;
+    }
+    Object.assign(r,details(d,{...r,pickupId},r.people));r.locationHistory=[...(r.locationHistory||[]),previous].slice(-20);r.locationNote=clean(p.note,300,'定位说明','指挥员在地图核对并确认接人位置');r.locatedAt=c.now();
+    r.status='pending';materialize(d,r);r.status='accepted';c.invalidate(r.id+' 接人位置已人工确认');c.generate(r.id+' 地图补定位');
+    d.lastAnnouncement=r.id+' 接人位置已确认'+(r.needsInfo?'，仍需补齐人员协助或分组信息':'，已重新计算转移草案')+'；需人工确认后发布。';c.log(d.lastAnnouncement,'village');
+  }else if(name==='village-report'){
     assert(['increment','snapshot','correction'].includes(p.mode),'请选择新增、待转移总量或更正口径');const people=number(p.people,p.mode==='increment'?1:0,500,'本次人数');const extra=details(d,p,people);
     const source=p.source||'manual';assert(['quick','voice','text','manual'].includes(source),'现场输入来源无效');
     r={id:'VR'+(d.villageReportCounter+1),villageId:p.villageId,mode:p.mode,people,...extra,targetId:p.mode==='correction'?clean(p.targetId,40,'更正目标'):null,scope:p.mode==='snapshot'?p.scope:null,observedAt:p.mode==='snapshot'?p.observedAt:null,text:clean(p.text,2000,'现场原话',`${p.mode==='increment'?'新增':p.mode==='correction'?'更正为':'当前待转移共'} ${people} 人`),reporter:clean(p.reporter,40,'上报人','现场演示员'),source,inputSource:source,status:'pending',householdIds:[],needsInfo:needsInfo({people,...extra}),createdAt:c.now(),note:'',inputVersion:d.inputVersion,duplicateAcknowledged:p.duplicateAcknowledged===true};
