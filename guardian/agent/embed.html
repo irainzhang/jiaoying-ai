@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>城市韧性守护 Agent · 嵌入式面板</title>
+<meta name="description" content="可嵌入现有防汛演练系统的城市韧性守护 Agent 面板：对话、动作按钮、执行闭环与实时监控。">
+<link rel="stylesheet" href="assets/agent.css">
+</head>
+<!-- 嵌入页：默认收窄布局（body.embed），供宿主页面用 iframe 挂载。
+     完整工作台见 index.html；嵌入方式见 docs/集成指南.md -->
+<body class="embed">
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="brand-mark">守</div>
+      <div class="brand-text">
+        <strong>城市韧性守护 Agent</strong>
+        <span>演练面板</span>
+      </div>
+    </div>
+    <div class="badges">
+      <span class="badge" id="provider-badge">加载中…</span>
+      <span class="badge badge-warn hidden" id="stale-badge">需重新计算</span>
+    </div>
+    <div class="topbar-actions">
+      <button class="tbtn" id="btn-pipeline">完整研判</button>
+      <button class="tbtn" id="btn-rain">口播 +20 mm</button>
+      <button class="tbtn" id="btn-report">报告</button>
+      <button class="tbtn" id="btn-compliance">合规自查</button>
+      <button class="tbtn" id="btn-skills">技能 / 工具</button>
+      <button class="tbtn" id="btn-reset">重置</button>
+    </div>
+  </div>
+</header>
+
+<div class="disclaimer">
+  <div class="inner">
+    <span class="tag">边界</span>
+    <span>基于公开数据的<b>积水易发风险评估</b>，仅供演练参考；<b>调度方案需人工确认后执行</b>；人员与资源数据均为演练设定。</span>
+  </div>
+</div>
+
+<main class="layout">
+  <section class="column">
+    <div class="card">
+      <div class="card-head">
+        <h3>风险地图（长按网格提交险情）</h3>
+        <span class="meta" id="trace-meta"></span>
+      </div>
+      <div class="map-wrap" id="map"></div>
+      <div class="map-legend">
+        <span class="legend-item"><i class="legend-dot" style="background:#2f855a"></i>低</span>
+        <span class="legend-item"><i class="legend-dot" style="background:#c99a12"></i>中</span>
+        <span class="legend-item"><i class="legend-dot" style="background:#dd6b20"></i>高</span>
+        <span class="legend-item"><i class="legend-dot" style="background:#c53030"></i>极高</span>
+        <span class="legend-item"><i class="legend-dot" style="background:#0f6f5c;border-radius:2px"></i>安置点</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h3>关键指标</h3></div>
+      <div class="card-body tight" id="stats"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h3>智能体感知与执行轨迹</h3><span class="meta">实时</span></div>
+      <div class="scroll" id="trace" style="max-height:200px"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h3>任务执行进度</h3></div>
+      <div id="tasks"></div>
+    </div>
+
+    <div class="card hidden">
+      <div id="zones"></div>
+    </div>
+  </section>
+
+  <section class="column">
+    <div class="card">
+      <div class="card-head"><h3>与智能体对话</h3><span class="meta">Ctrl / ⌘ + Enter 发送</span></div>
+      <div class="chat">
+        <div class="chat-log" id="chat-log"></div>
+        <div class="composer">
+          <div class="composer-row">
+            <textarea id="input" rows="1" placeholder="例如：帮我做一次完整的研判和调度建议"></textarea>
+            <button class="send" id="send">发送</button>
+          </div>
+          <div class="quick" id="quick"></div>
+          <div class="small muted mt6">
+            确认人：<input id="actor" value="" placeholder="操作人（可选）" style="width:120px;font:inherit;font-size:11.5px;padding:2px 6px;border:1px solid #e2e8e4;border-radius:5px">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h3>调度方案</h3><span class="meta">约束校验 · 优化前后对比</span></div>
+      <div id="plan"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h3>报告与通知文本</h3></div>
+      <div id="report"></div>
+      <pre class="doc hidden" id="report-text"></pre>
+      <div class="card-body" id="doc"></div>
+    </div>
+
+    <!-- 情景选择（紧凑） -->
+    <div class="card">
+      <div class="card-head"><h3>演练情景</h3><span class="meta">切换后自动重新研判</span></div>
+      <div class="card-body">
+        <select id="scenario" style="font:inherit;font-size:13px;width:100%;padding:7px 9px;border:1px solid #e2e8e4;border-radius:7px"></select>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="toast-host"></div>
+
+<script src="assets/data/region-config.js"></script>
+<script src="assets/data/ruian-scenario.js"></script>
+<script src="assets/skills-bundle.js"></script>
+<script src="assets/kb-bundle.js"></script>
+<script src="api-config.js"></script>
+<script src="src/core/bus.js"></script>
+<script src="src/core/store.js"></script>
+<script src="src/core/triggers.js"></script>
+<script src="src/core/confirm.js"></script>
+<script src="src/core/analytics.js"></script>
+<script src="src/core/optimizer.js"></script>
+<script src="src/core/actions.js"></script>
+<script src="src/skills/registry.js"></script>
+<script src="src/tools/registry.js"></script>
+<script src="src/tools/risk.js"></script>
+<script src="src/tools/knowledge.js"></script>
+<script src="src/tools/optimize.js"></script>
+<script src="src/tools/workflow.js"></script>
+<script src="src/tools/deliver.js"></script>
+<script src="src/llm/adapter.js"></script>
+<script src="src/llm/offline.js"></script>
+<script src="src/llm/openai-compatible.js"></script>
+<script src="src/core/agent-loop.js"></script>
+<script src="src/ui/render.js"></script>
+<script src="src/ui/map.js"></script>
+<script src="src/ui/monitor.js"></script>
+<script src="src/ui/planner.js"></script>
+<script src="src/ui/app.js"></script>
+</body>
+</html>
