@@ -22,7 +22,7 @@ export function createExerciseServer({initialData=null,persistenceFile=null,star
   if(persistenceFile)persist(store.data);
   const transport={preferred:'sse',eventsUrl:'/api/v3/events',eventName:'state',pollIntervalMs:1200};
   const connection={mode:room?'lan-room':'local',roomId:room?.roomId||null,shared:!!room,scopeLabel:room?'同 Wi-Fi 房间':'仅本机浏览器',speechNote:room?'手机 HTTP 页面可能不支持浏览器语音识别，可使用系统键盘语音听写。':''};
-  const capabilities={realtimeEvents:true,villageReporting:true,commandIntake:true,mapDemandLocation:true,roadMapConversion:true,numericRainfall:true,taskLifecycle:true,version:'4.0.0',operations:true,stateRestore:true,persistentStorage:!!persistenceFile,crossDeviceSync:!!room};
+  const capabilities={realtimeEvents:true,villageReporting:true,commandIntake:true,mapDemandLocation:true,roadMapConversion:true,numericRainfall:true,taskLifecycle:true,resourceRegistry:true,version:'4.1.0',operations:true,stateRestore:true,persistentStorage:!!persistenceFile,crossDeviceSync:!!room};
   const state=()=>{const data=store.data;return {session,data,savedAt,connection,diagnostics:Exercise.diagnostics?.(data),metrics:Exercise.metrics(data),taskSummary:Exercise.taskSummary?.(data),mapConversion:Exercise.mapConversionStatus(data),villageLedger:Exercise.villageMetrics(data),blockedVehicles:data.activePlan?.routes.filter(r=>Exercise.blockedRoute(data,r)).map(r=>r.vehicleId)||[],integrations:integrationStatus,transport,capabilities};};
   // Road snapshots and retained task history can exceed 128 KiB. Permit one
   // bounded full snapshot while still disconnecting readers that stop draining.
@@ -76,7 +76,7 @@ export function createExerciseServer({initialData=null,persistenceFile=null,star
         const chunks=[];let bytes=0;for await(const chunk of req){bytes+=chunk.length;if(bytes>6*1024*1024){json(res,413,{error:'请求过长'});return;}chunks.push(chunk);}
         let input;try{input=JSON.parse(Buffer.concat(chunks).toString('utf8'));}catch{json(res,400,{error:'JSON 格式无效'});return;}
         if(!input||typeof input!=='object'||Array.isArray(input)||typeof input.action!=='string'||typeof input.requestId!=='string'||input.requestId.length>100||!input.requestId){json(res,400,{error:'操作参数无效'});return;}
-        if(input.action!=='restore'&&bytes>(input.action==='command-intake'?262144:16384)){json(res,413,{error:'请求过长'});return;}
+        if(input.action!=='restore'&&bytes>(['command-intake','configure-resources'].includes(input.action)?262144:16384)){json(res,413,{error:'请求过长'});return;}
         const digest=JSON.stringify([input.action,input.payload||{},input.expectedRevision,input.session]);
         if(seen.has(input.requestId)){if(seen.get(input.requestId)!==digest){json(res,409,{error:'同一请求编号不能提交不同内容',...state()});return;}json(res,200,{duplicate:true,...state()});return;}
         if(input.session!==session||input.expectedRevision!==store.data.revision){json(res,409,{error:'另一网页已更新演练，请核对最新状态后重试；当前操作未执行',...state()});return;}

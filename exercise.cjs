@@ -5,6 +5,7 @@ const V=require('./village-ledger.cjs');
 const R=require('./resilience.cjs');
 const L=require('./intake-location.cjs');
 const T=require('./lifecycle.cjs');
+const G=require('./dist/resource-registry.js');
 const clone=E.clone;
 const ALGORITHM='ruian-candidate-search-3.0';
 const BASELINE='risk-nearest-feasible-3.0';
@@ -43,8 +44,10 @@ function freshTask(source=null,{seedMode='sample',mapMode='same',name}={}){
       const nodes=new Set(d.scenario.nodes.map(n=>n.id));
       assert(source.scenario.vehicles.every(v=>nodes.has(v.start))&&source.scenario.shelters.every(sh=>nodes.has(sh.id)),'已有资源位置不能映射到新地图，请先在原地图保留并核对资源位置');
       d.scenario.vehicles=clone(source.scenario.vehicles);d.scenario.shelters=clone(source.scenario.shelters);
+      if(source.scenario.resourceRegistryVersion!==undefined)d.scenario.resourceRegistryVersion=source.scenario.resourceRegistryVersion;
+      if(source.scenario.staff!==undefined)d.scenario.staff=clone(source.scenario.staff);
     }
-    for(const resource of [...d.scenario.vehicles,...d.scenario.shelters]){delete resource.resourceChangeVersion;delete resource.availabilityUpdatedAt;}
+    for(const resource of [...d.scenario.vehicles,...d.scenario.shelters,...(d.scenario.staff||[])]){delete resource.resourceChangeVersion;delete resource.availabilityUpdatedAt;}
   }
   d.seedMode=seedMode;d.taskName=name===undefined||typeof name==='string'&&!name.trim()?(seedMode==='blank'?'新建转移任务':'瑞安示例演练'):text(name,80,'任务名称');
   if(seedMode==='blank')d.scenario.households=[];
@@ -57,16 +60,35 @@ function freshTask(source=null,{seedMode='sample',mapMode='same',name}={}){
 }
 function createBlank(options={}){return freshTask(null,{mapMode:'ruian-roads',...options,seedMode:'blank'});}
 function snapshot(d){return clone({scenario:d.scenario,stage:d.stage,fleet:d.fleet,occupancy:d.occupancy,inputVersion:d.inputVersion,executionVersion:d.executionVersion,unplannedRequests:V.unplannedRequests(d)});}
+function resourceAssignment(s,v,homes){
+  if(!G.isEnabled(s))return undefined;
+  return {vehicleType:v.vehicleType,model:v.model,totalCapacity:v.totalCapacity,passengerCapacity:v.capacity,wheelchairSlots:G.wheelchairCapacity(s,v),driverId:v.driverId,escortIds:[...v.escortIds],staffCount:Number(Boolean(v.driverId))+v.escortIds.length,assistancePeople:sum(homes,h=>h.assistancePeople??(h.assistance?h.people:0)),wheelchairPeople:sum(homes,h=>h.wheelchairPeople??Number(h.wheelchair))};
+}
+function unassignedReason(i,h){
+  const s=i.scenario;
+  if(i.stage[h.id]==='boarded'){
+    const v=s.vehicles.find(v=>i.fleet[v.id].onboard.includes(h.id)),issues=v?G.routeIssues(s,v,[h]):[];
+    return '已上车人员留在原车，'+(issues.length?issues.join('；'):'当前无可用送达安排')+'，待人工协调';
+  }
+  if(G.isEnabled(s)){
+    const available=s.vehicles.filter(v=>v.available&&!i.fleet[v.id].finished),chairs=h.wheelchairPeople??Number(h.wheelchair);
+    if(!available.length)return '没有当前可用的车辆，需登记可用资源或安排下一趟';
+    const fit=available.filter(v=>v.capacity>=h.people&&G.wheelchairCapacity(s,v)>=chairs);
+    if(!fit.length)return chairs&&!available.some(v=>G.wheelchairCapacity(s,v)>=chairs)?'轮椅位不足，需协调已核定轮椅位的适配车辆':'扣除司机及随车工作人员后，单车可接人数不足；需增援或核实分组';
+    if(fit.every(v=>G.routeIssues(s,v,[h]).length))return [...new Set(fit.flatMap(v=>G.routeIssues(s,v,[h])))].join('；');
+  }
+  return '当前车辆适配、座位、安置容量或开放路网不能同时满足';
+}
 function routeBuilder(i){
   const cache=new Map(),s=i.scenario,homes=Object.fromEntries(s.households.map(h=>[h.id,h]));
   const path=(a,b)=>{const k=a+':'+b;if(!cache.has(k))cache.set(k,E.shortestPath(s,a,b));return cache.get(k);};
   function route(v,order,sh){
     const f=i.fleet[v.id],ids=[...f.onboard,...order.map(h=>h.id)],people=sum(ids,id=>homes[id].people);
-    if(!v.available||f.finished||!sh?.available||!ids.length||people>v.capacity||people+(i.occupancy[sh.id]||0)>sh.capacity||sum(ids,id=>homes[id].wheelchairPeople??Number(homes[id].wheelchair))>Number(v.wheelchair))return null;
+    if(!v.available||f.finished||!sh?.available||!ids.length||people>v.capacity||people+(i.occupancy[sh.id]||0)>sh.capacity||sum(ids,id=>homes[id].wheelchairPeople??Number(homes[id].wheelchair))>G.wheelchairCapacity(s,v)||G.routeIssues(s,v,ids.map(id=>homes[id])).length)return null;
     let node=f.node,minute=f.minute,wait=0,drive=0;const stops=[],segments=[];
     for(const h of order){const p=path(node,h.node);if(!p)return null;minute+=p.minutes;drive+=p.minutes;wait+=Math.max(0,minute-f.minute)*h.people*(h.risk===3?3:h.assistance?2:1);stops.push({id:h.id,node:h.node,people:h.people,arrival:minute,depart:minute+h.service});segments.push({from:node,to:h.node,...p});minute+=h.service;node=h.node;}
     const tail=path(node,sh.id);if(!tail)return null;segments.push({from:node,to:sh.id,...tail});minute+=tail.minutes;drive+=tail.minutes;
-    return {vehicleId:v.id,from:f.node,startMinute:f.minute,onboard:[...f.onboard],stops,segments,shelterId:sh.id,people,passengerIds:ids,finish:minute,wait,drive,holding:false};
+    return {vehicleId:v.id,from:f.node,startMinute:f.minute,onboard:[...f.onboard],stops,segments,shelterId:sh.id,people,passengerIds:ids,finish:minute,wait,drive,holding:false,...(G.isEnabled(s)?{resourceAssignment:resourceAssignment(s,v,ids.map(id=>homes[id]))}:{})};
   }
   const idle=v=>({vehicleId:v.id,from:i.fleet[v.id].node,startMinute:i.fleet[v.id].minute,onboard:[...i.fleet[v.id].onboard],stops:[],segments:[],shelterId:null,people:0,passengerIds:[],finish:i.fleet[v.id].minute,wait:0,drive:0,holding:i.fleet[v.id].onboard.length>0});
   return {route,path,idle};
@@ -76,7 +98,7 @@ function summarize(i,routes,algorithm){
   const remaining=i.scenario.households.filter(h=>['waiting','boarded'].includes(i.stage[h.id]));
   const ids=routes.flatMap(r=>r.passengerIds),covered=new Set(ids),selected=remaining.filter(h=>covered.has(h.id));
   const onboardCount=sum(routes,r=>r.holding?0:sum(r.onboard,id=>i.scenario.households.find(h=>h.id===id).people));
-  return {algorithm,routes:clone(routes),servedPeople:sum(selected,h=>h.people),totalPeople:sum(remaining,h=>h.people)+sum(pendingInfo,h=>h.people),servedIds:[...covered].sort(),urgentPeople:sum(selected.filter(h=>h.risk===3),h=>h.people),assistedPeople:sum(selected,h=>h.assistancePeople??(h.assistance?h.people:0)),onboardCount,wait:sum(routes,r=>r.wait),finish:Math.max(0,...routes.filter(r=>r.people).map(r=>r.finish)),drive:sum(routes,r=>r.drive),unassigned:remaining.filter(h=>!covered.has(h.id)).map(h=>({id:h.id,name:h.name,people:h.people,stage:i.stage[h.id],reason:i.stage[h.id]==='boarded'?'已上车人员留在原车，当前无可用送达安排，待人工协调':'当前车辆适配、座位、安置容量或开放路网不能同时满足'})).concat(clone(pendingInfo)),complete:remaining.length>0&&selected.length===remaining.length&&!pendingInfo.length,inputVersion:i.inputVersion,executionVersion:i.executionVersion};
+  return {algorithm,routes:clone(routes),servedPeople:sum(selected,h=>h.people),totalPeople:sum(remaining,h=>h.people)+sum(pendingInfo,h=>h.people),servedIds:[...covered].sort(),urgentPeople:sum(selected.filter(h=>h.risk===3),h=>h.people),assistedPeople:sum(selected,h=>h.assistancePeople??(h.assistance?h.people:0)),onboardCount,wait:sum(routes,r=>r.wait),finish:Math.max(0,...routes.filter(r=>r.people).map(r=>r.finish)),drive:sum(routes,r=>r.drive),unassigned:remaining.filter(h=>!covered.has(h.id)).map(h=>({id:h.id,name:h.name,people:h.people,stage:i.stage[h.id],reason:unassignedReason(i,h)})).concat(clone(pendingInfo)),complete:remaining.length>0&&selected.length===remaining.length&&!pendingInfo.length,inputVersion:i.inputVersion,executionVersion:i.executionVersion};
 }
 const score=p=>[-p.onboardCount,-p.urgentPeople,-p.assistedPeople,-p.servedPeople,p.wait,p.finish,p.drive];
 function signature(p){return p.routes.map(r=>r.vehicleId+':'+r.stops.map(h=>h.id).join(',')+'>'+r.shelterId).join('|');}
@@ -88,7 +110,7 @@ function solve(i){
     if(!v.available||f.finished)return [b.idle(v)];
     function walk(order,mask,people,chairs){
       if(order.length||manifest.length)for(const sh of s.shelters){const r=b.route(v,order,sh);if(!r)continue;r.mask=mask;const key=mask+':'+sh.id,old=best.get(key);if(!old||cmp([r.wait,r.finish,r.drive],[old.wait,old.finish,old.drive])<0)best.set(key,r);}
-      for(let j=0;j<waiting.length;j++){if(mask&(1<<j))continue;const h=waiting[j];if(people+h.people>v.capacity||chairs+(h.wheelchairPeople??Number(h.wheelchair))>Number(v.wheelchair))continue;if(!b.path(order.at(-1)?.node||f.node,h.node))continue;walk([...order,h],mask|(1<<j),people+h.people,chairs+(h.wheelchairPeople??Number(h.wheelchair)));}
+      for(let j=0;j<waiting.length;j++){if(mask&(1<<j))continue;const h=waiting[j];if(people+h.people>v.capacity||chairs+(h.wheelchairPeople??Number(h.wheelchair))>G.wheelchairCapacity(s,v))continue;if(!b.path(order.at(-1)?.node||f.node,h.node))continue;walk([...order,h],mask|(1<<j),people+h.people,chairs+(h.wheelchairPeople??Number(h.wheelchair)));}
     }
     walk([],0,sum(manifest,h=>h.people),sum(manifest,h=>h.wheelchairPeople??Number(h.wheelchair)));
     return [{...b.idle(v),mask:0},...best.values()];
@@ -112,6 +134,7 @@ function baseline(i){
 }
 function validate(i,p){
   const errors=[],seen=new Set(),loads={},vehicles=new Set(),s=i.scenario;
+  try{G.validateScenario(s);}catch(error){return [error.message];}
   function bad(condition,msg){if(!condition)errors.push(msg);}
   for(const r of p.routes){const v=s.vehicles.find(v=>v.id===r.vehicleId),f=i.fleet[r.vehicleId];if(!v||!f){errors.push('车辆不存在');continue;}bad(!vehicles.has(v.id),'车辆重复');vehicles.add(v.id);bad(r.from===f.node&&r.startMinute===f.minute,'车辆起点或时间不一致');bad(JSON.stringify([...r.onboard].sort())===JSON.stringify([...f.onboard].sort()),'已上车人员必须留原车');if(!r.people){bad(!r.stops.length&&!r.passengerIds.length&&!r.shelterId&&!r.segments.length,'空闲或暂停路线不能携带隐含任务');bad(r.holding===Boolean(f.onboard.length),'车上人员未明确待协调');continue;}
     bad(v.available&&!f.finished,'车辆不可用');const sh=s.shelters.find(x=>x.id===r.shelterId);bad(sh?.available,'安置点不可用');let node=f.node,minute=f.minute;const ids=[...f.onboard];
@@ -119,7 +142,7 @@ function validate(i,p){
     const tail=r.segments.at(-1);bad(r.segments.length===r.stops.length+1&&tail?.from===node&&tail?.to===r.shelterId,'送达尾程缺失');minute+=tail?.minutes||0;bad(minute===r.finish,'送达时间不符');
     for(const seg of r.segments){bad(seg.nodes?.[0]===seg.from&&seg.nodes?.at(-1)===seg.to&&seg.edges?.length===seg.nodes.length-1,'路径结构无效');let minutes=0;for(let k=0;k<(seg.edges||[]).length;k++){const edge=s.edges.find(e=>e.id===seg.edges[k]);bad(edge?.open,'包含封闭道路');if(edge){bad((edge.from===seg.nodes[k]&&edge.to===seg.nodes[k+1])||(!edge.directed&&edge.to===seg.nodes[k]&&edge.from===seg.nodes[k+1]),'路径不连续');minutes+=edge.minutes;}}bad(minutes===seg.minutes,'路段时间无效');}
     bad(JSON.stringify(ids)===JSON.stringify(r.passengerIds),'乘员清单不符');let people=0,chairs=0;for(const id of ids){const h=s.households.find(x=>x.id===id);bad(Boolean(h),'人员不存在');if(!h)continue;bad(!seen.has(id),'人员重复分配');seen.add(id);people+=h.people;chairs+=h.wheelchairPeople??Number(h.wheelchair);}
-    bad(people===r.people&&people<=v.capacity,'座位人数不符或超载');bad(chairs<=Number(v.wheelchair),'轮椅位超限');loads[r.shelterId]=(loads[r.shelterId]||0)+people;
+    bad(people===r.people&&people<=v.capacity,'座位人数不符或超载');bad(chairs<=G.wheelchairCapacity(s,v),'轮椅位超限');for(const issue of G.routeIssues(s,v,ids.map(id=>s.households.find(h=>h.id===id)).filter(Boolean)))bad(false,issue);if(G.isEnabled(s))bad(JSON.stringify(r.resourceAssignment)===JSON.stringify(resourceAssignment(s,v,ids.map(id=>s.households.find(h=>h.id===id)).filter(Boolean))),'车辆与工作人员分配快照不符');loads[r.shelterId]=(loads[r.shelterId]||0)+people;
   }
   for(const sh of s.shelters)bad((loads[sh.id]||0)+(i.occupancy[sh.id]||0)<=sh.capacity,'安置容量超限');
   for(const h of s.households.filter(h=>['waiting','boarded'].includes(i.stage[h.id])))bad(Number(seen.has(h.id))+p.unassigned.filter(x=>x.id===h.id).length===1,'人员遗漏或重复列为待协调');
@@ -132,7 +155,7 @@ function blockedRoute(d,r){
   if(!r||r.holding)return true;
   const f=d.fleet[r.vehicleId],v=d.scenario.vehicles.find(v=>v.id===r.vehicleId);
   if(!f||!v)return true;if(f.finished)return false;
-  if(r.people&&(!v.available||!d.scenario.shelters.find(sh=>sh.id===r.shelterId)?.available))return true;
+  if(r.people&&(!v.available||!d.scenario.shelters.find(sh=>sh.id===r.shelterId)?.available||G.routeIssues(d.scenario,v,r.passengerIds.map(id=>d.scenario.households.find(h=>h.id===id)).filter(Boolean)).length))return true;
   const sh=d.scenario.shelters.find(sh=>sh.id===r.shelterId);
   if(r.people&&d.activePlan&&(v.resourceChangeVersion>d.activePlan.inputVersion||sh?.resourceChangeVersion>d.activePlan.inputVersion))return true;
   if(r.passengerIds.some(id=>d.stage[id]==='superseded'))return true;
@@ -272,21 +295,32 @@ function create(initialData=null){
       }
       else if(name==='configure-resources'){
         assert(d.phase==='preparation'&&!d.activePlan&&!d.history.length&&!Object.values(d.fleet).some(f=>f.onboard.length||f.delivered.length||f.minute||f.finished),'仅可在未发布、未执行的准备阶段配置资源；执行中请登记资源变化');
+        assert(p.resourceRegistryVersion===undefined||p.resourceRegistryVersion===1,'资源登记库版本无效');
+        const registry=p.resourceRegistryVersion===1;
+        assert(!G.isEnabled(d.scenario)||registry,'已启用的资源登记库不可由旧配置覆盖，请同时提交车辆和工作人员');
+        assert(p.staff===undefined||registry,'工作人员登记需使用资源登记库格式');
         const cleanId=(id,label)=>{assert(typeof id==='string'&&/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,59}$/.test(id)&&!['__proto__','prototype','constructor'].includes(id),label+'编号无效');return id;};
         assert(Array.isArray(p.vehicles)&&p.vehicles.length>0&&p.vehicles.length<=30,'请配置 1–30 辆车');assert(Array.isArray(p.shelters)&&p.shelters.length>0&&p.shelters.length<=30,'请配置 1–30 个安置点');
         const nodes=new Set(d.scenario.nodes.map(n=>n.id));
         const reservedIds=new Set([...d.scenario.vehicles.map(v=>v.id),...p.vehicles.map(v=>v?.id).filter(Boolean)]);let idCounter=1;
-        const vehicles=p.vehicles.map((v,index)=>{assert(v&&typeof v==='object','车辆配置无效');let id=v.id;if(id===undefined||id===''){do{id='V'+idCounter++;}while(reservedIds.has(id));reservedIds.add(id);}id=cleanId(id,'车辆');assert(nodes.has(v.start),'车辆起点必须在当前地图中');assert(typeof v.available==='boolean'&&typeof v.wheelchair==='boolean','请明确车辆可用性及轮椅适配');const color=v.color||d.scenario.vehicles.find(old=>old.id===id)?.color||['#0a9e9e','#4478ee','#c68824'][index%3];assert(/^#[0-9a-f]{6}$/i.test(color),'车辆颜色无效');return {id,name:text(v.name,80,'车辆名称'),start:v.start,capacity:integer(v.capacity,0,500,'车辆座位'),wheelchair:v.wheelchair,available:v.available,color};});
+        let vehicles=p.vehicles.map((v,index)=>{assert(v&&typeof v==='object','车辆配置无效');let id=v.id;if(id===undefined||id===''){do{id='V'+idCounter++;}while(reservedIds.has(id));reservedIds.add(id);}id=cleanId(id,'车辆');assert(nodes.has(v.start),'车辆起点必须在当前地图中');assert(typeof v.available==='boolean'&&(registry||typeof v.wheelchair==='boolean'),'请明确车辆可用性及轮椅适配');const color=v.color||d.scenario.vehicles.find(old=>old.id===id)?.color||['#0a9e9e','#4478ee','#c68824'][index%3];assert(/^#[0-9a-f]{6}$/i.test(color),'车辆颜色无效');const base={id,name:text(v.name,80,'车辆名称'),start:v.start,available:v.available,color};return registry?{...base,...Object.fromEntries(['model','vehicleType','totalCapacity','wheelchairSlots','driverId','escortIds','notes'].map(key=>[key,v[key]]))}:{...base,capacity:integer(v.capacity,0,500,'车辆座位'),wheelchair:v.wheelchair};});
+        const registration=registry?G.normalize({resourceRegistryVersion:1,vehicles,staff:p.staff},{nodes:d.scenario.nodes,oldVehicles:d.scenario.vehicles}):null;
+        if(registration)vehicles=registration.vehicles;
         const shelters=p.shelters.map(sh=>{assert(sh&&typeof sh==='object','安置点配置无效');const id=cleanId(sh.id,'安置点');assert(nodes.has(id)&&(!sh.nodeId||sh.nodeId===id),'安置点编号须选用当前地图节点');assert(typeof sh.available==='boolean','请明确安置点可用性');return {id,name:text(sh.name,80,'安置点名称'),capacity:integer(sh.capacity,0,10000,'接收容量'),available:sh.available,synthetic:true};});
         assert(new Set(vehicles.map(v=>v.id)).size===vehicles.length&&new Set(shelters.map(sh=>sh.id)).size===shelters.length,'资源编号不能重复');
         d.scenario.vehicles=vehicles;d.scenario.shelters=shelters;d.fleet=Object.fromEntries(vehicles.map(v=>[v.id,{node:v.start,minute:0,onboard:[],delivered:[],finished:false}]));d.occupancy=Object.fromEntries(shelters.map(sh=>[sh.id,0]));d.taskAcks={};
+        if(registration){d.scenario.resourceRegistryVersion=1;d.scenario.staff=registration.staff;G.validateScenario(d.scenario);}
         invalidate('人工核对本场资源：'+vehicles.length+' 辆车、'+shelters.length+' 个安置点');generate('资源配置更新');
       }
       else if(name==='resource-event'){
-        assert(['vehicle','shelter'].includes(p.kind),'资源事件类型无效');assert(typeof p.available==='boolean','请明确资源是否可用');
-        const item=d.scenario[p.kind==='vehicle'?'vehicles':'shelters'].find(x=>x.id===p.id);assert(item,'资源不存在');const reason=p.reason===undefined||p.reason===''?'指挥员已人工核对资源'+(p.available?'恢复可用':'暂停使用'):text(p.reason,300,'核实依据');
+        assert(['vehicle','shelter','staff'].includes(p.kind),'资源事件类型无效');assert(typeof p.available==='boolean','请明确资源是否可用');
+        assert(p.kind!=='staff'||G.isEnabled(d.scenario),'请先登记工作人员');
+        const item=d.scenario[p.kind==='vehicle'?'vehicles':p.kind==='staff'?'staff':'shelters'].find(x=>x.id===p.id);assert(item,'资源不存在');const reason=p.reason===undefined||p.reason===''?'指挥员已人工核对资源'+(p.available?'恢复可用':'暂停使用'):text(p.reason,300,'核实依据');
         assert(item.available!==p.available,'资源状态没有变化，无需重复提交');item.available=p.available;item.unavailableReason=p.available?'':reason;item.availabilityUpdatedAt=now();
-        invalidate(item.name+(p.available?'已核实恢复可用':'已核实不可用')+'：'+reason);item.resourceChangeVersion=d.inputVersion;generate('资源状态变化：'+item.name);
+        const label=p.kind==='staff'?'工作人员 '+item.id:item.name;
+        invalidate(label+(p.available?'已核实恢复可用':'已核实不可用')+'：'+reason);item.resourceChangeVersion=d.inputVersion;
+        if(p.kind==='staff')for(const v of d.scenario.vehicles)if(v.driverId===item.id||v.escortIds.includes(item.id))v.resourceChangeVersion=d.inputVersion;
+        generate('资源状态变化：'+label);
         const key=p.kind+':'+item.id;d.followups=d.followups||{};if(!p.available)d.followups[key]={key,owner:'待指派',note:reason,dueAt:null,status:'open',updatedAt:now()};
       }
       else if(name==='followup'){
@@ -433,6 +467,7 @@ function create(initialData=null){
       }
       else if(name==='edit'){
         assert(d.phase==='preparation','执行中请通过现场反馈处理变化');const kind=p.kind;assert(['households','vehicles','shelters'].includes(kind),'编辑对象无效');const item=d.scenario[kind].find(x=>x.id===p.id);assert(item,'对象不存在');
+        assert(kind!=='vehicles'||!G.isEnabled(d.scenario),'已启用资源登记库，请在未发布时通过资源库修改车型、总载人数及人员分配；执行中请登记资源状态变化');
         if(kind==='households'){assert(!item.sourceBatchId,'村级人员组请通过村级批次更正，不能直接改写分组人数');item.people=integer(p.people,1,30,'人数');item.risk=integer(p.risk,1,3,'演练风险等级');item.assistance=p.assistance===true||p.wheelchair===true;item.wheelchair=p.wheelchair===true;item.service=item.wheelchair?6:item.assistance?5:2;item.priority=item.risk;V.checkLimits(d,0);}
         else {item.capacity=integer(p.capacity,0,100,'容量');item.available=p.available===true;if(kind==='vehicles')item.wheelchair=p.wheelchair===true;}
         invalidate('人工修改 '+item.name);generate('人员或资源条件变化');

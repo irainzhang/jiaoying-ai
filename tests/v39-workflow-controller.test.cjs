@@ -50,7 +50,7 @@ function harness(role='command'){
     setTimeout:()=>1,clearTimeout(){},setInterval(){},matchMedia:()=>({matches:true}),
     fetch:(url,options)=>new Promise(resolve=>requests.push({url,options,resolve}))};
   context.window=context;vm.createContext(context);
-  for(const name of ['village-assistant.js','village-workspace.js','place-directory.js','command-intake.js','intake-file.js','quick-context.js','review-form.js','workflow-ui.js','task-workbench.js'])vm.runInContext(fs.readFileSync(path.join(__dirname,'../dist',name),'utf8'),context,{filename:name});
+  for(const name of ['village-assistant.js','village-workspace.js','place-directory.js','command-intake.js','intake-file.js','quick-context.js','review-form.js','workflow-ui.js','resource-registry.js','resource-cards.js','task-workbench.js'])vm.runInContext(fs.readFileSync(path.join(__dirname,'../dist',name),'utf8'),context,{filename:name});
   const bootstrap='render();poll();setInterval(poll,1200);';
   const bridge=`window.testWorkflow={seed(next){state=next;connected=true;draftLoaded=true;},inspect(){return {view,commandSection,fieldSection,modal,busy,intake,quickText,quickDraft,villageForm,fieldVehicle,fieldHousehold,fieldLocation,reviewBound:!!reviewBinding};},acceptState,clickAction,navigate,reveal,action,readIntakeFile,workspaceNavHTML,commitIntakePlace,intakePlaceOptions,restoreIntakeDraft(){draftLoaded=false;restoreDraft();}};`;
   const source=fs.readFileSync(path.join(__dirname,'../dist/workspace-app.js'),'utf8');assert.ok(source.includes(bootstrap));vm.runInContext(source.replace(bootstrap,bridge),context,{filename:'workspace-app.js'});

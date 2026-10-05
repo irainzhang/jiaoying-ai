@@ -1,4 +1,5 @@
 'use strict';
+const G = require('./dist/resource-registry.js');
 
 // Bounded heuristic for the larger village ledger. All route feasibility and
 // conservation checks use the same helpers as the small exact candidate search.
@@ -79,7 +80,7 @@ function solve(snapshot, {routeBuilder, summarize, validate, baseline}) {
         if (!vehicle.available || fleet.finished) continue;
         const manifest = [...fleet.onboard, ...old.stops.map(st => st.id)].map(id => homes.get(id));
         const people = total(manifest, h => h.people) + home.people;
-        if (people > vehicle.capacity || total(manifest, h => Number(h.wheelchair)) + Number(home.wheelchair) > Number(vehicle.wheelchair)) continue;
+        if (people > vehicle.capacity || total(manifest, h => h.wheelchairPeople ?? Number(h.wheelchair)) + (home.wheelchairPeople ?? Number(home.wheelchair)) > G.wheelchairCapacity(s, vehicle)) continue;
         const existing = old.stops.map(st => homes.get(st.id));
         const otherFinish = Math.max(0, ...routes.filter((r, index) => index !== vi && r.people).map(r => r.finish));
         for (const at of insertionPositions(existing.length)) {
