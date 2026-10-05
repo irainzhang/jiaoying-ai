@@ -1,12 +1,12 @@
 (function(root){
-  const data={version:'4.0.0',date:'2026-10-05',title:'叫应 AI · 瑞安转移协同演练',modelConnected:false,agentConnected:false,weatherConnected:false,crossDeviceSync:'lan-optional',entries:[
+  const data={version:'4.0.1',date:'2026-10-05',title:'叫应 AI · 瑞安转移协同演练',modelConnected:false,agentConnected:false,weatherConnected:false,crossDeviceSync:'lan-optional',entries:[
     {id:'O01',name:'数据来源目录',status:'已实现 / 待外部核实',detail:'道路、合成业务、天气与预案列明出处。地图来源和合成数据的赛事适用性仍需组委会确认。'},
     {id:'O02',name:'模型与 Agent',status:'离线协同已接通 / 模型暂缓',detail:'守护面板读取本场真实演练快照、生成算法草案与报告，发布返回主台人工核对；21工具独立沙盘另列。DeepSeek 未连接，不将规则当作模型。'},
     {id:'O03',name:'真实道路与调度统一',status:'已实现',detail:'瑞安局部道路绑定演练点位，遵守单向通行，计算路线并支持点选上报；速度和开放状态为演练假设。'},
     {id:'O04',name:'公开预案参考卡',status:'已实现',detail:'浙江与瑞安公开预案追溯到文件和条款，仅作流程参考，非路线审批或官方授权。'},
     {id:'O05',name:'可复现效果评估',status:'已实现 / 模型评估暂缓',detail:'固定情景、同输入基线与优化，记录覆盖、等待、约束校验与耗时；不主张 AI 增益。'},
     {id:'O06',name:'情景库与演示引导',status:'已实现',detail:'初始、真实道路、封路、新增12人、运力不足、接收点失效；人工演示和 JSON 复盘恢复。'},
-    {id:'O07',name:'指挥三步主线',status:'已实现',detail:'需求录入负责上传、语音和核实；任务执行统一地图、安排、发布、进度与结束；任务记录负责留痕和复盘。默认0人；Excel / CSV 预览可改人数、村名与点名并保留原值，缺少位置/协助/分组信息集中待补。'},
+    {id:'O07',name:'指挥三步主线',status:'已实现',detail:'需求录入负责上传、语音和核实；任务执行统一地图、安排、发布、进度与结束；任务记录负责留痕和复盘。默认0人；支持搜索下拉选择地区与接人点、手动填写新地点、直接填人数；语音未登记地区保留人数待定位。Excel / CSV 预览可改人数、村名与点名并保留原值，缺少位置/协助/分组信息集中待补。'},
     {id:'O08',name:'现场执行与快捷补报',status:'已实现',detail:'现场只保留执行任务、补报情况两个主区；按车辆接令、勾选实际联系过的组、独立出发；按当前一步反馈，新增人员可整批语音补报。处理记录放二级入口；未知协助、轮椅人数不默认填零。'},
     {id:'O09',name:'资源配置与失效应对',status:'已实现',detail:'发布前可增减车辆/接收点与粘贴资源表；送达空车可安排下一趟，保留占用。执行中资源失效可登记重算；已上车保持原车，缺口保留，恢复需人工核实。'},
     {id:'O10',name:'方案变更影响',status:'已实现',detail:'逐车比较原方案和草案；同级天气不重排，重复请求不重记，关键障碍立即复核。'},

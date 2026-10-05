@@ -1,6 +1,6 @@
 {
-  "build": "07088e25fab13cc549a2",
-  "version": "4.0.0",
+  "build": "2bdd7a5b829b935ff05a",
+  "version": "4.0.1",
   "files": [
     "assets/evaluation.json",
     "assets/logo-lockup.png",
@@ -78,6 +78,8 @@
     "operations-ui.css",
     "operations-ui.js",
     "pages-runtime.js",
+    "place-picker.css",
+    "place-picker.js",
     "quick-context.js",
     "real-map.css",
     "real-map.js",
