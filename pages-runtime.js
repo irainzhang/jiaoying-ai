@@ -60,7 +60,8 @@
     let indexedDB;try{indexedDB=env.indexedDB;}catch(_){}
     const storage=options.storage||createIndexedDBStorage(indexedDB,key);
     const integrations=options.integrations||{};
-    const capabilities={realtimeEvents:true,villageReporting:true,commandIntake:true,mapDemandLocation:true,roadMapConversion:true,numericRainfall:true,taskLifecycle:true,version:'3.9.1-pages',operations:true,stateRestore:true,persistentStorage:true,browserOnly:true,crossDeviceSync:false};
+    const capabilities={realtimeEvents:true,villageReporting:true,commandIntake:true,mapDemandLocation:true,roadMapConversion:true,numericRainfall:true,taskLifecycle:true,version:'4.0.0-pages',operations:true,stateRestore:true,persistentStorage:true,browserOnly:true,crossDeviceSync:false};
+    const connection={mode:'browser',roomId:null,shared:false,scopeLabel:'同浏览器标签页同步',speechNote:''};
     const transport={preferred:'browser-storage',eventsUrl:'/api/v3/events',eventName:'state',pollIntervalMs:1200};
     const listeners=new Set(),streams=new Set();let lastError='',channel=null;
     try{if(typeof env.BroadcastChannel==='function')channel=new env.BroadcastChannel(key);}catch(_){}
@@ -73,12 +74,12 @@
       // Only an opaque notification is placed in localStorage, never exercise data.
       if(!channel)try{env.localStorage.setItem(key+':change',env.crypto.randomUUID());}catch(_){}
     }
-    function initial(){const exercise=Exercise.create();exercise.action('generate');return {format:1,session:env.crypto.randomUUID(),data:exercise.data,savedAt:new Date().toISOString(),seen:[]};}
+    function initial(){const exercise=Exercise.create(Exercise.createBlank());return {format:1,session:env.crypto.randomUUID(),data:exercise.data,savedAt:new Date().toISOString(),seen:[]};}
     function check(record){
       if(!record||record.format!==1||typeof record.session!=='string'||!record.session||!record.data||!Number.isInteger(record.data.revision)||!Array.isArray(record.seen))throw new Error('已保存的演练格式无法读取；为保护记录，没有自动覆盖。');
       return record;
     }
-    function snapshot(record){const data=copy(record.data);return {session:record.session,data,savedAt:record.savedAt||null,diagnostics:Exercise.diagnostics?.(data),metrics:Exercise.metrics(data),taskSummary:Exercise.taskSummary?.(data),mapConversion:Exercise.mapConversionStatus(data),villageLedger:Exercise.villageMetrics(data),blockedVehicles:data.activePlan?.routes.filter(route=>Exercise.blockedRoute(data,route)).map(route=>route.vehicleId)||[],integrations:integrations.integrationStatus||{},transport,capabilities};}
+    function snapshot(record){const data=copy(record.data);return {session:record.session,data,savedAt:record.savedAt||null,connection,diagnostics:Exercise.diagnostics?.(data),metrics:Exercise.metrics(data),taskSummary:Exercise.taskSummary?.(data),mapConversion:Exercise.mapConversionStatus(data),villageLedger:Exercise.villageMetrics(data),blockedVehicles:data.activePlan?.routes.filter(route=>Exercise.blockedRoute(data,route)).map(route=>route.vehicleId)||[],integrations:integrations.integrationStatus||{},transport,capabilities};}
     async function read(signal){
       const value=await storage.transact(existing=>{const record=existing?check(existing):initial();return {record,changed:!existing,value:snapshot(record)};},signal);
       lastError='';return value;
@@ -110,7 +111,7 @@
       try{
         if(url.pathname==='/api/v3/state'&&method==='GET'){
           const value=await read(init.signal);
-          return response(result(200,url.searchParams.get('session')===value.session&&Number(url.searchParams.get('after'))===value.data.revision?{session:value.session,unchanged:true,revision:value.data.revision,transport,capabilities}:value));
+          return response(result(200,url.searchParams.get('session')===value.session&&Number(url.searchParams.get('after'))===value.data.revision?{session:value.session,unchanged:true,revision:value.data.revision,transport,capabilities,connection}:value));
         }
         if(url.pathname==='/api/v3/integrations'&&method==='GET')return response(result(200,{integrations:integrations.integrationStatus||{},agentContract:integrations.agentContract||{connected:false}}));
         if(url.pathname==='/api/v3/agent')return response(result(501,{error:'Agent 接口已预留，GitHub 浏览器演练未连接外部模型',contract:integrations.agentContract||{connected:false}}));

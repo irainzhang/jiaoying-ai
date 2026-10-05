@@ -419,7 +419,7 @@ function validateState(d){
   inspectJSON(d);assert(object(d)&&d.schema==='jiaoying-v3','恢复数据必须为 jiaoying-v3 演练数据');const s=d.scenario;
   assert(object(s),'恢复数据缺少演练场景');
   const limits={nodes:2500,edges:8000,households:2000,vehicles:30,shelters:30};
-  for(const [key,max] of Object.entries(limits)){assert(Array.isArray(s[key])&&s[key].length>0&&s[key].length<=max&&s[key].every(x=>object(x)&&validId(x.id)),'恢复数据'+key+'目录无效或超过限额');assert(new Set(s[key].map(x=>x.id)).size===s[key].length,'恢复数据存在重复对象');}
+  for(const [key,max] of Object.entries(limits)){assert(Array.isArray(s[key])&&(key==='households'||s[key].length>0)&&s[key].length<=max&&s[key].every(x=>object(x)&&validId(x.id)),'恢复数据'+key+'目录无效或超过限额');assert(new Set(s[key].map(x=>x.id)).size===s[key].length,'恢复数据存在重复对象');}
   const nodes=new Set(s.nodes.map(n=>n.id));
   assert(object(s.region)&&['synthetic-topology','osm-road-network'].includes(s.region.mapKind),'恢复地图模式无效');
   const geographic=s.region.mapKind==='osm-road-network';
@@ -457,8 +457,17 @@ function validateState(d){
     for(const id of f.onboard){assert(d.stage[id]==='boarded'&&!onboard.has(id),'恢复已上车人员重复或阶段不符');onboard.add(id);}
     for(const id of f.delivered){assert(['arrived','verified'].includes(d.stage[id])&&!delivered.has(id),'恢复已到达人员重复或阶段不符');delivered.add(id);}
     const hs=f.onboard.map(id=>s.households.find(h=>h.id===id));assert(sum(hs,h=>h.people)<=v.capacity&&sum(hs,h=>h.wheelchairPeople??Number(h.wheelchair))<=Number(v.wheelchair),'恢复车载人数超载');
-    assert(!f.finished||!f.onboard.length,'已结束车辆仍有在途人员');assert(!f.delivered.length||f.finished&&s.shelters.some(sh=>sh.id===f.node),'已送达记录缺少有效到达点');
-    if(f.delivered.length)occupancy[f.node]=(occupancy[f.node]||0)+sum(f.delivered,id=>s.households.find(h=>h.id===id).people);
+    assert(!f.finished||!f.onboard.length,'已结束车辆仍有在途人员');
+    if(f.deliveries!==undefined){
+      assert(Array.isArray(f.deliveries)&&f.deliveries.length<=200,'多趟送达记录无效');const ids=[];
+      for(const trip of f.deliveries){assert(object(trip)&&s.shelters.some(sh=>sh.id===trip.shelterId)&&Array.isArray(trip.householdIds)&&trip.householdIds.length>0&&trip.householdIds.every(id=>f.delivered.includes(id))&&bounded(trip.minute,0,f.minute),'多趟送达记录关联无效');ids.push(...trip.householdIds);occupancy[trip.shelterId]=(occupancy[trip.shelterId]||0)+sum(trip.householdIds,id=>s.households.find(h=>h.id===id).people);}
+      assert(ids.length===f.delivered.length&&new Set(ids).size===ids.length&&f.delivered.every(id=>ids.includes(id)),'多趟送达人数不守恒');
+    }else{
+      assert(!f.delivered.length||f.finished&&s.shelters.some(sh=>sh.id===f.node),'已送达记录缺少有效到达点');
+      if(f.delivered.length)occupancy[f.node]=(occupancy[f.node]||0)+sum(f.delivered,id=>s.households.find(h=>h.id===id).people);
+    }
+    if(f.startedPlanId!==undefined&&f.startedPlanId!==null)assert(validId(f.startedPlanId),'车辆发车方案编号无效');
+    if(f.tripNumber!==undefined)assert(integer(f.tripNumber,1,200),'车辆趟次无效');
   }
   for(const h of s.households){assert((d.stage[h.id]==='boarded')===onboard.has(h.id),'恢复已上车人员守恒校验失败');assert(['arrived','verified'].includes(d.stage[h.id])===delivered.has(h.id),'恢复已到达人员守恒校验失败');}
   for(const sh of s.shelters)assert(integer(d.occupancy[sh.id],0,sh.capacity)&&d.occupancy[sh.id]===(occupancy[sh.id]||0),'恢复安置人数不守恒');
@@ -468,6 +477,9 @@ function validateState(d){
   assert(d.taskAcks===undefined||object(d.taskAcks)&&Object.entries(d.taskAcks).every(([id,a])=>s.vehicles.some(v=>v.id===id)&&object(a)&&typeof a.planId==='string'),'恢复接令记录无效');
   assert(d.log.every(row=>integer(row.id,1,Number.MAX_SAFE_INTEGER)&&typeof row.message==='string'&&row.message.length<=5000&&typeof row.type==='string'&&typeof row.time==='string'&&Number.isFinite(Date.parse(row.time))),'恢复日志内容无效');
   assert(d.lastAnnouncement===undefined||typeof d.lastAnnouncement==='string','恢复播报内容无效');
+  assert(d.executionMode===undefined||d.executionMode==='per-vehicle','执行方式无效');
+  assert(d.taskName===undefined||typeof d.taskName==='string'&&d.taskName.trim().length>0&&d.taskName.length<=80,'任务名称无效');
+  assert(d.seedMode===undefined||['blank','sample'].includes(d.seedMode),'任务底数模式无效');
   assert(d.exerciseId===undefined||typeof d.exerciseId==='string'&&d.exerciseId.length<=100,'恢复演练编号无效');
   assert(d.createdAt===undefined||typeof d.createdAt==='string'&&Number.isFinite(Date.parse(d.createdAt)),'恢复创建时间无效');
   if(d.lastDelta!==undefined){
@@ -638,7 +650,7 @@ function summary(d){
   const pending=d.reports.filter(r=>r.status==='pending'),pendingVillage=villages.filter(r=>r.status==='pending');
   const count=stage=>sum(homes.filter(h=>d.stage[h.id]===stage),h=>h.people);
   const result={people:sum(homes,h=>h.people)+sum(unplanned,r=>r.people),waiting:count('waiting')+sum(unplanned,r=>r.people),boarded:count('boarded'),arrived:count('arrived'),verified:count('verified'),unplannedPeople:sum(unplanned,r=>r.people),pendingVillagePeople:sum(pendingVillage.filter(r=>r.mode==='increment'),r=>r.people),pendingReports:pending.length+pendingVillage.length,pendingReviewPeople:sum(pending.filter(r=>r.kind==='people'),r=>r.people)+sum(pendingVillage.filter(r=>r.mode==='increment'),r=>r.people),unlocatedPeople:sum(villages.filter(r=>r.status==='accepted'&&r.mode!=='snapshot'&&!r.supersededBy&&!r.householdIds.length&&r.locationStatus==='pending'),r=>r.people),unresolvedReports:d.reports.filter(r=>r.status==='coordination').length};
-  result.canComplete=result.waiting===0&&result.boarded===0&&result.arrived===0&&result.pendingReports===0&&result.unresolvedReports===0&&result.verified===result.people;
+  result.canComplete=result.people>0&&result.waiting===0&&result.boarded===0&&result.arrived===0&&result.pendingReports===0&&result.unresolvedReports===0&&result.verified===result.people;
   return result;
 }
 function close(d,{mode,note}={},time=new Date().toISOString()){
@@ -722,6 +734,34 @@ function initial(){
   for(const v of scenario.vehicles)d.fleet[v.id]={node:v.start,minute:0,onboard:[],delivered:[],finished:false};
   d.log.push({id:1,time:now(),type:'init',message:d.lastAnnouncement});return T.ensure(V.ensure(d));
 }
+// Fresh tasks keep configured map/resources, never passenger or execution ledgers.
+function freshTask(source=null,{seedMode='sample',mapMode='same',name}={}){
+  assert(['blank','sample'].includes(seedMode),'请选择空白任务或示例演练');
+  assert(['same','ruian-roads'].includes(mapMode),'新任务地图请选择沿用当前地图或瑞安真实道路');
+  const d=initial(),realRoads=mapMode==='ruian-roads'||source?.scenario.region.mapKind==='osm-road-network';
+  if(realRoads){require('./geo-scenario.cjs').apply(d);d.scenarioPreset='ruian-roads';}
+  if(source){
+    const same=source.scenario.region.mapKind===d.scenario.region.mapKind;
+    if(same){
+      const samples=d.scenario.households;d.scenario=clone(source.scenario);d.scenario.households=samples;
+      d.scenario.edges.forEach(edge=>{edge.open=true;});d.villages=clone(source.villages);
+    }else{
+      const nodes=new Set(d.scenario.nodes.map(n=>n.id));
+      assert(source.scenario.vehicles.every(v=>nodes.has(v.start))&&source.scenario.shelters.every(sh=>nodes.has(sh.id)),'已有资源位置不能映射到新地图，请先在原地图保留并核对资源位置');
+      d.scenario.vehicles=clone(source.scenario.vehicles);d.scenario.shelters=clone(source.scenario.shelters);
+    }
+    for(const resource of [...d.scenario.vehicles,...d.scenario.shelters]){delete resource.resourceChangeVersion;delete resource.availabilityUpdatedAt;}
+  }
+  d.seedMode=seedMode;d.taskName=name===undefined||typeof name==='string'&&!name.trim()?(seedMode==='blank'?'新建转移任务':'瑞安示例演练'):text(name,80,'任务名称');
+  if(seedMode==='blank')d.scenario.households=[];
+  d.stage={};d.contacts={};d.fleet={};d.occupancy={};
+  for(const h of d.scenario.households){assert(d.scenario.nodes.some(n=>n.id===h.node),'示例人员点位不在当前地图中，请使用空白任务');d.stage[h.id]='waiting';d.contacts[h.id]={ack:false,contacted:false};}
+  for(const v of d.scenario.vehicles)d.fleet[v.id]={node:v.start,minute:0,onboard:[],delivered:[],finished:false};
+  for(const sh of d.scenario.shelters)d.occupancy[sh.id]=0;
+  d.lastAnnouncement=seedMode==='blank'?'空白任务已建立，当前 0 人。请上传或录入本场需求。':'示例演练已建立，当前为 15 人合成底数。';
+  d.log=[{id:1,time:now(),type:'init',message:d.lastAnnouncement}];return T.ensure(V.ensure(d));
+}
+function createBlank(options={}){return freshTask(null,{mapMode:'ruian-roads',...options,seedMode:'blank'});}
 function snapshot(d){return clone({scenario:d.scenario,stage:d.stage,fleet:d.fleet,occupancy:d.occupancy,inputVersion:d.inputVersion,executionVersion:d.executionVersion,unplannedRequests:V.unplannedRequests(d)});}
 function routeBuilder(i){
   const cache=new Map(),s=i.scenario,homes=Object.fromEntries(s.households.map(h=>[h.id,h]));
@@ -742,13 +782,13 @@ function summarize(i,routes,algorithm){
   const remaining=i.scenario.households.filter(h=>['waiting','boarded'].includes(i.stage[h.id]));
   const ids=routes.flatMap(r=>r.passengerIds),covered=new Set(ids),selected=remaining.filter(h=>covered.has(h.id));
   const onboardCount=sum(routes,r=>r.holding?0:sum(r.onboard,id=>i.scenario.households.find(h=>h.id===id).people));
-  return {algorithm,routes:clone(routes),servedPeople:sum(selected,h=>h.people),totalPeople:sum(remaining,h=>h.people)+sum(pendingInfo,h=>h.people),servedIds:[...covered].sort(),urgentPeople:sum(selected.filter(h=>h.risk===3),h=>h.people),assistedPeople:sum(selected,h=>h.assistancePeople??(h.assistance?h.people:0)),onboardCount,wait:sum(routes,r=>r.wait),finish:Math.max(0,...routes.filter(r=>r.people).map(r=>r.finish)),drive:sum(routes,r=>r.drive),unassigned:remaining.filter(h=>!covered.has(h.id)).map(h=>({id:h.id,name:h.name,people:h.people,stage:i.stage[h.id],reason:i.stage[h.id]==='boarded'?'已上车人员留在原车，当前无可用送达安排，待人工协调':'当前车辆适配、座位、安置容量或开放路网不能同时满足'})).concat(clone(pendingInfo)),complete:selected.length===remaining.length&&!pendingInfo.length,inputVersion:i.inputVersion,executionVersion:i.executionVersion};
+  return {algorithm,routes:clone(routes),servedPeople:sum(selected,h=>h.people),totalPeople:sum(remaining,h=>h.people)+sum(pendingInfo,h=>h.people),servedIds:[...covered].sort(),urgentPeople:sum(selected.filter(h=>h.risk===3),h=>h.people),assistedPeople:sum(selected,h=>h.assistancePeople??(h.assistance?h.people:0)),onboardCount,wait:sum(routes,r=>r.wait),finish:Math.max(0,...routes.filter(r=>r.people).map(r=>r.finish)),drive:sum(routes,r=>r.drive),unassigned:remaining.filter(h=>!covered.has(h.id)).map(h=>({id:h.id,name:h.name,people:h.people,stage:i.stage[h.id],reason:i.stage[h.id]==='boarded'?'已上车人员留在原车，当前无可用送达安排，待人工协调':'当前车辆适配、座位、安置容量或开放路网不能同时满足'})).concat(clone(pendingInfo)),complete:remaining.length>0&&selected.length===remaining.length&&!pendingInfo.length,inputVersion:i.inputVersion,executionVersion:i.executionVersion};
 }
 const score=p=>[-p.onboardCount,-p.urgentPeople,-p.assistedPeople,-p.servedPeople,p.wait,p.finish,p.drive];
 function signature(p){return p.routes.map(r=>r.vehicleId+':'+r.stops.map(h=>h.id).join(',')+'>'+r.shelterId).join('|');}
 function solve(i){
   const started=Date.now(),s=i.scenario,waiting=s.households.filter(h=>i.stage[h.id]==='waiting'),b=routeBuilder(i);
-  if(waiting.length>8)return require('./dispatch-large.cjs').solve(i,{routeBuilder,summarize,validate,baseline});
+  if(waiting.length>8||s.vehicles.length>4)return require('./dispatch-large.cjs').solve(i,{routeBuilder,summarize,validate,baseline});
   const options=s.vehicles.map(v=>{
     const best=new Map(),f=i.fleet[v.id],manifest=s.households.filter(h=>f.onboard.includes(h.id));
     if(!v.available||f.finished)return [b.idle(v)];
@@ -834,13 +874,13 @@ function create(initialData=null){
   }
   function fresh(){return !!d.plan&&d.plan.inputVersion===d.inputVersion&&d.plan.executionVersion===d.executionVersion;}
   function advanceVehicle(vehicleId,expectedStage=null,householdId=null){
-    assert(d.phase==='executing','请先开始模拟执行');const r=d.activePlan?.routes.find(r=>r.vehicleId===vehicleId),f=d.fleet[vehicleId];assert(r&&f&&!f.finished&&r.people,'该车辆没有可推进任务');assert(!r.passengerIds.some(id=>d.stage[id]==='superseded'),'本路线的人员批次已更正，请重新计算并确认方案后继续');assert(!blockedRoute(d,r),'车辆、安置点或剩余道路已不可用，暂停推进；请先协调资源、重规划并确认');
+    assert(d.phase==='executing','请先开始模拟执行');if(d.executionMode==='per-vehicle')assert(d.fleet[vehicleId]?.startedPlanId===d.activePlan?.id,'请先确认本车接令、联系并发车；方案变化后须重新确认本车任务');const r=d.activePlan?.routes.find(r=>r.vehicleId===vehicleId),f=d.fleet[vehicleId];assert(r&&f&&!f.finished&&r.people,'该车辆没有可推进任务');assert(!r.passengerIds.some(id=>d.stage[id]==='superseded'),'本路线的人员批次已更正，请重新计算并确认方案后继续');assert(!blockedRoute(d,r),'车辆、安置点或剩余道路已不可用，暂停推进；请先协调资源、重规划并确认');
     const st=r.stops.find(st=>d.stage[st.id]==='waiting');
     if(expectedStage==='board')assert(st&&st.id===householdId,'上车登记必须对应本车下一待接家庭，不可跳站或重复登记');
     if(expectedStage==='arrive')assert(!st,'仍有待接家庭，不能提前登记到达');
     let result;
     if(st){assert(d.contacts[st.id]?.contacted,'该家庭尚未联系，不能登记上车');const h=d.scenario.households.find(h=>h.id===st.id);assert(st.people===h.people,'人员输入已变化，请重规划');f.node=h.node;f.minute=st.depart;f.onboard.push(h.id);d.stage[h.id]='boarded';log(vehicleId+' 在 '+h.name+' 登记接人 '+h.people+' 人。','execution');result={stage:'board',householdId:h.id,people:h.people};}
-    else {const sh=d.scenario.shelters.find(sh=>sh.id===r.shelterId);assert(sh?.available,'安置点不可用');const people=sum(f.onboard,id=>d.scenario.households.find(h=>h.id===id).people);assert((d.occupancy[sh.id]||0)+people<=sh.capacity,'安置容量不足');d.occupancy[sh.id]+=people;for(const id of f.onboard){d.stage[id]='arrived';f.delivered.push(id);}f.node=sh.id;f.minute=r.finish;f.onboard=[];f.finished=true;log(vehicleId+' 上报到达 '+sh.name+'，'+people+' 人等待人工核验。','execution');result={stage:'arrive',householdId:null,people};}
+    else {const sh=d.scenario.shelters.find(sh=>sh.id===r.shelterId);assert(sh?.available,'安置点不可用');const people=sum(f.onboard,id=>d.scenario.households.find(h=>h.id===id).people);assert((d.occupancy[sh.id]||0)+people<=sh.capacity,'安置容量不足');d.occupancy[sh.id]+=people;f.deliveries=f.deliveries||[];f.deliveries.push({householdIds:[...f.onboard],shelterId:sh.id,minute:r.finish,planId:d.activePlan.id});for(const id of f.onboard){d.stage[id]='arrived';f.delivered.push(id);}f.node=sh.id;f.minute=r.finish;f.onboard=[];f.finished=true;log(vehicleId+' 上报到达 '+sh.name+'，'+people+' 人等待人工核验。','execution');result={stage:'arrive',householdId:null,people};}
     d.executionVersion++;d.plan=null;d.baseline=null;d.alternative=null;d.planSnapshot=null;d.lastAnnouncement=d.log[0].message;
     return {...result,summary:d.lastAnnouncement};
   }
@@ -855,10 +895,26 @@ function create(initialData=null){
     if(batch){d.log[0].householdIds=[...ids];d.log[0].people=people;}
     d.lastAnnouncement=d.log[0].message;
   }
+  function migrateLegacyStarts(){
+    if(d.executionMode!=='per-vehicle'&&d.phase==='executing')for(const r of d.activePlan?.routes||[]){const f=d.fleet[r.vehicleId];if(f&&!f.finished&&r.people&&!r.holding&&r.stops.filter(st=>d.stage[st.id]==='waiting').every(st=>d.contacts[st.id]?.contacted)){f.startedPlanId=d.activePlan.id;f.tripNumber=f.tripNumber||1;}}
+  }
+  function carryWaiting(source){
+    const rows=source.scenario.households.filter(h=>source.stage[h.id]==='waiting').map(h=>({villageId:h.villageId,pickupId:h.pickupId,people:h.people,assistancePeople:h.assistancePeople??(h.assistance?h.people:0),wheelchairPeople:h.wheelchairPeople??Number(h.wheelchair),groupPolicy:h.groupPolicy||'together',risk:h.risk,riskBase:h.riskBase??h.risk,priority:h.priority,carryover:{exerciseId:source.exerciseId,batchId:h.sourceBatchId||null,householdIds:[h.id]}}));
+    for(const r of source.villageReports.filter(r=>r.status==='accepted'&&r.mode!=='snapshot'&&!r.supersededBy&&!r.householdIds.length&&r.people>0))rows.push({villageId:r.villageId,pickupId:r.pickupId,people:r.people,assistancePeople:r.assistancePeople,wheelchairPeople:r.wheelchairPeople,groupPolicy:r.groupPolicy,carryover:{exerciseId:source.exerciseId,batchId:r.id,householdIds:[]}});
+    const context={now,log,invalidate:()=>{},generate:()=>{},fieldEvent};let count=0;
+    for(const row of rows){
+      const original=source.villages.find(v=>v.id===row.villageId),oldPickup=original?.pickups.find(p=>p.id===row.pickupId),village=d.villages.find(v=>v.id===row.villageId),pickup=village?.pickups.find(p=>p.id===row.pickupId);
+      assert(village&&(!row.pickupId||pickup&&pickup.node===oldPickup?.node),'待接需求位置无法对应新地图，请沿用当前地图后结转并核对定位');
+      V.handle(d,'village-report',{...row,mode:'increment',text:'从上一场 '+source.exerciseId+' 结转待接 '+row.people+' 人；不含已上车或到达人员',reporter:'指挥端人工结转',source:'manual',duplicateAcknowledged:true},context);
+      const record=d.villageReports[0];V.handle(d,'village-review',{id:record.id,decision:'accept',note:'人工选择结转尚未上车需求；来源记录保留，接送安排需重新确认'},context);record.carryover=clone(row.carryover);
+      for(const id of record.householdIds){const h=d.scenario.households.find(h=>h.id===id);h.carryover=clone(row.carryover);if(row.risk!==undefined){h.risk=row.risk;h.riskBase=row.riskBase;h.priority=row.priority;}}count+=row.people;
+    }
+    d.carryover={exerciseId:source.exerciseId,people:count,createdAt:now()};return count;
+  }
   function action(name,p={}){
     const before=clone(d);
     try{
-      assert(!T.isClosed(d)||['new-task','restore'].includes(name),'当前任务已结束，两端记录均为只读；请查看记录、导出或新建下一场任务');
+      assert(!T.isClosed(d)||['new-task','restore','reset','scenario','clear-archives'].includes(name),'当前任务已结束，两端记录均为只读；请查看记录、导出或新建下一场任务');
       if(name==='end-task'){
         const closed=T.close(d,p,now());
         d.lastAnnouncement=(closed.status==='completed'?'本场任务全部完成并结束。':'本场任务已提前结束。')+'已核验 '+closed.summary.verified+' 人；待接 '+closed.summary.waiting+' 人、在途 '+closed.summary.boarded+' 人、到达待核验 '+closed.summary.arrived+' 人、待核实 '+closed.summary.pendingReports+' 条。原始记录保留，两端进入只读。';
@@ -866,16 +922,26 @@ function create(initialData=null){
       }
       else if(name==='new-task'){
         assert(T.isClosed(d),'请先结束当前任务，再新建下一场');
-        const mapMode=p.mapMode===undefined?'same':p.mapMode;assert(['same','ruian-roads'].includes(mapMode),'新任务地图请选择沿用当前地图或瑞安真实道路');
-        const revision=d.revision,realRoads=mapMode==='ruian-roads'||d.scenario.region.mapKind==='osm-road-network',archives=T.mergeArchives([T.archive(d)],d.taskArchives);
-        d=initial();d.revision=revision;d.taskArchives=archives;
-        if(realRoads){require('./geo-scenario.cjs').apply(d);d.scenarioPreset='ruian-roads';}
-        generate('新场任务已建立，恢复 15 人演练底数');
-        d.lastAnnouncement='已新建独立任务 '+d.exerciseId+'，'+archives.length+' 场历史及未完成记录完整保留；当前为新的 15 人演练底数。';log(d.lastAnnouncement,'new-task');
+        assert(p.carryWaiting===undefined||typeof p.carryWaiting==='boolean','请明确是否结转未上车需求');assert(!p.carryWaiting||p.seedMode==='blank','结转需求请选空白任务，避免与示例人员混合');
+        const archives=T.mergeArchives([T.archive(d)],d.taskArchives),revision=d.revision,source=clone(d);
+        d=freshTask(d,p);d.revision=revision;d.taskArchives=archives;if(p.carryWaiting)carryWaiting(source);
+        generate(d.seedMode==='blank'?'空白任务等待录入人员':'新场示例演练已建立');
+        d.lastAnnouncement='已新建 '+d.taskName+'，'+archives.length+' 场历史及未完成记录完整保留；当前 '+metrics(d).people+' 人。';log(d.lastAnnouncement,'new-task');
       }
-      else if(name==='reset'){const revision=d.revision,archives=d.taskArchives;d=initial();d.revision=revision;d.taskArchives=archives;log('人工重置演练，两个网页同步恢复初始数据。');}
+      else if(name==='clear-archives'){
+        assert(p.backupConfirmed===true,'请先导出并核对备份，再明确勾选确认清理历史');
+        assert(Array.isArray(p.exerciseIds)&&p.exerciseIds.length>0&&new Set(p.exerciseIds).size===p.exerciseIds.length,'请选择需要清理的历史任务');
+        assert(p.exerciseIds.every(id=>typeof id==='string'&&d.taskArchives.some(row=>row.exerciseId===id)),'清理列表包含不存在的历史任务；当前任务不可删除');
+        d.taskArchives=d.taskArchives.filter(row=>!p.exerciseIds.includes(row.exerciseId));
+        d.lastAnnouncement='人工确认已备份后清理 '+p.exerciseIds.length+' 场历史，当前任务和其余历史保持原样。';log(d.lastAnnouncement,'clear-archives');
+      }
+      else if(name==='reset'){
+        const revision=d.revision,old=clone(d);if(!T.isClosed(old))T.close(old,{mode:'stopped',note:'人工重新开场，上一场按原状态保留'},now());
+        const archives=T.mergeArchives([T.archive(old)],d.taskArchives);d=freshTask(d,{seedMode:p.seedMode||d.seedMode||'sample',mapMode:p.mapMode||'same',...(p.name?{name:p.name}:{})});d.revision=revision;d.taskArchives=archives;
+        generate('已保留上一场记录，开始新的独立任务');log('原任务已结束并完整归档，两个网页同步进入新任务。','reset');
+      }
       else if(name==='scenario'){
-        assert(R.catalog.some(x=>x.id===p.id),'示范情景不存在');const revision=d.revision,archives=d.taskArchives;d=initial();d.revision=revision;d.taskArchives=archives;d.scenarioPreset=p.id;
+        assert(R.catalog.some(x=>x.id===p.id),'示范情景不存在');const revision=d.revision,old=clone(d);if(!T.isClosed(old))T.close(old,{mode:'stopped',note:'人工切换示范情景，上一场按原状态保留'},now());const archives=T.mergeArchives([T.archive(old)],d.taskArchives);d=initial();d.seedMode='sample';d.taskName=R.catalog.find(x=>x.id===p.id).name;d.revision=revision;d.taskArchives=archives;d.scenarioPreset=p.id;
         if(p.id==='ruian-roads')require('./geo-scenario.cjs').apply(d);
         if(p.id==='road-closure'){d.scenario.edges.find(e=>e.id==='east').open=false;d.reports.unshift({id:'R1',kind:'road',location:'east',text:'标准情景：东桥经演练核实中断',people:0,status:'accepted',reporter:'情景演示',inputSource:'manual',createdAt:now(),reviewedAt:now(),note:'标准情景条件，不代表实时路况'});}
         if(p.id==='resource-shortage'){d.scenario.vehicles[0].available=false;d.scenario.vehicles[0].unavailableReason='标准情景：车辆故障，等待维修或增援';}
@@ -885,28 +951,44 @@ function create(initialData=null){
           V.handle(d,'village-report',{villageId:'VA',mode:'increment',people:12,pickupId:'P-A1',assistancePeople:3,wheelchairPeople:1,groupPolicy:'splittable',text:'演示村 A 新增 12 人，其中 3 人需要协助，包含 1 名轮椅人员；允许分组接送。',reporter:'情景演示',source:'manual'},ctx);
           V.handle(d,'village-review',{id:d.villageReports[0].id,decision:'accept',note:'标准演练情景已核对人数、集合点和分组要求'},ctx);
         }else generate('加载示范情景：'+R.catalog.find(x=>x.id===p.id).name);
-        log('已创建新的独立演练 '+d.exerciseId+'；原演练只在先前导出文件中保留。','scenario');
+        log('已创建新的独立演练 '+d.exerciseId+'；原任务已结束并完整保存在任务历史中。','scenario');
       }
       else if(name==='restore'){
         const imported=p.data?.schema?p.data:p.data?.data;assert(imported,'请选择完整的演练 JSON 导出文件');
+        assert(!(T.isClosed(d)&&imported.exerciseId===d.exerciseId&&!T.isClosed(imported)),'已结束的同一任务不能通过旧存档重新打开，请新建下一场任务');
         const restored=restore(imported,{external:true}),revision=d.revision;
+        assert(restored.exerciseId!==d.exerciseId,'同一任务备份不能覆盖当前事实；请保留当前记录，在另一浏览器打开备份核对');
         assert(!(T.isClosed(d)&&restored.exerciseId===d.exerciseId&&!T.isClosed(restored)),'已结束的同一任务不能通过旧存档重新打开，请新建下一场任务');
         const knownClosed=(d.taskArchives||[]).find(row=>row.exerciseId===restored.exerciseId);
         assert(!knownClosed||T.isClosed(restored),'历史已结束任务不能恢复为进行中');
-        const archives=T.mergeArchives(...[(T.isClosed(d)&&d.exerciseId!==restored.exerciseId)?[T.archive(d)]:[],d.taskArchives||[],restored.taskArchives||[]].map(rows=>rows.filter(row=>row.exerciseId!==restored.exerciseId)));
+        if(knownClosed)assert(JSON.stringify(knownClosed.data)===JSON.stringify(Object.fromEntries(Object.entries(restored).filter(([key])=>key!=='taskArchives'))),'历史任务备份与已保留事实不一致，拒绝覆盖，请在另一浏览器核对');
+        const old=clone(d);if(!T.isClosed(old))T.close(old,{mode:'stopped',note:'人工导入另一场任务，原任务事实完整保留'},now());
+        const archives=T.mergeArchives(...[[T.archive(old)],d.taskArchives||[],restored.taskArchives||[]].map(rows=>rows.filter(row=>row.exerciseId!==restored.exerciseId)));
         assert(T.isClosed(restored)||restored.phase==='executing'||Object.values(restored.stage).every(st=>!['boarded','arrived','verified'].includes(st)),'准备阶段不能包含已上车或到达执行记录');
         // External imports never authorize an imported route for execution.
         // Boarding/delivery ledgers stay intact and the new candidate is computed locally.
         d=restored;d.revision=revision;d.taskArchives=archives;
         d.importedAt=now();d.importedRevision=imported.revision;
         if(T.isClosed(d)){d.lastAnnouncement='已恢复结束任务的只读记录；人员、发布和未完成状态原样保留。';log(d.lastAnnouncement,'restore');}
-        else{d.plan=null;d.baseline=null;d.alternative=null;d.activePlan=null;d.planSnapshot=null;d.history=[];d.taskAcks={};d.inputVersion++;d.executionVersion++;
+        else{d.importedPublication={activePlan:clone(d.activePlan),history:clone(d.history),taskAcks:clone(d.taskAcks),importedAt:now()};d.plan=null;d.baseline=null;d.alternative=null;d.activePlan=null;d.planSnapshot=null;d.history=[];d.taskAcks={};d.inputVersion++;d.executionVersion++;
           generate('导入校验通过；已撤销导入文件中的发布状态，保留车载与到达记录');
           log('文件恢复完成：保留人员执行台账，所有剩余安排须重新人工确认。','restore');}
       }
+      else if(name==='configure-resources'){
+        assert(d.phase==='preparation'&&!d.activePlan&&!d.history.length&&!Object.values(d.fleet).some(f=>f.onboard.length||f.delivered.length||f.minute||f.finished),'仅可在未发布、未执行的准备阶段配置资源；执行中请登记资源变化');
+        const cleanId=(id,label)=>{assert(typeof id==='string'&&/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,59}$/.test(id)&&!['__proto__','prototype','constructor'].includes(id),label+'编号无效');return id;};
+        assert(Array.isArray(p.vehicles)&&p.vehicles.length>0&&p.vehicles.length<=30,'请配置 1–30 辆车');assert(Array.isArray(p.shelters)&&p.shelters.length>0&&p.shelters.length<=30,'请配置 1–30 个安置点');
+        const nodes=new Set(d.scenario.nodes.map(n=>n.id));
+        const reservedIds=new Set([...d.scenario.vehicles.map(v=>v.id),...p.vehicles.map(v=>v?.id).filter(Boolean)]);let idCounter=1;
+        const vehicles=p.vehicles.map((v,index)=>{assert(v&&typeof v==='object','车辆配置无效');let id=v.id;if(id===undefined||id===''){do{id='V'+idCounter++;}while(reservedIds.has(id));reservedIds.add(id);}id=cleanId(id,'车辆');assert(nodes.has(v.start),'车辆起点必须在当前地图中');assert(typeof v.available==='boolean'&&typeof v.wheelchair==='boolean','请明确车辆可用性及轮椅适配');const color=v.color||d.scenario.vehicles.find(old=>old.id===id)?.color||['#0a9e9e','#4478ee','#c68824'][index%3];assert(/^#[0-9a-f]{6}$/i.test(color),'车辆颜色无效');return {id,name:text(v.name,80,'车辆名称'),start:v.start,capacity:integer(v.capacity,0,500,'车辆座位'),wheelchair:v.wheelchair,available:v.available,color};});
+        const shelters=p.shelters.map(sh=>{assert(sh&&typeof sh==='object','安置点配置无效');const id=cleanId(sh.id,'安置点');assert(nodes.has(id)&&(!sh.nodeId||sh.nodeId===id),'安置点编号须选用当前地图节点');assert(typeof sh.available==='boolean','请明确安置点可用性');return {id,name:text(sh.name,80,'安置点名称'),capacity:integer(sh.capacity,0,10000,'接收容量'),available:sh.available,synthetic:true};});
+        assert(new Set(vehicles.map(v=>v.id)).size===vehicles.length&&new Set(shelters.map(sh=>sh.id)).size===shelters.length,'资源编号不能重复');
+        d.scenario.vehicles=vehicles;d.scenario.shelters=shelters;d.fleet=Object.fromEntries(vehicles.map(v=>[v.id,{node:v.start,minute:0,onboard:[],delivered:[],finished:false}]));d.occupancy=Object.fromEntries(shelters.map(sh=>[sh.id,0]));d.taskAcks={};
+        invalidate('人工核对本场资源：'+vehicles.length+' 辆车、'+shelters.length+' 个安置点');generate('资源配置更新');
+      }
       else if(name==='resource-event'){
         assert(['vehicle','shelter'].includes(p.kind),'资源事件类型无效');assert(typeof p.available==='boolean','请明确资源是否可用');
-        const item=d.scenario[p.kind==='vehicle'?'vehicles':'shelters'].find(x=>x.id===p.id);assert(item,'资源不存在');const reason=text(p.reason,300,'核实依据');
+        const item=d.scenario[p.kind==='vehicle'?'vehicles':'shelters'].find(x=>x.id===p.id);assert(item,'资源不存在');const reason=p.reason===undefined||p.reason===''?'指挥员已人工核对资源'+(p.available?'恢复可用':'暂停使用'):text(p.reason,300,'核实依据');
         assert(item.available!==p.available,'资源状态没有变化，无需重复提交');item.available=p.available;item.unavailableReason=p.available?'':reason;item.availabilityUpdatedAt=now();
         invalidate(item.name+(p.available?'已核实恢复可用':'已核实不可用')+'：'+reason);item.resourceChangeVersion=d.inputVersion;generate('资源状态变化：'+item.name);
         const key=p.kind+':'+item.id;d.followups=d.followups||{};if(!p.available)d.followups[key]={key,owner:'待指派',note:reason,dueAt:null,status:'open',updatedAt:now()};
@@ -971,7 +1053,7 @@ function create(initialData=null){
         fieldEvent({kind:'report',stage:'report',reportId:r.id,reportKind:r.kind,location:r.location,vehicleId:null,householdId:null,people:r.people,planId:d.activePlan?.id||null,reporter:r.reporter,source,text:r.text,summary:d.lastAnnouncement});
       }
       else if(name==='review'){
-        const r=d.reports.find(r=>r.id===p.id);assert(r&&r.status==='pending','反馈不存在或已经处理');assert(['accept','reject'].includes(p.decision),'核实操作无效');const note=text(p.note,300,'核实说明');r.reviewedAt=now();r.note=note;
+        const r=d.reports.find(r=>r.id===p.id);assert(r&&r.status==='pending','反馈不存在或已经处理');assert(['accept','reject'].includes(p.decision),'核实操作无效');const note=p.note===undefined||p.note===''?(p.decision==='accept'?'指挥员人工核实并采纳现场反馈':'指挥员核对后未采纳本条反馈'):text(p.note,300,'核实说明');r.reviewedAt=now();r.note=note;
         if(p.decision==='reject'){r.status='rejected';log(r.id+' 核实后未采纳：'+note,'review');}
         else if(r.kind==='road'){d.scenario.edges.find(e=>e.id===r.location).open=false;r.status='accepted';invalidate(r.id+' 核实道路受阻：'+note);generate(r.id+' 道路中断反馈');}
         else if(r.kind==='people'){
@@ -992,27 +1074,57 @@ function create(initialData=null){
       else if(name==='contact'){
         assert(Array.isArray(p.ids)&&p.ids.length>0&&p.ids.length<=V.MAX_GROUPS,'请选择联系对象');for(const id of p.ids){assert(d.contacts[id],'家庭不存在');d.contacts[id]={ack:true,contacted:true};}log('人工登记演练任务已接收、家庭已联系：'+p.ids.join('、'),'contact');
       }
+      else if(name==='field-contact-batch'){
+        const planId=text(p.planId,60,'执行方案编号'),vehicleId=text(p.vehicleId,40,'车辆编号');
+        assert(d.activePlan?.id===planId,'现场任务方案已过期，请刷新当前已发布方案后再确认');
+        const route=d.activePlan.routes.find(r=>r.vehicleId===vehicleId),f=d.fleet[vehicleId];assert(route&&f&&route.people&&!f.finished&&!route.holding,'本车没有待联系任务');
+        assert(d.taskAcks[vehicleId]?.planId===planId,'请先确认本车已接收当前任务');
+        const ids=p.householdIds;assert(Array.isArray(ids)&&ids.length>0&&ids.length<=V.MAX_GROUPS&&new Set(ids).size===ids.length,'请选择本车本批已联系人员组');
+        assert(ids.every(id=>route.stops.some(st=>st.id===id)&&d.stage[id]==='waiting'&&!d.contacts[id]?.contacted),'批量联系只允许本车待接且未登记联系的人员组；整批未提交');
+        const reporter=text(p.reporter||'现场值守',40,'登记人'),source=inputSource(p.source,'quick'),original=p.text?text(p.text,2000,'现场原话'):'';
+        for(const id of ids)d.contacts[id]={ack:true,contacted:true};const people=sum(ids,id=>d.scenario.households.find(h=>h.id===id).people);
+        d.lastAnnouncement=vehicleId+' 已人工登记本批 '+ids.length+' 组、'+people+' 人完成联系；未登记上车。';log(d.lastAnnouncement,'field');
+        fieldEvent({kind:'progress',stage:'contact-batch',vehicleId,planId,householdId:null,householdIds:[...ids],people,reporter,source,text:original,summary:d.lastAnnouncement});
+      }
+      else if(name==='start-vehicle'){
+        const vehicleId=text(p.vehicleId,40,'车辆编号'),planId=text(p.planId,60,'执行方案编号');
+        assert(d.activePlan?.id===planId,'执行方案已变化，请重新核对本车任务');assert(d.activePlan.inputVersion===d.inputVersion,'发布后条件已变化，请重新计算并确认');
+        const r=d.activePlan.routes.find(r=>r.vehicleId===vehicleId),f=d.fleet[vehicleId];assert(r&&f&&r.people&&!r.holding&&!f.finished,'本车没有可执行任务');assert(f.onboard.length||r.stops.some(st=>d.stage[st.id]==='waiting'),'本车原方案已完成，请等待下一趟发布后重新接令和发车');
+        assert(d.taskAcks[vehicleId]?.planId===planId,'请先确认本车已接收当前任务');assert(r.stops.filter(st=>d.stage[st.id]==='waiting').every(st=>d.contacts[st.id]?.contacted),'本车仍有待联系人员，请核对联系结果');assert(!blockedRoute(d,r),'本车路线或资源已变化，请重新计算');assert(f.startedPlanId!==planId,'本车已经开始执行');
+        migrateLegacyStarts();d.phase='executing';d.executionMode='per-vehicle';f.startedPlanId=planId;f.tripNumber=f.tripNumber||1;d.executionVersion++;d.plan=null;d.baseline=null;d.alternative=null;d.planSnapshot=null;
+        d.lastAnnouncement=vehicleId+' 已开始本车第 '+f.tripNumber+' 趟任务，其他车辆可独立完成接令和联系。';log(d.lastAnnouncement,'execution');
+        fieldEvent({kind:'progress',stage:'start',vehicleId,planId,householdId:null,people:r.people,reporter:text(p.reporter||'现场值守',40,'登记人'),source:inputSource(p.source,'quick'),text:'',summary:d.lastAnnouncement});
+      }
+      else if(name==='start-next-trip'){
+        const vehicleId=text(p.vehicleId,40,'车辆编号'),f=d.fleet[vehicleId],v=d.scenario.vehicles.find(v=>v.id===vehicleId);
+        assert(f&&v&&v.available&&f.finished&&!f.onboard.length&&f.delivered.length,'仅已送达且当前可用的空车可以准备下一趟');assert(d.scenario.households.some(h=>d.stage[h.id]==='waiting'),'当前没有可安排的待接人员');
+        if(!f.deliveries)f.deliveries=[{householdIds:[...f.delivered],shelterId:f.node,minute:f.minute,planId:d.activePlan?.id||null}];
+        migrateLegacyStarts();d.executionMode='per-vehicle';f.finished=false;f.startedPlanId=null;f.tripNumber=(f.tripNumber||1)+1;delete d.taskAcks[vehicleId];
+        invalidate(vehicleId+' 从已登记安置点准备第 '+f.tripNumber+' 趟，既有送达记录和占用保持不变');generate('车辆准备下一趟接送');
+        d.lastAnnouncement=vehicleId+' 下一趟草案已计算；请人工发布、接令并发车。';log(d.lastAnnouncement,'next-trip');
+      }
       else if(name==='field-progress'){
         assert(['ack','contact','board','arrive'].includes(p.stage),'现场执行环节无效');const planId=text(p.planId,60,'执行方案编号');assert(d.activePlan?.id===planId,'现场任务方案已过期，请刷新当前已发布方案后再确认');
         const vehicleId=text(p.vehicleId,40,'车辆编号'),r=d.activePlan.routes.find(r=>r.vehicleId===vehicleId),f=d.fleet[vehicleId];assert(r&&f&&r.people&&!r.holding&&!f.finished,'该车辆没有可回报的当前执行任务');
         const reporter=text(p.reporter||'现场演示员',40,'上报人'),source=inputSource(p.source,'quick'),original=p.text===undefined||p.text===''?'':text(p.text,2000,'现场原话');let result;
         assert(['preparation','executing'].includes(d.phase),'当前阶段不能登记现场执行');
         if(p.stage==='ack'){
+          assert(f.onboard.length||r.stops.some(st=>d.stage[st.id]==='waiting'),'本车原方案已完成，请等待下一趟发布后重新接令');
           assert(d.taskAcks[vehicleId]?.planId!==planId,'本车已接收当前任务，请继续后续环节');d.taskAcks[vehicleId]={planId,time:now(),reporter,source};
           result={stage:'ack',householdId:null,people:r.people,summary:vehicleId+' 已接收方案 '+planId+' 的转移任务，共 '+r.people+' 人；家庭联系状态尚未改变。'};
           log(result.summary,'field');d.lastAnnouncement=result.summary;
         }else{
           assert(d.taskAcks[vehicleId]?.planId===planId,'请先确认本车已接收当前任务');
           if(p.stage==='contact'){
-            const householdId=text(p.householdId,40,'联系家庭编号'),next=r.stops.find(st=>d.stage[st.id]==='waiting'&&!d.contacts[st.id]?.contacted);
-            assert(next?.id===householdId,'联系登记必须对应本车下一待联系家庭，不可跳过、跨车或重复登记');const h=d.scenario.households.find(h=>h.id===householdId);d.contacts[householdId]={ack:true,contacted:true};
+            const householdId=text(p.householdId,40,'联系家庭编号');
+            assert(r.stops.some(st=>st.id===householdId)&&d.stage[householdId]==='waiting'&&!d.contacts[householdId]?.contacted,'联系登记只允许本车待接且尚未联系的家庭，不可跨车或重复登记');const h=d.scenario.households.find(h=>h.id===householdId);d.contacts[householdId]={ack:true,contacted:true};
             result={stage:'contact',householdId,people:h.people,summary:vehicleId+' 已联系 '+h.name+'，'+h.people+' 人的联系结果已登记，尚未登记上车。'};log(result.summary,'field');d.lastAnnouncement=result.summary;
           }else result=advanceVehicle(vehicleId,p.stage,p.stage==='board'?text(p.householdId,40,'上车家庭编号'):null);
         }
         fieldEvent({kind:'progress',vehicleId,planId,reporter,source,text:original,...result});
       }
       else if(name==='start'){
-        assert(d.phase==='preparation'&&d.activePlan,'请先确认并发布草案');assert(d.activePlan.inputVersion===d.inputVersion,'发布后条件已变化，请重新计算并确认');assert(d.activePlan.servedIds.every(id=>d.contacts[id]?.contacted),'已安排家庭仍未完成联系登记');d.phase='executing';log('开始模拟执行；车辆位置按逐站登记更新，不是真实 GPS。','execution');d.lastAnnouncement='已开始模拟执行。';
+        assert(d.phase==='preparation'&&d.activePlan,'请先确认并发布草案');assert(d.activePlan.inputVersion===d.inputVersion,'发布后条件已变化，请重新计算并确认');assert(d.activePlan.servedIds.every(id=>d.contacts[id]?.contacted),'已安排家庭仍未完成联系登记');d.phase='executing';for(const r of d.activePlan.routes.filter(r=>r.people&&!d.fleet[r.vehicleId].finished)){d.fleet[r.vehicleId].startedPlanId=d.activePlan.id;d.fleet[r.vehicleId].tripNumber=d.fleet[r.vehicleId].tripNumber||1;}d.executionVersion++;d.plan=null;d.baseline=null;d.alternative=null;d.planSnapshot=null;log('开始模拟执行；车辆位置按逐站登记更新，不是真实 GPS。','execution');d.lastAnnouncement='已开始模拟执行。';
       }
       else if(name==='step'){
         advanceVehicle(p.vehicleId);
@@ -1040,7 +1152,7 @@ function create(initialData=null){
   }
   return {get data(){return clone(d);},action,fresh};
 }
-module.exports={create,initial,snapshot,solve,baseline,validate,metrics,diagnostics,restore,taskSummary:T.summary,mapConversionStatus:require('./geo-scenario.cjs').conversionStatus,scenarioCatalog:R.catalog,villageMetrics:V.villageMetrics,blockedRoute,ALGORITHM,BASELINE};
+module.exports={create,initial,createBlank,snapshot,solve,baseline,validate,metrics,diagnostics,restore,taskSummary:T.summary,mapConversionStatus:require('./geo-scenario.cjs').conversionStatus,scenarioCatalog:R.catalog,villageMetrics:V.villageMetrics,blockedRoute,ALGORITHM,BASELINE};
 
 };
 cache['./dist/assets/maps/ruian-routing.json']={exports:{

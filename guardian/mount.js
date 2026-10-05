@@ -1,4 +1,4 @@
-/* 城市韧性守护：独立静态面板。只挂载自己的 DOM，不读写叫应业务状态。 */
+/* 城市韧性守护：主台版本化工具 + 次级独立沙盘；发布仍由主台人工确认。 */
 (function () {
   'use strict';
   var script = document.currentScript;
@@ -6,6 +6,7 @@
   var host, launcher, panel, frameBody, help, helpButton, closeButton, badge, counts, offline;
   var bridge, style, bridgeScript, priorOverflow, frameDocument, onFrameKey, workerListener;
   var disposed = false;
+  var currentTask, hostToolsScript, workspaceMode = 'current', workspaceTabs, independence;
 
   function cleanup() {
     if (disposed) return;
@@ -15,7 +16,8 @@
     try { if (frameDocument && onFrameKey) frameDocument.removeEventListener('keydown', onFrameKey, true); } catch (_) {}
     try { if (workerListener && navigator.serviceWorker) navigator.serviceWorker.removeEventListener('message', workerListener); } catch (_) {}
     try { if (bridge) bridge.destroy(); } catch (_) {}
-    [launcher, host, style, bridgeScript].forEach(function (node) { try { if (node) node.remove(); } catch (_) {} });
+    try { if (currentTask) currentTask.destroy(); } catch (_) {}
+    [launcher, host, style, bridgeScript, hostToolsScript].forEach(function (node) { try { if (node) node.remove(); } catch (_) {} });
   }
 
   // A failed optional integration must not interfere with the original workspace.
@@ -51,7 +53,8 @@
   function updateProvider(provider) { if (provider) badge.textContent = providerText(provider); }
   function hideHelp() {
     help.hidden = true;
-    frameBody.hidden = false;
+    frameBody.hidden = !!currentTask && workspaceMode === 'current';
+    if(currentTask)currentTask.element.hidden=workspaceMode !== 'current';
     helpButton.setAttribute('aria-expanded', 'false');
     helpButton.focus();
   }
@@ -72,6 +75,22 @@
     document.body.style.overflow = 'hidden';
     launcher.setAttribute('aria-expanded', 'true');
     closeButton.focus({ preventScroll: true });
+    if(currentTask&&workspaceMode==='current')currentTask.refresh();
+  }
+
+  function selectWorkspace(mode){
+    workspaceMode=mode;help.hidden=true;helpButton.setAttribute('aria-expanded','false');
+    if(currentTask)currentTask.element.hidden=mode!=='current';frameBody.hidden=mode==='current';
+    if(mode==='current'){
+      counts.textContent='3 个主台工具 · 同一场任务 · 人工发布';
+      badge.textContent='运行路径：主台本地规则与调度算法（未连接大模型）';
+      independence.textContent='当前主台任务 · 人数、路线、缺项与执行反馈来自同一份主台记录；建议更新后仍需人工在主台发布。';
+      currentTask.refresh();
+    }else{
+      counts.textContent='21 个工具 · 7 个技能 · 独立算法沙盘';updateProvider(bridge.getCapabilities()?.provider);
+      independence.textContent='独立算法沙盘 · 10 网格与 15 人为独立合成底数，不是当前主台需求；沙盘模拟发布不会写入叫应任务。';
+    }
+    if(workspaceTabs)Array.prototype.forEach.call(workspaceTabs.children,function(b){b.setAttribute('aria-pressed',String(b.getAttribute('data-mode')===mode));});
   }
 
   function makeHelp(configURL) {
@@ -79,7 +98,7 @@
     section.hidden = true;
     var title = node('h2', { id: 'guardian-api-title', tabindex: '-1' }, '自己接入 API');
     var path = node('code', {}, 'dist/guardian/agent/api-config.js');
-    var intro = node('p', {}, '只需编辑这个配置文件，顶部有大字说明，分为 ① 大模型、② 天气数据、③ 运行策略。');
+    var intro = node('p', {}, '这个配置文件供独立算法沙盘接入模型与天气，顶部说明分为 ① 大模型、② 天气数据、③ 运行策略。本场任务助手目前使用主台本地工具，不向模型发送主台名单；后续接入模型还需扩展主台适配器。');
     var hint = node('p', { class: 'guardian-help-note' }, '公开版默认离线演练。推荐的本机代理只预留了配置，服务端转发端点尚未实现；不填写任何内容也能使用本面板。');
     var steps = node('ol');
     [
@@ -168,6 +187,11 @@
     var scriptURL = new URL(source, location.href);
     await load('link', { rel: 'stylesheet', href: new URL('mount.css?v=1', scriptURL).href });
     await load('script', { src: new URL('bridge/flood-agent-bridge.js?v=1', scriptURL).href });
+    if(window.JiaoyingGuardianHost){
+      var originalBridgeScript=bridgeScript;
+      hostToolsScript=await load('script',{src:new URL('host-tools.js?v=4',scriptURL).href});
+      bridgeScript=originalBridgeScript;
+    }
     if (disposed || !window.FloodAgent || typeof window.FloodAgent.mount !== 'function') throw new Error('guardian bridge unavailable');
     host = node('div', { id: 'guardian-agent-host' });
     panel = node('dialog', { id: 'guardian-agent-panel', 'aria-labelledby': 'guardian-agent-title', 'aria-describedby': 'guardian-independence guardian-boundary' });
@@ -183,15 +207,21 @@
     closeButton = button('guardian-close', '关闭面板');
     var controls = append(node('div', { class: 'guardian-controls' }), [helpButton, closeButton]);
     append(top, [heading, controls]);
-    var independence = node('div', { id: 'guardian-independence' }, '独立瑞安演练 · 人员、容量、车速和路网均为合成设定；模拟发布不会写入叫应任务。');
+    independence = node('div', { id: 'guardian-independence' }, '独立瑞安演练 · 人员、容量、车速和路网均为合成设定；模拟发布不会写入叫应任务。');
     var status = append(node('div', { class: 'guardian-status' }), [badge]);
     offline = node('span', { id: 'guardian-offline-status', role: 'status' }, '离线缓存状态待检查');
     status.appendChild(offline);
     frameBody = node('div', { id: 'guardian-agent-body' });
     help = makeHelp(new URL('agent/api-config.js', scriptURL).href);
     var content = append(node('div', { class: 'guardian-panel-content' }), [frameBody, help]);
+    if(window.JiaoyingGuardianHost&&window.JiaoyingGuardianTools){
+      currentTask=window.JiaoyingGuardianTools.createPanel({document:document,host:window.JiaoyingGuardianHost,beforeReview:closePanel});
+      content.appendChild(currentTask.element);frameBody.hidden=true;
+      workspaceTabs=node('nav',{class:'guardian-workspace-tabs','aria-label':'守护工作范围'});
+      [['current','本场任务助手'],['sandbox','独立算法沙盘']].forEach(function(item){var b=button('guardian-mode-'+item[0],item[1]);b.setAttribute('data-mode',item[0]);b.setAttribute('aria-pressed',String(item[0]==='current'));b.addEventListener('click',safe(function(){selectWorkspace(item[0]);}));workspaceTabs.appendChild(b);});
+    }
     var boundary = node('footer', { id: 'guardian-boundary' }, '基于公开数据的积水易发风险评估，仅供演练参考；调度方案需人工确认后执行。人员与资源均为演练设定；预案检索为公开文件概括性摘要，不是原文。');
-    append(panel, [top, independence, status, content, boundary]);
+    append(panel, [top, independence, status]);if(workspaceTabs)panel.appendChild(workspaceTabs);append(panel,[content,boundary]);
     host.appendChild(panel);
     document.body.appendChild(host);
     launcher = button('guardian-launcher', '城市韧性守护');
@@ -208,6 +238,7 @@
     helpButton.addEventListener('click', safe(function () {
       if (!help.hidden) { hideHelp(); return; }
       help.hidden = false; frameBody.hidden = true;
+      if(currentTask)currentTask.element.hidden=true;
       helpButton.setAttribute('aria-expanded', 'true');
       document.getElementById('guardian-api-title').focus();
     }));
@@ -220,11 +251,11 @@
         var caps = payload && payload.capabilities || {};
         counts.textContent = (Array.isArray(caps.tools) ? caps.tools.length : '—') + ' 个工具 · ' +
           (Array.isArray(caps.skills) ? caps.skills.length : '—') + ' 个技能 · 独立演练';
-        updateProvider(caps.provider);
+        if(currentTask&&workspaceMode==='current'){counts.textContent='3 个主台工具 · 同一场任务 · 人工发布';badge.textContent='运行路径：主台本地规则与调度算法（未连接大模型）';independence.textContent='当前主台任务 · 人数、路线、缺项与执行反馈来自同一份主台记录；建议更新后仍需人工在主台发布。';}else updateProvider(caps.provider);
         connectFrameKeyboard();
       }),
-      onTurn: safe(function (turn) { updateProvider(turn && turn.provider); }),
-      onPublished: safe(function () { independence.textContent = '独立演练已模拟发布 · 通知文本可在面板内复制；没有写入叫应任务，也没有向真实人员发送。'; })
+      onTurn: safe(function (turn) { if(!currentTask||workspaceMode==='sandbox')updateProvider(turn && turn.provider); }),
+      onPublished: safe(function () { if(!currentTask||workspaceMode==='sandbox')independence.textContent = '独立演练已模拟发布 · 通知文本可在面板内复制；没有写入叫应任务，也没有向真实人员发送。'; })
     });
     await bridge.whenReady(30000);
     if (disposed) return;

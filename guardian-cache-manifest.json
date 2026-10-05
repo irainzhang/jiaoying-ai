@@ -1,6 +1,6 @@
 {
-  "build": "6908125ef0fbe2242ec7",
-  "version": "3.9.1",
+  "build": "07088e25fab13cc549a2",
+  "version": "4.0.0",
   "files": [
     "assets/evaluation.json",
     "assets/logo-lockup.png",
@@ -67,6 +67,7 @@
     "guardian/agent/src/ui/planner.js",
     "guardian/agent/src/ui/render.js",
     "guardian/bridge/flood-agent-bridge.js",
+    "guardian/host-tools.js",
     "guardian/mount.css",
     "guardian/mount.js",
     "index.html",
@@ -86,6 +87,7 @@
     "start-page.css",
     "start-page.js",
     "start.html",
+    "task-workbench.js",
     "transport-map.js",
     "update.html",
     "vendor/leaflet/LICENSE",

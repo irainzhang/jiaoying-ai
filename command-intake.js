@@ -215,5 +215,110 @@
     return finish(out);
   }
 
-  return {mode:'local-rules',maxRows:MAX_ROWS,parseCSV,parseRows,parseText};
+  const editableFields=['people','villageName','pickupName','assistancePeople','wheelchairPeople','groupPolicy'];
+  const fieldLabels={people:'人数',villageName:'村庄',pickupName:'接人点',assistancePeople:'协助人数',wheelchairPeople:'轮椅人数',groupPolicy:'同行关系'};
+  const fieldText=(key,value)=>value==null||value===''?'待补':key==='groupPolicy'?({unknown:'待补',splittable:'可分组',together:'须同行'}[value]||String(value)):String(value);
+  function withNames(row,context={}) {
+    const village=(context.data?.villages||[]).find(v=>v.id===row.villageId),point=village?.pickups?.find(p=>p.id===row.pickupId);
+    return {...row,villageName:row.villageName||village?.name||'',pickupName:row.pickupName||point?.name||''};
+  }
+  function remember(row,context={}) {
+    const next=withNames(row,context);
+    if(!next.original)next.original=Object.fromEntries([...editableFields,'text'].map(key=>[key,next[key]??null]));
+    next.editedFields=editableFields.filter(key=>next[key]!==next.original[key]);
+    return next;
+  }
+  // Editing a place is an explicit change of facts. Clear the previous anchor so
+  // a new label can never remain silently attached to the old map location.
+  function updateRow(row,key,value,context={}) {
+    let next=remember(row,context);
+    if(!editableFields.includes(key))return next;
+    const edited=['people','assistancePeople','wheelchairPeople'].includes(key)?(value===''||value==null?null:Number(value)):string(value);
+    if(next[key]===edited)return next;
+    next[key]=edited;
+    if(key==='villageName'||key==='pickupName') {
+      const villages=context.data?.villages||[],matches=villageFor(next.villageName,villages),village=matches.length===1?matches[0]:null;
+      next.villageId=village?.id||'';
+      next.pickupId='';next.locationNodeId=null;next.longitude=null;next.latitude=null;next.coordinateSystem=null;
+      // An old village's pickup is not reused merely because it has a generic
+      // name shared by another village. The operator chooses the new point.
+      if(key==='villageName')next.pickupName='';
+      else if(village){const points=pickupFor(next.pickupName,village);if(points.length===1)next.pickupId=points[0].id;}
+    }
+    next.editedFields=editableFields.filter(field=>next[field]!==next.original[field]);
+    return next;
+  }
+  function locationReview(row,data={}) {
+    const scenario=data.scenario||{},villages=data.villages||[],village=villages.find(v=>v.id===row.villageId),pickup=village?.pickups?.find(p=>p.id===row.pickupId);
+    const nodeId=row.locationNodeId||pickup?.node;
+    const hasCoordinates=row.longitude!=null||row.latitude!=null;
+    if(pickup&&row.locationNodeId&&pickup.node!==row.locationNodeId)return {ready:false,label:'接人点与选点冲突',error:'已登记接人点与人工选点不一致，请修改接人点后重新选点。'};
+    if(hasCoordinates) {
+      if(!Number.isFinite(row.longitude)||!Number.isFinite(row.latitude)||row.longitude<-180||row.longitude>180||row.latitude<-90||row.latitude>90)return {ready:false,label:'经纬度格式待修正',error:'经纬度须同时提供有效数字。'};
+      if(row.coordinateSystem!=='WGS84')return {ready:false,label:'坐标系待修正',error:'仅接受 WGS84 经纬度，不能直接使用其他坐标系。'};
+      if(scenario.region?.mapKind!=='osm-road-network')return {ready:false,label:'需使用真实道路任务',error:'当前任务不是瑞安道路地图；请先按地图提示启用道路或结束本场后新建道路任务，再保存含坐标的需求。'};
+      const b=scenario.region?.bounds;
+      if(!Array.isArray(b)||row.longitude<b[0]||row.latitude<b[1]||row.longitude>b[2]||row.latitude>b[3])return {ready:false,label:'超出当前路网范围',warning:'坐标超出当前有限瑞安道路范围；保存需求后仍待定位，不会生成虚构路线。'};
+      if(pickup){
+        const rad=x=>x*Math.PI/180,lat=rad(row.latitude-(pickup.latitude||0)),lon=rad(row.longitude-(pickup.longitude||0));
+        const q=Math.sin(lat/2)**2+Math.cos(rad(row.latitude))*Math.cos(rad(pickup.latitude||0))*Math.sin(lon/2)**2;
+        const metres=6371000*2*Math.atan2(Math.sqrt(q),Math.sqrt(Math.max(0,1-q)));
+        if(!Number.isFinite(pickup.longitude)||!Number.isFinite(pickup.latitude)||metres>1)return {ready:false,label:'坐标与登记点冲突',error:'上传坐标与已登记接人点不一致；请修改接人点名称并重新核对位置。'};
+      }
+      // Coordinates alone are a candidate, never proof that a usable route has
+      // been found. The authoritative import performs its own road matching.
+      if(!nodeId)return {ready:false,label:'坐标待匹配道路',warning:'已提供 WGS84 坐标，保存时匹配可用道路；匹配失败的需求保留待定位。'};
+    }
+    if(nodeId){
+      if(Array.isArray(scenario.nodes)&&!scenario.nodes.some(n=>n.id===nodeId))return {ready:false,label:'接入点待核对',error:'已选接人节点不在当前地图中，请重新选点。'};
+      if(Array.isArray(scenario.edges)&&!scenario.edges.some(e=>e.open&&(e.from===nodeId||e.to===nodeId)))return {ready:false,label:'接入道路暂不可用',warning:'接人点没有开放的接入道路，需核实道路情况后重新安排。'};
+      return {ready:true,label:row.locationNodeId?'已人工选点':'已匹配登记点'};
+    }
+    return {ready:false,label:'待定位',warning:'未匹配到已登记接人点；补充位置后才能安排接送。'};
+  }
+  function reviewRows(rows,context={}) {
+    const data=context.data||{},villages=data.villages||[],out={rows:[],errors:[],warnings:[],readyPeople:0,pendingPeople:0,readyRows:0,pendingRows:0};
+    for(const [index,input] of (rows||[]).entries()){
+      const row=remember(input,context),errors=[],prefix='第 '+(row.rowIndex||index+1)+' 行：';
+      if(!Number.isInteger(row.people)||row.people<1||row.people>500)errors.push('人数须为 1 至 500 的整数。');
+      for(const key of ['assistancePeople','wheelchairPeople'])if(row[key]!=null&&(!Number.isInteger(row[key])||row[key]<0||row[key]>row.people))errors.push(fieldLabels[key]+'须为 0 至总人数之间的整数，未确认时请留空。');
+      if(row.assistancePeople!=null&&row.wheelchairPeople!=null&&row.wheelchairPeople>row.assistancePeople)errors.push('轮椅人数不能超过需协助人数。');
+      if(!['unknown','splittable','together'].includes(row.groupPolicy))errors.push('请核对同行关系。');
+      if(!row.villageName||row.villageName.length>100||/[\u0000-\u001f]/.test(row.villageName))errors.push('村庄名称不能为空且不能超过 100 字。');
+      if(row.pickupName.length>100||/[\u0000-\u001f]/.test(row.pickupName))errors.push('接人点名称不能超过 100 字。');
+      const matches=villageFor(row.villageName,villages),byId=villages.find(v=>v.id===row.villageId),village=byId||(matches.length===1?matches[0]:null);
+      if(row.villageId&&!byId)errors.push('所选村庄已不在本场目录中，请重新核对。');
+      if(matches.length>1&&!byId)errors.push('同名村庄不唯一，请在村庄栏使用已登记编号。');
+      if(village){
+        const points=pickupFor(row.pickupName,village),point=(village.pickups||[]).find(p=>p.id===row.pickupId);
+        if(row.pickupId&&!point)errors.push('接人点不属于当前村庄，请重新选择。');
+        if(points.length>1&&!point)errors.push('同名接人点不唯一，请在接人点栏使用已登记编号。');
+        if(!row.pickupId&&!row.locationNodeId&&points.length===1&&!Number.isFinite(row.longitude)&&!Number.isFinite(row.latitude))row.pickupId=points[0].id;
+        if(!row.villageId)row.villageId=village.id;
+      }
+      const location=locationReview(row,data);
+      if(location.error)errors.push(location.error);
+      const missing=[!location.ready?'位置':null,row.assistancePeople==null?'协助人数':null,row.wheelchairPeople==null?'轮椅人数':null,row.groupPolicy==='unknown'?'同行关系':null].filter(Boolean);
+      row.review={ready:!errors.length&&!missing.length,missing,location,errors};out.rows.push(row);
+      out.errors.push(...errors.map(error=>prefix+error));
+      if(location.warning)out.warnings.push(prefix+location.warning);
+      const people=Number.isInteger(row.people)&&row.people>0?row.people:0;
+      if(row.review.ready){out.readyRows++;out.readyPeople+=people;}else{out.pendingRows++;out.pendingPeople+=people;}
+    }
+    out.errors=unique(out.errors);out.warnings=unique(out.warnings);return out;
+  }
+  function summary(state,rows) {
+    const reviewed=reviewRows(rows,{data:state.data||state}),metrics=state.metrics||{},existingPeople=Number.isFinite(metrics.people)?metrics.people:0;
+    const incomingPeople=reviewed.rows.reduce((n,row)=>n+(Number.isInteger(row.people)&&row.people>0?row.people:0),0);
+    const legacyPending=(state.data?.reports||[]).filter(r=>r.status==='pending'&&r.kind==='people').reduce((n,r)=>n+(Number.isFinite(r.people)?r.people:0),0);
+    const pendingReportPeople=Number.isFinite(state.taskSummary?.pendingReviewPeople)?state.taskSummary.pendingReviewPeople:(Number.isFinite(metrics.pendingVillagePeople)?metrics.pendingVillagePeople:0)+legacyPending;
+    return {...reviewed,existingPeople,incomingPeople,afterPeople:existingPeople+incomingPeople,pendingReportPeople};
+  }
+  function submissionText(row) {
+    const original=row.original||{},changes=(row.editedFields||[]).map(key=>fieldLabels[key]+' '+fieldText(key,original[key])+' → '+fieldText(key,row[key]));
+    const note=changes.length?'；人工核对修改：'+changes.join('，'):'';
+    const source=string(original.text??row.text);
+    return source.slice(0,Math.max(0,2000-note.length))+note;
+  }
+  return {mode:'local-rules',maxRows:MAX_ROWS,parseCSV,parseRows,parseText,editableFields,updateRow,reviewRows,summary,submissionText};
 });
