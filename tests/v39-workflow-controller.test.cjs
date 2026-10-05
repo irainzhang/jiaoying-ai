@@ -167,6 +167,22 @@ function savedProgress(){
   x.action('report',{kind:'hazard',location:'H1',text:'现场补报一条待核实情况'});return f;
 }
 
+test('resource entry from a published task reviews end and new-task separately before opening the editable registry',async()=>{
+ const f=savedProgress(),h=harness(),old=f.store.data;h.controller.seed(f.snapshot());
+ await h.click('resource-next-task');assert.equal(h.requests.length,0);assert.equal(h.controller.inspect().modal.kind,'end-task');assert.match(h.elements['dialog-content'].innerHTML,/接下来：新建任务/);assert.deepEqual(f.store.data,old);
+ let pending=h.submit();assert.equal(JSON.parse(h.requests[0].options.body).action,'end-task');h.respond(0,f);await pending;
+ assert.equal(f.store.data.taskLifecycle.status,'stopped');assert.deepEqual(f.store.data.fleet,old.fleet);assert.deepEqual(f.store.data.stage,old.stage);assert.equal(h.requests.length,1);assert.equal(h.controller.inspect().modal.kind,'new-task');assert.equal(h.elements['task-map-mode'].value,'same');
+ assert.match(h.elements['dialog-content'].innerHTML,/下一步直接打开资源录入/);
+ pending=h.submit();const body=JSON.parse(h.requests[1].options.body);assert.equal(body.action,'new-task');assert.equal(body.payload.seedMode,'blank');assert.equal(body.payload.carryWaiting,false);h.respond(1,f);await pending;
+ assert.equal(h.controller.inspect().modal.kind,'configure-resources');assert.ok(h.elements.dialog.open);assert.match(h.elements['dialog-content'].innerHTML,/data-readonly="false"/);assert.equal(E.metrics(f.store.data).people,0);assert.deepEqual(f.store.data.taskArchives[0].data.fleet,old.fleet);assert.equal(h.requests.length,2);
+});
+
+test('resource next-task navigation can be cancelled and an already-ended task skips the end action',async()=>{
+ const h=harness(),f=fixture();f.store.action('confirm');h.controller.seed(f.snapshot());const before=f.store.data;
+ await h.click('resource-next-task');await h.click('close');assert.equal(h.requests.length,0);assert.deepEqual(f.store.data,before);
+ f.store.action('end-task',{mode:'stopped'});h.controller.acceptState(f.snapshot());await h.click('resource-next-task');assert.equal(h.controller.inspect().modal.kind,'new-task');assert.equal(h.requests.length,0);await h.click('close');assert.equal(h.elements.dialog.open,false);
+});
+
 test('blocked map setup displays saved plan, passenger progress and pending report instead of an unusable convert button',()=>{
   const f=savedProgress(),before=f.store.data,state=f.snapshot();assert.equal(state.mapConversion.allowed,false);assert.ok(state.taskSummary.boarded>0);assert.equal(state.taskSummary.pendingReports,1);
   const html=Workflow.mapSetup(state);assert.ok(html.includes('已发布 '+before.activePlan.id));assert.ok(html.includes('车上 '+state.taskSummary.boarded+' 人'));assert.ok(html.includes('待核实 1 条'));assert.ok(html.includes('待接 '+state.taskSummary.waiting+' 人'));
