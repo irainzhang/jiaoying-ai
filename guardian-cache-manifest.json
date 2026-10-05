@@ -1,6 +1,6 @@
 {
-  "build": "8fa3067265ab33162c23",
-  "version": "4.1.1",
+  "build": "7dfeea25d66160fea8e9",
+  "version": "4.2.0",
   "files": [
     "assets/evaluation.json",
     "assets/logo-lockup.png",
@@ -18,6 +18,8 @@
     "command-intake.js",
     "command-theme.css",
     "engine.js",
+    "entry-kit.css",
+    "entry-kit.js",
     "evidence-library.js",
     "exercise-browser.js",
     "field-assistant.js",
@@ -88,6 +90,7 @@
     "release.json",
     "resource-cards.css",
     "resource-cards.js",
+    "resource-intake.js",
     "resource-registry.css",
     "resource-registry.js",
     "review-form.css",
