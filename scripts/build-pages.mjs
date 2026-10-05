@@ -10,7 +10,7 @@ const require=createRequire(import.meta.url),capabilities=require('../dist/capab
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 export const output=resolve(root,'tmp/pages-release');
 const read=path=>readFile(resolve(root,path),'utf8');
-const included=['place-picker.js','place-picker.css','task-workbench.js','version-update.js','update.html','.nojekyll','index.html','engine.js','voice-input.js','transport-map.js','real-map.js','real-map.css','command-flow.css','weather-panel.js','weather-panel.css','review-form.js','review-form.css','workflow-ui.js','workflow-ui.css','workspace-app.js','workspace.css','command-theme.css','interface-motion.js','interface-motion.css','field-assistant.js','field-workspace.js','field-workspace.css','village-assistant.js','command-intake.js','intake-file.js','quick-context.js','intake-ui.js','village-workspace.js','village-workspace.css','pages-runtime.js','capabilities.js','evidence-library.js','operations-ui.js','operations-ui.css','start-page.js','start-page.css'];
+const included=['place-directory.js','place-picker.js','place-picker.css','task-workbench.js','version-update.js','update.html','.nojekyll','index.html','engine.js','voice-input.js','transport-map.js','real-map.js','real-map.css','command-flow.css','weather-panel.js','weather-panel.css','review-form.js','review-form.css','workflow-ui.js','workflow-ui.css','workspace-app.js','workspace.css','command-theme.css','interface-motion.js','interface-motion.css','field-assistant.js','field-workspace.js','field-workspace.css','village-assistant.js','command-intake.js','intake-file.js','quick-context.js','intake-ui.js','village-workspace.js','village-workspace.css','pages-runtime.js','capabilities.js','evidence-library.js','operations-ui.js','operations-ui.css','start-page.js','start-page.css'];
 
 export async function buildPages({outputDirectory=output,manifestPath=resolve(root,'tmp/pages-manifest.json')}={}){
   const buildOutput=resolve(outputDirectory);
@@ -37,10 +37,11 @@ export async function buildPages({outputDirectory=output,manifestPath=resolve(ro
     else throw new Error('Unexpected guardian asset: '+path);
   }}
   await copyGuardian('guardian');
-  const modules=['intake-location.cjs','village-ledger.cjs','dispatch-large.cjs','resilience.cjs','geo-scenario.cjs','lifecycle.cjs','exercise.cjs'];
+  const modules=['ruian-directory.cjs','intake-location.cjs','village-ledger.cjs','dispatch-large.cjs','resilience.cjs','geo-scenario.cjs','lifecycle.cjs','exercise.cjs'];
   let bundle="/* Generated from the same audited exercise modules as the local server. */\n(()=>{'use strict';const factories=Object.create(null),cache={'./dist/engine.js':{exports:window.JiaoyingEngine}};\n";
   for(const name of modules)bundle+=`factories[${JSON.stringify('./'+name)}]=function(module,exports,require){\n${await read(name)}\n};\n`;
   bundle+=`cache['./dist/assets/maps/ruian-routing.json']={exports:${await read('dist/assets/maps/ruian-routing.json')}};\n`;
+  bundle+=`cache['./dist/assets/maps/ruian-places.json']={exports:${await read('dist/assets/maps/ruian-places.json')}};\n`;
   bundle+="function require(id){if(cache[id])return cache[id].exports;if(!factories[id])throw new Error('Unavailable browser module: '+id);const m={exports:{}};cache[id]=m;factories[id](m,m.exports,require);return m.exports;}window.JiaoyingExercise=require('./exercise.cjs');\n";
   bundle+=`window.JiaoyingPagesIntegrations=${JSON.stringify({integrationStatus,agentContract})};})();\n`;
   await write('exercise-browser.js',bundle);

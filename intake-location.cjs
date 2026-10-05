@@ -1,7 +1,9 @@
 'use strict';
 // Local matching only. This module never geocodes a name or invents a road.
 const assert=(ok,message)=>{if(!ok)throw new Error(message);};
-const MAX_DISTANCE_M=500,MAX_VILLAGES=503,MAX_PICKUPS=1000;
+const D=require('./ruian-directory.cjs');
+// Bundled choices do not consume capacity reserved for pre-existing user data.
+const MAX_DISTANCE_M=500,MAX_VILLAGES=503+D.CATALOG_DISTRICTS,MAX_PICKUPS=1000+D.CATALOG_PICKUPS;
 const norm=s=>String(s||'').normalize('NFKC').trim().replace(/\s+/g,'').toUpperCase();
 const label=(value,title)=>{assert(typeof value==='string'&&value.trim()&&value.length<=100&&!/[\u0000-\u001f]/.test(value),title+'不能为空且不能超过100字');return value.trim();};
 const validId=s=>typeof s==='string'&&/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,79}$/.test(s)&&!['constructor','prototype','__proto__'].includes(s);
@@ -37,6 +39,18 @@ function prepareRow(d,row){
   if(!village){const name=label(row.villageName,'村庄名称'),matches=d.villages.filter(v=>norm(v.name)===norm(name));assert(matches.length<2,'村庄名称不唯一，请选村庄编号');village=matches[0];
     if(!village){assert(d.villages.length<MAX_VILLAGES,'村庄目录已达上限');village={id:nextId(d.villages,'VI'),name,township:'上传地点（待核对行政归属）',synthetic:false,imported:true,pickups:[]};d.villages.push(village);}}
   let pickup=row.pickupId?village.pickups.find(p=>p.id===row.pickupId):null;
+  if(!pickup&&row.pickupId){
+    const shared=D.sharedPickup(d,row.pickupId);
+    if(shared){
+      pickup=village.pickups.find(p=>p.publicPlaceSource===D.SOURCE&&p.publicPlaceId===shared.id);
+      if(!pickup){
+        const all=d.villages.flatMap(v=>v.pickups);assert(all.length<MAX_PICKUPS&&village.pickups.length<100,'集合点目录已达上限');
+        const copy=JSON.parse(JSON.stringify(shared));delete copy.catalogSource;
+        pickup={...copy,id:nextId(all,'PI'),imported:true,publicPlaceId:shared.id,publicPlaceSource:D.SOURCE,administrativeRelation:'user-selected-unverified',locationReason:shared.locationReason+'；由本次录入选用，所在街道/村庄归属未核实'};
+        village.pickups.push(pickup);
+      }
+    }
+  }
   if(row.pickupId)assert(pickup,'接人点必须属于当前村庄');
   const explicitLocation=present(row.longitude)||present(row.latitude)||row.locationNodeId||row.nodeId;
   if(pickup&&explicitLocation){
@@ -66,12 +80,12 @@ function validateCatalog(d){
   const villages=d.villages,nodes=new Set(d.scenario.nodes.map(n=>n.id));
   assert(Array.isArray(villages)&&villages.length>=3&&villages.length<=MAX_VILLAGES,'村庄目录数量无效');
   assert(new Set(villages.map(v=>v.id)).size===villages.length,'村庄编号重复');
-  for(const v of villages){assert(v&&validId(v.id)&&typeof v.name==='string'&&v.name.trim()&&v.name.length<=100&&typeof v.township==='string'&&v.township.length<=100&&Array.isArray(v.pickups)&&v.pickups.length<=100&&(v.pickups.length>0||v.imported===true),'村庄或集合点目录无效');}
+  for(const v of villages){assert(v&&validId(v.id)&&typeof v.name==='string'&&v.name.trim()&&v.name.length<=100&&typeof v.township==='string'&&v.township.length<=100&&Array.isArray(v.pickups)&&v.pickups.length<=100&&(v.pickups.length>0||v.imported===true||D.isDistrict(v)),'村庄或集合点目录无效');}
   const pickups=villages.flatMap(v=>v.pickups);
   assert(pickups.length<=MAX_PICKUPS&&new Set(pickups.map(p=>p.id)).size===pickups.length,'集合点数量或编号无效');
   for(const p of pickups){
     assert(p&&validId(p.id)&&typeof p.name==='string'&&p.name.trim()&&p.name.length<=100,'集合点名称或编号无效');
-    assert(nodes.has(p.node)||(p.imported===true&&p.node===null&&p.locationStatus==='pending'&&p.locationNodeId===null),'集合点路网节点无效');
+    assert(nodes.has(p.node)||((p.imported===true||D.isPickup(p))&&p.node===null&&p.locationStatus==='pending'&&p.locationNodeId===null),'集合点路网节点无效');
     if(p.locationStatus!==undefined)assert(['pending','located'].includes(p.locationStatus)&&(p.locationStatus==='located')===nodes.has(p.node)&&p.locationNodeId===p.node,'集合点定位状态不一致');
     if(p.longitude!==undefined&&p.longitude!==null||p.latitude!==undefined&&p.latitude!==null)assert(coordinate(p.longitude,p.latitude)&&p.coordinateSystem==='WGS84','集合点经纬度或坐标系无效');
     if(p.locationDistanceM!==undefined&&p.locationDistanceM!==null)assert(Number.isFinite(p.locationDistanceM)&&p.locationDistanceM>=0&&p.locationDistanceM<=MAX_DISTANCE_M,'集合点接驳距离无效');
@@ -81,6 +95,7 @@ function validateCatalog(d){
       if(p.locationDistanceM!==undefined&&p.locationDistanceM!==null)assert(Math.abs(p.locationDistanceM-metres)<0.2,'集合点接驳距离与坐标不一致');
     }
   }
+  D.validate(d);
   return true;
 }
 module.exports={resolve,prepareRow,metadata,validateCatalog,distance,MAX_DISTANCE_M,MAX_VILLAGES,MAX_PICKUPS};

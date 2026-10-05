@@ -1,5 +1,5 @@
 'use strict';
-// These villages and pickup points belong only to the synthetic exercise graph.
+// The base villages remain synthetic; real-road exercises add a public directory.
 const assert=(ok,message)=>{if(!ok)throw new Error(message);};
 const sum=(xs,f)=>xs.reduce((n,x)=>n+f(x),0);
 const number=(v,min,max,label)=>{assert(Number.isInteger(v)&&v>=min&&v<=max,`${label}须为 ${min}–${max} 的整数`);return v;};
@@ -10,6 +10,8 @@ function catalog(){return ['A','B','C'].map((letter,i)=>({id:'V'+letter,name:`�
 function ensure(d){
   if(d.villages===undefined)d.villages=catalog();
   if(d.villageReports===undefined)d.villageReports=[];
+  L.validateCatalog(d);
+  require('./ruian-directory.cjs').ensure(d);
   L.validateCatalog(d);
   assert(Array.isArray(d.villageReports)&&d.villageReports.every(r=>r&&typeof r.id==='string'&&d.villages.some(v=>v.id===r.villageId)&&Number.isInteger(r.people)&&r.people>=0&&r.people<=500&&['increment','snapshot','correction'].includes(r.mode)&&['pending','accepted','rejected','superseded'].includes(r.status)&&Array.isArray(r.householdIds)),'村级上报恢复数据无效');
   assert(new Set(d.villageReports.map(r=>r.id)).size===d.villageReports.length,'村级批次编号重复');
@@ -41,7 +43,7 @@ function villageMetrics(d){return (d.villages||[]).map(v=>{
   return {villageId:v.id,villageName:v.name,township:v.township,pendingPeople:sum(reports.filter(r=>r.status==='pending'&&r.mode==='increment'),r=>r.people),pendingReports:reports.filter(r=>r.status==='pending').length,pendingCorrections:reports.filter(r=>r.status==='pending'&&r.mode==='correction').length,pendingSnapshots:reports.filter(r=>r.status==='pending'&&r.mode==='snapshot').length,waiting,boarded:count('boarded'),arrived:count('arrived'),verified:count('verified'),people:sum(hs,h=>h.people)+unplannedPeople,unplannedPeople,unplannedBatches:reports.filter(r=>effective(r)&&r.needsInfo).length,latestSnapshot:latest?{id:latest.id,people:latest.people,observedAt:latest.observedAt,scope:latest.scope,difference:latest.people-waiting}:null};
 });}
 function details(d,p,people){
-  const v=d.villages.find(v=>v.id===p.villageId);assert(v,'请选择有效的演示村庄');
+  const v=d.villages.find(v=>v.id===p.villageId);assert(v,'请选择有效的地区或村庄');
   const pickupId=p.pickupId||null;assert(pickupId===null||v.pickups.some(x=>x.id===pickupId),'接人点必须属于当前村庄');
   const assistancePeople=p.assistancePeople===undefined?null:p.assistancePeople,wheelchairPeople=p.wheelchairPeople===undefined?null:p.wheelchairPeople;
   if(assistancePeople!==null)number(assistancePeople,0,people,'需协助人数');if(wheelchairPeople!==null)number(wheelchairPeople,0,people,'轮椅人数');

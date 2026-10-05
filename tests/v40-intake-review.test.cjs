@@ -79,7 +79,7 @@ test('human-selected location with complete needs remains ready after a road-bas
 });
 
 test('the review UI provides one count equation, editable fields and honest save wording',()=>{
-  const contextUI={window:{JiaoyingCommandIntake:intake}};vm.createContext(contextUI);vm.runInContext(fs.readFileSync(require.resolve('../dist/intake-ui.js'),'utf8'),contextUI);
+  const contextUI={window:{JiaoyingCommandIntake:intake,JiaoyingPlaceDirectory:require('../dist/place-directory.js')}};vm.createContext(contextUI);vm.runInContext(fs.readFileSync(require.resolve('../dist/intake-ui.js'),'utf8'),contextUI);
   const state={...context(),session:'s',metrics:{people:20,pendingVillagePeople:3},capabilities:{commandIntake:true}};state.data.revision=1;
   const changed=intake.updateRow(row(),'people','8',state),ui={draft:{rows:[{...changed,assistancePeople:null}],errors:[],warnings:[],revision:1,session:'s'},connected:true};
   const h={btn:(label,action,attrs='',cls='')=>`<button data-ac="${action}" ${attrs} class="${cls}">${label}</button>`,badge:s=>s,voiceHTML:()=>''};

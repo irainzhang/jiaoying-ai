@@ -69,7 +69,8 @@ test('road conversion refuses published or unmappable road incidents without res
 
 test('restoration rejects forged dynamic coordinates, nodes and duplicated directory IDs',()=>{
   const x=geo();intake(x,[row(coords(x))]);const d=x.data;
-  for(const mutate of [d=>{d.villages[3].pickups[0].node='unknown';},d=>{d.villages[3].id=d.villages[0].id;},d=>{d.villages[3].pickups[0].longitude=121;},d=>{d.villageReports[0].locationNodeId='H2';}]){const bad=JSON.parse(JSON.stringify(d));mutate(bad);assert.throws(()=>E.create(bad));}
+  const uploaded=d=>d.villages.find(v=>v.imported&&v.name==='瑞安上传村');
+  for(const mutate of [d=>{uploaded(d).pickups[0].node='unknown';},d=>{uploaded(d).id=d.villages[0].id;},d=>{uploaded(d).pickups[0].longitude=121;},d=>{d.villageReports[0].locationNodeId='H2';}]){const bad=JSON.parse(JSON.stringify(d));mutate(bad);assert.throws(()=>E.create(bad));}
 });
 
 test('partial plans may be manually confirmed with an automatic traceable note; version guards remain',()=>{

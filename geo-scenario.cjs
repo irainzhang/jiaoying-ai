@@ -29,6 +29,7 @@ function apply(d){
       synthetic:true,coordinateSource:'OpenStreetMap 历史道路节点；集合点用途为演练设定'});
   }
   d.lastAnnouncement='瑞安城区道路演练已就绪。真实 OSM 道路几何与单行方向参与求解；集合点、接收点用途、车辆、容量与时间为演练设定。';
+  require('./ruian-directory.cjs').ensure(d);
   return d;
 }
 
@@ -72,6 +73,7 @@ function convert(d){
     Object.assign(pickup,{longitude:node.longitude,latitude:node.latitude,coordinateSystem:'WGS84',locationNodeId:node.id,locationStatus:'located',locationDistanceM:0,locationSource:'catalog',locationReason:'原演练集合点对应公开道路节点；接送用途仍为演练设定',osmNodeId:node.osmNodeId,sourceUrl:node.sourceUrl});
   }
   const L=require('./intake-location.cjs');
+  require('./ruian-directory.cjs').ensure(d);
   for(const r of d.villageReports){const v=d.villages.find(v=>v.id===r.villageId);Object.assign(r,L.metadata(v,v.pickups.find(p=>p.id===r.pickupId)));}
   for(const h of s.households){const v=d.villages.find(v=>v.id===h.villageId);if(v)Object.assign(h,L.metadata(v,v.pickups.find(p=>p.id===h.pickupId)));}
   d.scenarioPreset='ruian-roads';

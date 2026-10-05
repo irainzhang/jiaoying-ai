@@ -50,7 +50,7 @@ function harness(role='command'){
     setTimeout:()=>1,clearTimeout(){},setInterval(){},matchMedia:()=>({matches:true}),
     fetch:(url,options)=>new Promise(resolve=>requests.push({url,options,resolve}))};
   context.window=context;vm.createContext(context);
-  for(const name of ['village-assistant.js','village-workspace.js','command-intake.js','intake-file.js','quick-context.js','review-form.js','workflow-ui.js','task-workbench.js'])vm.runInContext(fs.readFileSync(path.join(__dirname,'../dist',name),'utf8'),context,{filename:name});
+  for(const name of ['village-assistant.js','village-workspace.js','place-directory.js','command-intake.js','intake-file.js','quick-context.js','review-form.js','workflow-ui.js','task-workbench.js'])vm.runInContext(fs.readFileSync(path.join(__dirname,'../dist',name),'utf8'),context,{filename:name});
   const bootstrap='render();poll();setInterval(poll,1200);';
   const bridge=`window.testWorkflow={seed(next){state=next;connected=true;draftLoaded=true;},inspect(){return {view,commandSection,fieldSection,modal,busy,intake,quickText,quickDraft,villageForm,fieldVehicle,fieldHousehold,fieldLocation,reviewBound:!!reviewBinding};},acceptState,clickAction,navigate,reveal,action,readIntakeFile,workspaceNavHTML,commitIntakePlace,intakePlaceOptions,restoreIntakeDraft(){draftLoaded=false;restoreDraft();}};`;
   const source=fs.readFileSync(path.join(__dirname,'../dist/workspace-app.js'),'utf8');assert.ok(source.includes(bootstrap));vm.runInContext(source.replace(bootstrap,bridge),context,{filename:'workspace-app.js'});
@@ -214,12 +214,12 @@ test('V4 Guardian publication review selects the freshly calculated primary draf
  const h=harness(),f=fixture();assert.ok(f.store.data.alternative);h.controller.seed(f.snapshot());await h.click('alternative');const current={session:f.snapshot().session,revision:f.store.data.revision,inputVersion:f.store.data.inputVersion,executionVersion:f.store.data.executionVersion};h.guardian.openPublicationReview(current);assert.equal(h.controller.inspect().modal.alternative,false);assert.ok(h.elements['dialog-content'].innerHTML.includes(f.store.data.plan.id));assert.ok(!h.elements['dialog-content'].innerHTML.includes(f.store.data.alternative.id));assert.equal(h.requests.length,0);
 });
 
-test('V4.0.1 searchable quick entry preserves a new district and routes incomplete demand to follow-up',async()=>{
+test('V4.0.2 searchable quick entry preserves a registered district and routes incomplete demand to follow-up',async()=>{
  const h=harness(),f=fixture(E.createBlank({mapMode:'ruian-roads'}));h.controller.seed(f.snapshot());
  const district={id:'intake-scope-village',value:'玉海街道',dataset:{intakeScope:'villageName'}};
  h.controller.commitIntakePlace(district,'玉海街道',null,{reason:'blur'});
  h.input('intake-fast-people','10',{intakeFast:'people'});await h.click('intake-fast-prepare');
- const draft=h.controller.inspect().intake.draft;assert.equal(draft.rows.length,1);assert.equal(draft.rows[0].villageName,'玉海街道');assert.equal(draft.rows[0].people,10);assert.equal(draft.rows[0].villageId,'');assert.equal(draft.rows[0].assistancePeople,null);assert.equal(draft.errors.length,0);
+ const draft=h.controller.inspect().intake.draft;assert.equal(draft.rows.length,1);assert.equal(draft.rows[0].villageName,'玉海街道');assert.equal(draft.rows[0].people,10);assert.equal(draft.rows[0].villageId,f.store.data.villages.find(v=>v.name==='玉海街道').id);assert.equal(draft.rows[0].assistancePeople,null);assert.equal(draft.errors.length,0);
  const pending=h.click('intake-submit'),body=JSON.parse(h.requests[0].options.body);assert.equal(body.payload.rows[0].people,10);assert.equal(body.payload.rows[0].villageName,'玉海街道');h.respond(0,f);await pending;assert.equal(E.metrics(f.store.data).people,10);assert.equal(h.controller.inspect().commandSection,'inbox');assert.equal(f.store.data.plan?.servedPeople||0,0);
 });
 

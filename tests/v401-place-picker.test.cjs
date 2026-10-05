@@ -15,7 +15,7 @@ class Element{
   appendChild(node){node.parent=this;this.children.push(node);return node;}
   remove(){if(this.parent)this.parent.children=this.parent.children.filter(c=>c!==this);this.parent=null;}
   contains(node){return this===node||this.children.some(c=>c.contains(node));}
-  querySelector(sel){if(sel==='.place-picker-input')return this.input;if(sel==='.place-picker-toggle')return this.toggle;if(sel==='.place-picker-list')return this.list;return null;}
+  querySelector(sel){if(sel==='.place-picker-input')return this.input;if(sel==='.place-picker-toggle')return this.toggle;if(sel==='.place-picker-control')return this.control;if(sel==='.place-picker-list')return this.list;return null;}
   querySelectorAll(sel){if(sel==='[data-place-option]')return this.items||[];return [];}
   getBoundingClientRect(){return {width:220,left:30,top:40,bottom:84};}
   focus(){this.fire('focus');}
@@ -24,9 +24,9 @@ class Element{
   set innerHTML(value){this.markup=value;this.list=new Element();this.items=[...value.matchAll(/id="([^"]*)" data-place-option="(\d+)"/g)].map(([,id,index])=>{const item=new Element();item.id=id;item.dataset.placeOption=index;return item;});this.children=[this.list,...this.items];for(const node of this.children)node.parent=this;}
   get innerHTML(){return this.markup||'';}
 }
-function fixture({value='',options=choices,getOptions,disabled=false}={}){
+function fixture({value='',options=choices,getOptions,disabled=false,controlRect}={}){
   const doc=new Element(),win=new Element(),body=new Element();win.innerWidth=1024;win.innerHeight=768;doc.body=body;doc.defaultView=win;doc.createElement=tag=>new Element(tag);
-  const wrapper=new Element(),input=new Element('input'),toggle=new Element('button');input.id='village';input.value=value;input.disabled=disabled;input.setAttribute('aria-label','地区 / 村庄');wrapper.dataset.placeOptions=JSON.stringify(options);wrapper.input=input;wrapper.toggle=toggle;wrapper.appendChild(input);wrapper.appendChild(toggle);
+  const wrapper=new Element(),input=new Element('input'),toggle=new Element('button'),control=new Element();input.id='village';input.value=value;input.disabled=disabled;input.setAttribute('aria-label','地区 / 村庄');wrapper.dataset.placeOptions=JSON.stringify(options);wrapper.input=input;wrapper.toggle=toggle;wrapper.control=control;control.getBoundingClientRect=()=>controlRect||{width:264,left:30,top:40,bottom:86};wrapper.appendChild(control);control.appendChild(input);control.appendChild(toggle);
   const root=new Element();root.ownerDocument=doc;root.querySelectorAll=()=>[wrapper];const commits=[];
   const cleanup=P.bind(root,{getOptions,onCommit:(...args)=>commits.push(args)});
   return {doc,win,root,wrapper,input,toggle,commits,cleanup,portal:()=>body.children[0],type(text){input.value=text;return input.fire('input');},choose(index){const popup=body.children[0];popup.fire('click',{target:popup.items[index]});}};
@@ -92,3 +92,10 @@ test('fixed body portal is outside overflow table; outside click closes and clea
 });
 
 test('disabled picker does not open or change host data',()=>{const f=fixture({disabled:true});f.toggle.fire('click');assert.equal(f.portal(),undefined);assert.equal(f.commits.length,0);f.cleanup();});
+
+test('popup anchors to the full input and toggle control, and stays inside a resized mobile viewport',()=>{
+  const f=fixture({controlRect:{width:520,left:90,top:40,bottom:86}});f.toggle.fire('click');
+  assert.equal(f.portal().style.width,'520px');assert.equal(f.portal().style.left,'90px');assert.equal(f.portal().style.top,'92px');
+  f.win.innerWidth=390;f.win.fire('resize');assert.equal(f.portal().style.width,'366px');assert.equal(f.portal().style.left,'12px');
+  assert.equal(f.input.getAttribute('aria-expanded'),'true');f.input.fire('keydown',{key:'ArrowDown'});f.input.fire('keydown',{key:'Enter'});assert.equal(f.commits[0][2].id,'V-A');f.cleanup();
+});

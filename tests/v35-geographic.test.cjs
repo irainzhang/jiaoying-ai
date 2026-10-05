@@ -54,7 +54,9 @@ test('every retained geographic junction is reachable in both directions and bus
   for(const village of d.villages)for(const pickup of village.pickups){
     const node=s.nodes.find(n=>n.id===pickup.node);
     assert.equal(pickup.longitude,node.longitude);assert.equal(pickup.latitude,node.latitude);
-    assert.equal(pickup.synthetic,true);assert.match(pickup.coordinateSource,/用途为演练/);
+    if(village.legacyDemo)assert.equal(pickup.synthetic,true);
+    else{assert.equal(pickup.catalogSource,'ruian-places-v1');assert.equal(pickup.synthetic,false);assert.equal(pickup.purposeSynthetic,true);}
+    assert.match(pickup.coordinateSource,/用途为演练/);
   }
 });
 

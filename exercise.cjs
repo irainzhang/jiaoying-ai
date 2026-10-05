@@ -255,7 +255,9 @@ function create(initialData=null){
         assert(!(T.isClosed(d)&&restored.exerciseId===d.exerciseId&&!T.isClosed(restored)),'已结束的同一任务不能通过旧存档重新打开，请新建下一场任务');
         const knownClosed=(d.taskArchives||[]).find(row=>row.exerciseId===restored.exerciseId);
         assert(!knownClosed||T.isClosed(restored),'历史已结束任务不能恢复为进行中');
-        if(knownClosed)assert(JSON.stringify(knownClosed.data)===JSON.stringify(Object.fromEntries(Object.entries(restored).filter(([key])=>key!=='taskArchives'))),'历史任务备份与已保留事实不一致，拒绝覆盖，请在另一浏览器核对');
+        // Apply the same additive directory migration to both copies before
+        // comparing facts. Never mutate the archived original during import.
+        if(knownClosed){const comparable=x=>Object.fromEntries(Object.entries(x).filter(([key])=>key!=='taskArchives'));assert(JSON.stringify(comparable(restore(knownClosed.data,{external:true})))===JSON.stringify(comparable(restored)),'历史任务备份与已保留事实不一致，拒绝覆盖，请在另一浏览器核对');}
         const old=clone(d);if(!T.isClosed(old))T.close(old,{mode:'stopped',note:'人工导入另一场任务，原任务事实完整保留'},now());
         const archives=T.mergeArchives(...[[T.archive(old)],d.taskArchives||[],restored.taskArchives||[]].map(rows=>rows.filter(row=>row.exerciseId!==restored.exerciseId)));
         assert(T.isClosed(restored)||restored.phase==='executing'||Object.values(restored.stage).every(st=>!['boarded','arrived','verified'].includes(st)),'准备阶段不能包含已上车或到达执行记录');
