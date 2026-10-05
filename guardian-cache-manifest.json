@@ -1,5 +1,5 @@
 {
-  "build": "cbaa4d9d9a6382919b86",
+  "build": "0226dfccbaf5202f4fbf",
   "files": [
     "assets/evaluation.json",
     "assets/logo-lockup.png",
@@ -80,6 +80,8 @@
     "real-map.css",
     "real-map.js",
     "release.json",
+    "review-form.css",
+    "review-form.js",
     "start-page.css",
     "start-page.js",
     "start.html",
@@ -93,6 +95,8 @@
     "voice-input.js",
     "weather-panel.css",
     "weather-panel.js",
+    "workflow-ui.css",
+    "workflow-ui.js",
     "workspace-app.js",
     "workspace.css"
   ]
