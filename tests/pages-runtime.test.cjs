@@ -34,6 +34,28 @@ function setup(storage=database(),channels=null){
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
 const report={villageId:'VA',mode:'increment',people:7,pickupId:'P-A1',assistancePeople:2,wheelchairPeople:1,groupPolicy:'splittable',text:'演示村新增7人，2人协助，其中1人轮椅',reporter:'演示员',source:'voice'};
 
+test('closing a task notifies both Pages tabs and rejects stale or closed writes without losing pending work',async()=>{
+  const channels=new Set(),storage=database(),a=setup(storage,channels),b=setup(storage,channels),initial=await a.get();
+  assert.equal(initial.capabilities.taskLifecycle,true);assert.equal(initial.taskSummary.canComplete,false);
+  const pending=await (await a.post(initial,'village-report',report)).json(),received=[];
+  const stream=new b.api.EventSource('/api/v3/events');stream.addEventListener('state',event=>received.push(JSON.parse(event.data)));await tick();
+  const ended=await (await a.post(pending,'end-task',{mode:'stopped'},'close-task')).json();await tick();
+  assert.equal(ended.data.taskLifecycle.status,'stopped');assert.equal(received.at(-1).data.taskLifecycle.status,'stopped');assert.equal(ended.taskSummary.pendingVillagePeople,7);
+  assert.equal((await b.post(pending,'weather',{rainfall:80})).status,409);
+  const refused=await b.post(ended,'field-progress',{stage:'ack'});assert.equal(refused.status,422);assert.match((await refused.json()).error,/已结束/);
+  assert.equal((await a.post(pending,'end-task',{mode:'stopped'},'close-task')).status,200);assert.deepEqual((await a.get()).data,ended.data);
+  const reopened=setup(storage);assert.equal((await reopened.get()).data.taskLifecycle.status,'stopped');await reopened.api.close();await a.api.close();await b.api.close();
+});
+
+test('new task is an atomic same-session revision and retry never creates an extra archive',async()=>{
+  const a=setup(),initial=await a.get(),closed=await (await a.post(initial,'end-task',{mode:'stopped'})).json();
+  a.storage.fail=true;assert.equal((await a.post(closed,'new-task',{},'new-task-once')).status,503);assert.equal(a.storage.saved.data.exerciseId,closed.data.exerciseId);a.storage.fail=false;
+  const next=await (await a.post(closed,'new-task',{},'new-task-once')).json();assert.equal(next.session,closed.session);assert.equal(next.data.revision,closed.data.revision+1);assert.notEqual(next.data.exerciseId,closed.data.exerciseId);assert.equal(next.data.taskArchives.length,1);
+  const reopened=setup(a.storage),duplicate=await reopened.post(closed,'new-task',{},'new-task-once');assert.equal((await duplicate.json()).duplicate,true);assert.equal((await reopened.get()).data.taskArchives.length,1);
+  // Replaying the old closure also stays idempotent instead of closing this new task.
+  assert.equal(next.data.taskLifecycle.status,'active');await reopened.api.close();await a.api.close();
+});
+
 test('fresh Pages visitors receive synthetic plans; same store restores and separate visitors are isolated',async()=>{
   const a=setup(),initial=await a.get();
   assert.equal(initial.metrics.people,15);assert.equal(initial.metrics.waiting,15);assert.equal(initial.metrics.arrived,0);

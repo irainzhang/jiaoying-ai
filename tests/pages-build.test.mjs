@@ -30,7 +30,7 @@ test('stale assets and vendor output files never enter the publication or offlin
 });
 
 test('published build loads the real solver and supports its dynamic large-dispatch module',async()=>{
-  const context=vm.createContext({window:{},console});
+  const context=vm.createContext({window:{},console,TextEncoder});
   vm.runInContext(await read('engine.js'),context);
   // UMD engine attaches to globalThis in a browser (window === globalThis).
   context.window.JiaoyingEngine=context.JiaoyingEngine;
@@ -42,6 +42,12 @@ test('published build loads the real solver and supports its dynamic large-dispa
   assert.ok(x.data.baseline);
   x.action('confirm');
   assert.equal(x.data.activePlan.id,x.data.plan.id);
+  x.action('end-task',{mode:'stopped'});
+  x.action('new-task');
+  const restored=engine.create(x.data);
+  assert.equal(restored.data.taskArchives.length,1);
+  assert.equal(restored.data.taskArchives[0].data.taskLifecycle.status,'stopped');
+  assert.equal(restored.data.taskLifecycle.status,'active');
   assert.equal(context.window.JiaoyingPagesIntegrations.integrationStatus.agent.connected,false);
 });
 

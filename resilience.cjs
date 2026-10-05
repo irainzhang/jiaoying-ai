@@ -124,6 +124,13 @@ function validateState(d){
     assert(object(i.scenario)&&['nodes','edges','households','vehicles','shelters'].every(key=>Array.isArray(i.scenario[key]))&&object(i.stage)&&object(i.fleet)&&object(i.occupancy)&&Array.isArray(i.unplannedRequests),'恢复草案快照结构无效');
   }else assert(d.baseline===null&&d.alternative===null&&(d.planSnapshot===null||d.planSnapshot===undefined),'恢复草案与配套结果不一致');
   for(const p of d.history)checkPlan(p,s,'历史方案');
+  require('./lifecycle.cjs').validate(d,archived=>{
+    validateState(archived);
+    // Validate village references and limits in archived snapshots as strictly
+    // as the current state, without mutating the historical record.
+    const copy=JSON.parse(JSON.stringify(archived)),V=require('./village-ledger.cjs');
+    V.ensure(copy);V.checkLimits(copy,0);
+  });
   return d;
 }
 

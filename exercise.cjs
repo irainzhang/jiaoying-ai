@@ -4,6 +4,7 @@ const E=require('./dist/engine.js');
 const V=require('./village-ledger.cjs');
 const R=require('./resilience.cjs');
 const L=require('./intake-location.cjs');
+const T=require('./lifecycle.cjs');
 const clone=E.clone;
 const ALGORITHM='ruian-candidate-search-3.0';
 const BASELINE='risk-nearest-feasible-3.0';
@@ -25,7 +26,7 @@ function initial(){
   const d={schema:'jiaoying-v3',exerciseId:'EX-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8),createdAt:now(),scenarioPreset:'normal',followups:{},revision:1,inputVersion:1,executionVersion:1,algorithm:ALGORITHM,phase:'preparation',scenario,stage:{},contacts:{},fleet:{},occupancy:{S1:0,S2:0},reports:[],fieldEvents:[],taskAcks:{},history:[],log:[],plan:null,baseline:null,alternative:null,activePlan:null,planSnapshot:null,planCounter:0,weather:{sourceMode:'simulation',level:1,rainfall:20,unit:'mm',window:'演练最近1小时累计',updatedAt:now(),trigger:'初始演练条件'},lastAnnouncement:'瑞安合成演练已就绪。6 户 15 人，3 辆车，2 个安置点。'};
   for(const h of scenario.households){d.stage[h.id]='waiting';d.contacts[h.id]={ack:false,contacted:false};}
   for(const v of scenario.vehicles)d.fleet[v.id]={node:v.start,minute:0,onboard:[],delivered:[],finished:false};
-  d.log.push({id:1,time:now(),type:'init',message:d.lastAnnouncement});return V.ensure(d);
+  d.log.push({id:1,time:now(),type:'init',message:d.lastAnnouncement});return T.ensure(V.ensure(d));
 }
 function snapshot(d){return clone({scenario:d.scenario,stage:d.stage,fleet:d.fleet,occupancy:d.occupancy,inputVersion:d.inputVersion,executionVersion:d.executionVersion,unplannedRequests:V.unplannedRequests(d)});}
 function routeBuilder(i){
@@ -117,7 +118,7 @@ function restore(initialData,{external=false}={}){
   if(d.followups===undefined)d.followups={};
   if(d.createdAt===undefined)d.createdAt=d.log.find(x=>x.type==='init')?.time||d.log.at(-1)?.time||'2026-09-23T00:00:00.000Z';
   if(d.exerciseId===undefined)d.exerciseId='EX-legacy-'+String(d.createdAt).replace(/[^0-9]/g,'').slice(0,17);
-  V.ensure(d);V.checkLimits(d,0);
+  V.ensure(d);V.checkLimits(d,0);T.ensure(d);
   if(external&&d.plan){
     assert(d.planSnapshot&&d.plan.inputVersion===d.inputVersion&&d.plan.executionVersion===d.executionVersion,'恢复草案输入版本不符');
     assert(JSON.stringify(d.planSnapshot.scenario)===JSON.stringify(d.scenario)&&JSON.stringify(d.planSnapshot.stage)===JSON.stringify(d.stage)&&JSON.stringify(d.planSnapshot.fleet)===JSON.stringify(d.fleet)&&JSON.stringify(d.planSnapshot.occupancy)===JSON.stringify(d.occupancy),'恢复草案与输入快照不符');
@@ -149,12 +150,37 @@ function create(initialData=null){
     d.executionVersion++;d.plan=null;d.baseline=null;d.alternative=null;d.planSnapshot=null;d.lastAnnouncement=d.log[0].message;
     return {...result,summary:d.lastAnnouncement};
   }
+  function verifyArrivals(ids,batch=false){
+    assert(Array.isArray(ids)&&ids.length>0&&ids.length<=V.MAX_GROUPS,'请选择 1–200 组已到达人员进行核验');
+    assert(ids.every(id=>typeof id==='string')&&new Set(ids).size===ids.length,'核验人员编号无效或重复');
+    for(const id of ids)assert(d.scenario.households.some(h=>h.id===id)&&d.stage[id]==='arrived','请先有到达登记；本批包含不存在、未到达或已核验的人员，整批未提交');
+    const people=sum(ids,id=>d.scenario.households.find(h=>h.id===id).people);
+    for(const id of ids)d.stage[id]='verified';
+    d.executionVersion++;d.plan=null;d.baseline=null;d.alternative=null;d.planSnapshot=null;
+    log(batch?`本批 ${ids.length} 组、${people} 人到达记录已经人工核验。`:ids[0]+' 到达记录已经人工核验。','verify');
+    if(batch){d.log[0].householdIds=[...ids];d.log[0].people=people;}
+    d.lastAnnouncement=d.log[0].message;
+  }
   function action(name,p={}){
     const before=clone(d);
     try{
-      if(name==='reset'){const revision=d.revision;d=initial();d.revision=revision;log('人工重置演练，两个网页同步恢复初始数据。');}
+      assert(!T.isClosed(d)||['new-task','restore'].includes(name),'当前任务已结束，两端记录均为只读；请查看记录、导出或新建下一场任务');
+      if(name==='end-task'){
+        const closed=T.close(d,p,now());
+        d.lastAnnouncement=(closed.status==='completed'?'本场任务全部完成并结束。':'本场任务已提前结束。')+'已核验 '+closed.summary.verified+' 人；待接 '+closed.summary.waiting+' 人、在途 '+closed.summary.boarded+' 人、到达待核验 '+closed.summary.arrived+' 人、待核实 '+closed.summary.pendingReports+' 条。原始记录保留，两端进入只读。';
+        log(d.lastAnnouncement,'end-task');
+      }
+      else if(name==='new-task'){
+        assert(T.isClosed(d),'请先结束当前任务，再新建下一场');
+        const revision=d.revision,realRoads=d.scenario.region.mapKind==='osm-road-network',archives=T.mergeArchives([T.archive(d)],d.taskArchives);
+        d=initial();d.revision=revision;d.taskArchives=archives;
+        if(realRoads){require('./geo-scenario.cjs').apply(d);d.scenarioPreset='ruian-roads';}
+        generate('新场任务已建立，恢复 15 人演练底数');
+        d.lastAnnouncement='已新建独立任务 '+d.exerciseId+'，'+archives.length+' 场历史及未完成记录完整保留；当前为新的 15 人演练底数。';log(d.lastAnnouncement,'new-task');
+      }
+      else if(name==='reset'){const revision=d.revision,archives=d.taskArchives;d=initial();d.revision=revision;d.taskArchives=archives;log('人工重置演练，两个网页同步恢复初始数据。');}
       else if(name==='scenario'){
-        assert(R.catalog.some(x=>x.id===p.id),'示范情景不存在');const revision=d.revision;d=initial();d.revision=revision;d.scenarioPreset=p.id;
+        assert(R.catalog.some(x=>x.id===p.id),'示范情景不存在');const revision=d.revision,archives=d.taskArchives;d=initial();d.revision=revision;d.taskArchives=archives;d.scenarioPreset=p.id;
         if(p.id==='ruian-roads')require('./geo-scenario.cjs').apply(d);
         if(p.id==='road-closure'){d.scenario.edges.find(e=>e.id==='east').open=false;d.reports.unshift({id:'R1',kind:'road',location:'east',text:'标准情景：东桥经演练核实中断',people:0,status:'accepted',reporter:'情景演示',inputSource:'manual',createdAt:now(),reviewedAt:now(),note:'标准情景条件，不代表实时路况'});}
         if(p.id==='resource-shortage'){d.scenario.vehicles[0].available=false;d.scenario.vehicles[0].unavailableReason='标准情景：车辆故障，等待维修或增援';}
@@ -169,12 +195,19 @@ function create(initialData=null){
       else if(name==='restore'){
         const imported=p.data?.schema?p.data:p.data?.data;assert(imported,'请选择完整的演练 JSON 导出文件');
         const restored=restore(imported,{external:true}),revision=d.revision;
-        assert(restored.phase==='executing'||Object.values(restored.stage).every(st=>!['boarded','arrived','verified'].includes(st)),'准备阶段不能包含已上车或到达执行记录');
+        assert(!(T.isClosed(d)&&restored.exerciseId===d.exerciseId&&!T.isClosed(restored)),'已结束的同一任务不能通过旧存档重新打开，请新建下一场任务');
+        const knownClosed=(d.taskArchives||[]).find(row=>row.exerciseId===restored.exerciseId);
+        assert(!knownClosed||T.isClosed(restored),'历史已结束任务不能恢复为进行中');
+        const archives=T.mergeArchives(...[(T.isClosed(d)&&d.exerciseId!==restored.exerciseId)?[T.archive(d)]:[],d.taskArchives||[],restored.taskArchives||[]].map(rows=>rows.filter(row=>row.exerciseId!==restored.exerciseId)));
+        assert(T.isClosed(restored)||restored.phase==='executing'||Object.values(restored.stage).every(st=>!['boarded','arrived','verified'].includes(st)),'准备阶段不能包含已上车或到达执行记录');
         // External imports never authorize an imported route for execution.
         // Boarding/delivery ledgers stay intact and the new candidate is computed locally.
-        d=restored;d.revision=revision;d.plan=null;d.baseline=null;d.alternative=null;d.activePlan=null;d.planSnapshot=null;d.history=[];d.taskAcks={};d.inputVersion++;d.executionVersion++;
-        d.importedAt=now();d.importedRevision=imported.revision;generate('导入校验通过；已撤销导入文件中的发布状态，保留车载与到达记录');
-        log('文件恢复完成：保留人员执行台账，所有剩余安排须重新人工确认。','restore');
+        d=restored;d.revision=revision;d.taskArchives=archives;
+        d.importedAt=now();d.importedRevision=imported.revision;
+        if(T.isClosed(d)){d.lastAnnouncement='已恢复结束任务的只读记录；人员、发布和未完成状态原样保留。';log(d.lastAnnouncement,'restore');}
+        else{d.plan=null;d.baseline=null;d.alternative=null;d.activePlan=null;d.planSnapshot=null;d.history=[];d.taskAcks={};d.inputVersion++;d.executionVersion++;
+          generate('导入校验通过；已撤销导入文件中的发布状态，保留车载与到达记录');
+          log('文件恢复完成：保留人员执行台账，所有剩余安排须重新人工确认。','restore');}
       }
       else if(name==='resource-event'){
         assert(['vehicle','shelter'].includes(p.kind),'资源事件类型无效');assert(typeof p.available==='boolean','请明确资源是否可用');
@@ -290,7 +323,10 @@ function create(initialData=null){
         advanceVehicle(p.vehicleId);
       }
       else if(name==='verify'){
-        assert(d.stage[p.id]==='arrived','请先有到达登记');d.stage[p.id]='verified';d.executionVersion++;d.plan=null;d.baseline=null;d.alternative=null;d.planSnapshot=null;log(p.id+' 到达记录已经人工核验。','verify');d.lastAnnouncement=d.log[0].message;
+        verifyArrivals([p.id]);
+      }
+      else if(name==='verify-arrivals'){
+        verifyArrivals(p.ids,true);
       }
       else if(name==='edit'){
         assert(d.phase==='preparation','执行中请通过现场反馈处理变化');const kind=p.kind;assert(['households','vehicles','shelters'].includes(kind),'编辑对象无效');const item=d.scenario[kind].find(x=>x.id===p.id);assert(item,'对象不存在');
@@ -309,4 +345,4 @@ function create(initialData=null){
   }
   return {get data(){return clone(d);},action,fresh};
 }
-module.exports={create,initial,snapshot,solve,baseline,validate,metrics,diagnostics,restore,scenarioCatalog:R.catalog,villageMetrics:V.villageMetrics,blockedRoute,ALGORITHM,BASELINE};
+module.exports={create,initial,snapshot,solve,baseline,validate,metrics,diagnostics,restore,taskSummary:T.summary,scenarioCatalog:R.catalog,villageMetrics:V.villageMetrics,blockedRoute,ALGORITHM,BASELINE};

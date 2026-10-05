@@ -132,7 +132,7 @@ test('the operations guide navigates from a different section to planning, execu
   await h.operation('guide-next');await h.operation('guide-locate','task-panel');
   assert.equal(h.controller.inspect().commandSection,'execution');
   await h.operation('guide-next');await h.operation('guide-locate','ops-report');
-  assert.equal(h.controller.inspect().commandSection,'more');assert.equal(h.controller.inspect().tab,'report');
+  assert.equal(h.controller.inspect().commandSection,'records');assert.equal(h.controller.inspect().tab,'report');
   assert.equal(h.requests.length,0,'the guide locates actions without performing them');
 });
 
