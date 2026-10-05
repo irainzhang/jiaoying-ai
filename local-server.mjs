@@ -6,22 +6,27 @@ import {fileURLToPath} from 'node:url';
 import {randomUUID} from 'node:crypto';
 import Exercise from './exercise.cjs';
 import {integrationStatus,agentContract} from './integrations.mjs';
+import {createRoomAccess} from './room-access.mjs';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'dist');
 const mime={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.json':'application/json; charset=utf-8','.svg':'image/svg+xml','.png':'image/png'};
-export function createExerciseServer({initialData=null,persistenceFile=null}={}){
+export function createExerciseServer({initialData=null,persistenceFile=null,startMode='sample',sharedRoom=null}={}){
+  const room=sharedRoom?createRoomAccess(sharedRoom):null;
   let savedAt=null;
   if(initialData===null&&persistenceFile&&existsSync(persistenceFile)){
     const saved=JSON.parse(readFileSync(persistenceFile,'utf8'));
     if(saved.format!==1||!saved.data)throw new Error('本地存档格式无效，未覆盖原文件');
     initialData=saved.data;savedAt=saved.savedAt;
   }
-  let store=Exercise.create(initialData);const session=randomUUID(),seen=new Map(),clients=new Set();if(initialData===null)store.action('generate');
+  let store=Exercise.create(initialData===null&&startMode==='blank'?Exercise.createBlank({mapMode:'ruian-roads'}):initialData);const session=randomUUID(),seen=new Map(),clients=new Set();if(initialData===null&&startMode!=='blank')store.action('generate');
   function persist(data){if(!persistenceFile)return;const time=new Date().toISOString();mkdirSync(dirname(resolve(persistenceFile)),{recursive:true});writeFileSync(persistenceFile+'.writing',JSON.stringify({format:1,savedAt:time,data}),'utf8');renameSync(persistenceFile+'.writing',persistenceFile);savedAt=time;}
   if(persistenceFile)persist(store.data);
   const transport={preferred:'sse',eventsUrl:'/api/v3/events',eventName:'state',pollIntervalMs:1200};
-  const capabilities={realtimeEvents:true,villageReporting:true,commandIntake:true,mapDemandLocation:true,roadMapConversion:true,numericRainfall:true,taskLifecycle:true,version:'3.9.1',operations:true,stateRestore:true,persistentStorage:!!persistenceFile,crossDeviceSync:false};
-  const state=()=>{const data=store.data;return {session,data,savedAt,diagnostics:Exercise.diagnostics?.(data),metrics:Exercise.metrics(data),taskSummary:Exercise.taskSummary?.(data),mapConversion:Exercise.mapConversionStatus(data),villageLedger:Exercise.villageMetrics(data),blockedVehicles:data.activePlan?.routes.filter(r=>Exercise.blockedRoute(data,r)).map(r=>r.vehicleId)||[],integrations:integrationStatus,transport,capabilities};};
-  const maxClients=24,maxBufferedBytes=128*1024,heartbeatMs=15000;
+  const connection={mode:room?'lan-room':'local',roomId:room?.roomId||null,shared:!!room,scopeLabel:room?'同 Wi-Fi 房间':'仅本机浏览器',speechNote:room?'手机 HTTP 页面可能不支持浏览器语音识别，可使用系统键盘语音听写。':''};
+  const capabilities={realtimeEvents:true,villageReporting:true,commandIntake:true,mapDemandLocation:true,roadMapConversion:true,numericRainfall:true,taskLifecycle:true,version:'4.0.0',operations:true,stateRestore:true,persistentStorage:!!persistenceFile,crossDeviceSync:!!room};
+  const state=()=>{const data=store.data;return {session,data,savedAt,connection,diagnostics:Exercise.diagnostics?.(data),metrics:Exercise.metrics(data),taskSummary:Exercise.taskSummary?.(data),mapConversion:Exercise.mapConversionStatus(data),villageLedger:Exercise.villageMetrics(data),blockedVehicles:data.activePlan?.routes.filter(r=>Exercise.blockedRoute(data,r)).map(r=>r.vehicleId)||[],integrations:integrationStatus,transport,capabilities};};
+  // Road snapshots and retained task history can exceed 128 KiB. Permit one
+  // bounded full snapshot while still disconnecting readers that stop draining.
+  const maxClients=24,maxBufferedBytes=8*1024*1024,heartbeatMs=15000;
   let heartbeat=null;
   function removeClient(client){clients.delete(client);clearTimeout(client.drainTimer);client.res.off('drain',client.onDrain);if(!clients.size&&heartbeat){clearInterval(heartbeat);heartbeat=null;}}
   function writeEvent(client,frame){
@@ -45,9 +50,23 @@ export function createExerciseServer({initialData=null,persistenceFile=null}={})
   const server=http.createServer(async(req,res)=>{
     try{
       const url=new URL(req.url,'http://localhost'),host=new URL('http://'+req.headers.host).hostname;
-      if(!['localhost','127.0.0.1','[::1]'].includes(host)){json(res,403,{error:'仅供本机演练'});return;}
+      if(room?(!room.acceptsHost(host)||!room.acceptsAddress(req.socket.remoteAddress)):!['localhost','127.0.0.1','[::1]'].includes(host)){json(res,403,{error:room?'仅允许本房间列出的同 Wi-Fi 地址':'仅供本机演练'});return;}
       if(req.headers.origin&&req.headers.origin!=='http://'+req.headers.host){json(res,403,{error:'请求来源不匹配'});return;}
-      if(url.pathname==='/api/v3/state'&&req.method==='GET'){const current=store.data;if(url.searchParams.get('session')===session&&Number(url.searchParams.get('after'))===current.revision)json(res,200,{session,unchanged:true,revision:current.revision,transport,capabilities});else json(res,200,state());return;}
+      if(room){
+        if(req.method==='POST'&&req.headers.origin!=='http://'+req.headers.host){json(res,403,{error:'房间提交必须来自同一网页地址'});return;}
+        if(url.pathname==='/join'&&req.method==='GET'){res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','Referrer-Policy':'no-referrer','X-Content-Type-Options':'nosniff'});res.end(room.page());return;}
+        if(url.pathname==='/api/v3/room/join'&&req.method==='POST'){
+          if(!req.headers['content-type']?.startsWith('application/json')){json(res,415,{error:'需要 JSON 请求'});return;}
+          const chunks=[];let bytes=0;for await(const chunk of req){bytes+=chunk.length;if(bytes>2048){json(res,413,{error:'加入信息过长'});return;}chunks.push(chunk);}
+          let input;try{input=JSON.parse(Buffer.concat(chunks).toString('utf8'));}catch(_){json(res,400,{error:'JSON 格式无效'});return;}
+          const joined=room.join(req,input?.token);if(joined.cookie)res.setHeader('Set-Cookie',joined.cookie);json(res,joined.status,joined.cookie?{joined:true,roomId:room.roomId}:{error:joined.error});return;
+        }
+        if(!room.authorized(req)){
+          if(url.pathname.startsWith('/api/'))json(res,401,{error:'请先使用房间加入链接登录本次演练',joinUrl:'/join'});
+          else{res.writeHead(303,{'Location':'/join','Cache-Control':'no-store'});res.end();}return;
+        }
+      }
+      if(url.pathname==='/api/v3/state'&&req.method==='GET'){const current=store.data;if(url.searchParams.get('session')===session&&Number(url.searchParams.get('after'))===current.revision)json(res,200,{session,unchanged:true,revision:current.revision,transport,capabilities,connection});else json(res,200,state());return;}
       if(url.pathname==='/api/v3/events'&&req.method==='GET'){subscribe(req,res);return;}
       if(url.pathname==='/api/v3/integrations'&&req.method==='GET'){json(res,200,{integrations:integrationStatus,agentContract});return;}
       if(url.pathname==='/api/v3/agent'){json(res,501,{error:'Agent 接口已预留，本版本未连接外部模型',contract:agentContract});return;}

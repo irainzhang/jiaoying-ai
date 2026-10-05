@@ -14,6 +14,7 @@ function harness(failure='',manifestBuild='test'){
 }
 test('offline installation reports ready only after every file exists and serves query URLs after the network disappears',async()=>{
   const h=harness();await h.run('install');await h.run('activate');assert.deepEqual(h.actions,['skip','claim']);assert.ok(h.messages.some(x=>x.ready));
+  const progress=h.messages.find(x=>x.ready===false);assert.equal(progress.build,'test');assert.equal(progress.version,'3.9.1');assert.match(progress.message,/离线文件/);
   h.env.fetch=async()=>{throw Error('offline');};
   assert.match(await (await h.request('?v=3.7')).text(),/index.html/);
   assert.match(await (await h.request('guardian/mount.js?v=1')).text(),/mount.js/);
@@ -25,6 +26,7 @@ test('partial download cannot activate a falsely complete offline cache',async()
 test('model requests, state APIs, and unrelated origins never go into offline cache',async()=>{
   const h=harness();await h.run('install');const count=h.entries.size;
   assert.equal(await h.request('api/v3/state'),undefined);assert.equal(await h.request('api/v3/agent/chat','POST'),undefined);
+  assert.equal(await h.request('join'),undefined);assert.equal(await h.request('api/v3/room/join','POST'),undefined);assert.equal(await h.request('api/v3/events'),undefined);
   let captured=false;h.handlers.fetch({request:{url:'https://api.deepseek.com/chat/completions',method:'POST'},respondWith:()=>captured=true});assert.equal(captured,false);assert.equal(h.entries.size,count);
 });
 test('cache readiness identifies the exact build and a mixed deployment cannot activate',async()=>{

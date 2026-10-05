@@ -19,7 +19,7 @@ function summary(d){
   const pending=d.reports.filter(r=>r.status==='pending'),pendingVillage=villages.filter(r=>r.status==='pending');
   const count=stage=>sum(homes.filter(h=>d.stage[h.id]===stage),h=>h.people);
   const result={people:sum(homes,h=>h.people)+sum(unplanned,r=>r.people),waiting:count('waiting')+sum(unplanned,r=>r.people),boarded:count('boarded'),arrived:count('arrived'),verified:count('verified'),unplannedPeople:sum(unplanned,r=>r.people),pendingVillagePeople:sum(pendingVillage.filter(r=>r.mode==='increment'),r=>r.people),pendingReports:pending.length+pendingVillage.length,pendingReviewPeople:sum(pending.filter(r=>r.kind==='people'),r=>r.people)+sum(pendingVillage.filter(r=>r.mode==='increment'),r=>r.people),unlocatedPeople:sum(villages.filter(r=>r.status==='accepted'&&r.mode!=='snapshot'&&!r.supersededBy&&!r.householdIds.length&&r.locationStatus==='pending'),r=>r.people),unresolvedReports:d.reports.filter(r=>r.status==='coordination').length};
-  result.canComplete=result.waiting===0&&result.boarded===0&&result.arrived===0&&result.pendingReports===0&&result.unresolvedReports===0&&result.verified===result.people;
+  result.canComplete=result.people>0&&result.waiting===0&&result.boarded===0&&result.arrived===0&&result.pendingReports===0&&result.unresolvedReports===0&&result.verified===result.people;
   return result;
 }
 function close(d,{mode,note}={},time=new Date().toISOString()){

@@ -7,13 +7,19 @@
   'use strict';
   var root = new URL('./', location.href), workerURL = new URL('guardian-offline-sw.js?v=1', root);
   var status = document.getElementById('status'), open = document.getElementById('open');
-  var retry = document.getElementById('retry'), sw = navigator.serviceWorker, target, registration, ready = false, running = false;
+  var retry = document.getElementById('retry'), sw = navigator.serviceWorker, target, registration, ready = false, running = false, targetProgress = '';
+  var watchedWorkers = new WeakSet(), watchedRegistrations = new WeakSet();
   function own(worker) { return worker && worker.scriptURL && new URL(worker.scriptURL).pathname === workerURL.pathname; }
-  function ask() { if (sw && own(sw.controller)) sw.controller.postMessage({type:'GUARDIAN_CACHE_STATUS'}); }
+  function ask() { if (!sw) return; var workers=[sw.controller]; if(registration)workers.push(registration.active,registration.waiting,registration.installing);workers.forEach(function(worker){if(own(worker))worker.postMessage({type:'GUARDIAN_CACHE_STATUS'});}); }
+  function watchInstalling(){
+    var installing=registration&&registration.installing;if(!installing||watchedWorkers.has(installing))return;watchedWorkers.add(installing);
+    installing.addEventListener('statechange',function(){ask();if(installing.state==='redundant'&&!ready){targetProgress='下载未完成，请检查网络后重新检查。当前演练记录未改变。';status.textContent=targetProgress;}});
+    ask();
+  }
   function pending() { ready = false; open.disabled = true; open.textContent = '等待更新就绪'; }
   async function check() {
     if (running) return;
-    running = true; pending(); retry.disabled = true;
+    running = true; pending(); target=null; targetProgress=''; retry.disabled = true;
     try {
       if (!sw || !/^https?:$/.test(location.protocol)) throw new Error('请从已发布的 HTTPS 网页打开此链接。');
       status.textContent = '正在联网检查并下载完整网页，期间保留所有演练记录…';
@@ -25,28 +31,32 @@
       var existing = await sw.getRegistration(root.href), worker = existing && (existing.active || existing.waiting || existing.installing);
       if (worker && !own(worker)) throw new Error('此地址有其他离线服务，本页未修改它。');
       registration = await sw.register(workerURL.href, {scope:root.href, updateViaCache:'none'});
-      registration.addEventListener('updatefound', function () {
-        var installing = registration.installing;
-        if (installing) installing.addEventListener('statechange', function () {
-          ask();
-          if (installing.state === 'redundant' && !ready) status.textContent = '下载未完成，请检查网络后重新检查。当前演练记录未改变。';
-        });
-      });
+      if(!watchedRegistrations.has(registration)){watchedRegistrations.add(registration);registration.addEventListener('updatefound',watchInstalling);}
+      // register() may return after updatefound already fired; attach to an
+      // existing installing worker as well as future updatefound events.
+      watchInstalling();
       await registration.update();
-      if (!ready) status.textContent = '正在准备 V' + target.version + ' 的完整离线文件，请保持联网…';
+      watchInstalling();
+      if (!ready&&!targetProgress) status.textContent = '正在准备 V' + target.version + ' 的完整离线文件，请保持联网…';
       ask();
     } catch (error) { status.textContent = error.message || '更新暂未完成，请稍后重试。'; }
     finally { running = false; retry.disabled = false; }
   }
   if (sw) {
-    sw.addEventListener('controllerchange', function () { pending(); ask(); });
+    sw.addEventListener('controllerchange', function () { pending(); targetProgress='';if(target)status.textContent='网页已切换，正在核对 V'+target.version+' 的完整缓存…';ask(); });
     sw.addEventListener('message', function (event) {
       var data = event.data;
-      if (!target || !data || data.type !== 'GUARDIAN_CACHE_STATUS' || event.source !== sw.controller || !own(event.source)) return;
-      ready = data.ready === true && data.build === target.build && data.version === target.version;
-      open.disabled = !ready;
-      if (ready) { status.textContent = 'V' + target.version + ' 已完整下载，演练记录保持原样。'; open.textContent = '打开新版指挥台'; }
-      else if (data.message) status.textContent = data.message;
+      var known=event.source===sw.controller||registration&&[registration.active,registration.waiting,registration.installing].indexOf(event.source)>=0;
+      if (!target || !data || data.type !== 'GUARDIAN_CACHE_STATUS' || !known || !own(event.source)) return;
+      // An old controller may be fully cached while the requested build is still
+      // installing. Its READY text must never replace target download progress.
+      if(data.build!==target.build||data.version!==target.version){
+        if(!ready&&!targetProgress&&event.source===sw.controller)status.textContent='当前仍由旧网页控制。正在准备 V'+target.version+' 的新文件，请保持联网；完成后按钮会亮起。';
+        return;
+      }
+      if(event.source===sw.controller&&data.ready===true){ready=true;open.disabled=false;status.textContent='V'+target.version+' 已完整下载，演练记录保持原样。';open.textContent='打开新版指挥台';return;}
+      if(ready&&event.source!==sw.controller)return;
+      pending();targetProgress=data.ready===true?'V'+target.version+' 已完整下载，正在等待新网页接管；暂时不能打开。':data.message||'正在准备 V'+target.version+' 的完整离线文件，请保持联网…';status.textContent=targetProgress;
     });
   }
   open.addEventListener('click', function () { if (ready) location.href = new URL('./?v=' + target.version + '#command', root).href; });

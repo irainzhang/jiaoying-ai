@@ -68,7 +68,7 @@ test('contact requires explicit assigned household and current acknowledgement',
   const r = prepare('已联系家庭01');
   assert.equal(r.proposal.payload.householdId,'H1'); assert.equal(r.proposal.payload.stage,'contact');
   assert.equal(prepare('已联系',{householdId:'H1'}).proposal.payload.householdId,'H1');
-  clarify(prepare('已联系')); clarify(prepare('已联系家庭03')); clarify(prepare('已联系家庭02'));
+  clarify(prepare('已联系')); clarify(prepare('已联系家庭03')); assert.equal(prepare('已联系家庭02').proposal.payload.householdId,'H2');
   clarify(prepare('已联系家庭01',{householdId:'H2'}));
   const data = state(); data.taskAcks.V1.planId='P0-A'; clarify(prepare('已联系家庭01',{data}));
 });
@@ -107,3 +107,24 @@ test('empty data and oversized input are bounded, no implicit submission', () =>
   const r=prepare('演练北桥道路受阻'); assert.equal(r.proposal.payload.source,'voice');
   assert.equal(r.proposal.payload.text,'演练北桥道路受阻');
 });
+
+test('explicit all-on-this-car contact prepares a named batch without mutating data',()=>{
+  const data=state(),before=structuredClone(data),r=prepare('本车所有人员均已联系',{data});
+  assert.equal(r.proposal.action,'field-contact-batch');assert.deepEqual(r.proposal.payload.householdIds,['H1','H2']);assert.equal(r.proposal.payload.planId,'P1-A');assert.equal(r.proposal.payload.vehicleId,'V1');assert.equal(r.proposal.payload.source,'voice');assert.equal(r.contactBatch.reduce((n,h)=>n+h.people,0),5);assert.match(r.summary,/2 组、5 人/);assert.equal(r.contactBatch[0].name,data.scenario.households[0].name);assert.deepEqual(data,before);
+  data.contacts.H1.contacted=true;assert.deepEqual(prepare('本车全部人员已联系',{data}).proposal.payload.householdIds,['H2']);
+  data.contacts.H2.contacted=true;clarify(prepare('本车所有人员均已联系',{data}));
+});
+
+test('batch speech requires explicit car scope, acknowledgement and unambiguous completed fact',()=>{
+  for(const text of ['全部已联系','人员已联系','所有人都联系好了','本车部分人员已联系','本车所有人员可能已联系','本车所有人员还未联系','本车所有人员均已联系吗？','准备确认本车所有人员均已联系','本车所有人员均已联系，2号车也联系好了','本车所有人员均已联系，家庭01已上车'])clarify(prepare(text));
+  clarify(prepare('本车所有人员均已联系',{vehicleId:''}));const data=state();data.taskAcks={};clarify(prepare('本车所有人员均已联系',{data}));
+  clarify(prepare('本车所有人员均已联系',{planId:'P0-A'}));data.taskLifecycle={status:'stopped'};clarify(prepare('本车所有人员均已联系',{data}));
+});
+
+test('contact proposals omit boarded people and reject a duplicate single-household contact',()=>{const data=state();data.stage.H1='boarded';data.fleet.V1.onboard=['H1'];const r=prepare('本车所有人员均已联系',{data});assert.deepEqual(r.proposal.payload.householdIds,['H2']);clarify(prepare('已联系家庭01',{data}));data.contacts.H2.contacted=true;clarify(prepare('已联系家庭02',{data}));});
+
+test('voice batch remains a proposal until applied; old plan is rejected by real core',()=>{const x=E.create();x.action('generate');x.action('confirm');const planId=x.data.activePlan.id,vehicleId=x.data.activePlan.routes.find(r=>r.people).vehicleId;x.action('field-progress',{stage:'ack',planId,vehicleId});const before=x.data,r=A.prepare('本车所有人员均已联系',{data:before,vehicleId});assert.equal(r.proposal.action,'field-contact-batch');assert.deepEqual(x.data,before);x.action(r.proposal.action,r.proposal.payload);assert.ok(r.proposal.payload.householdIds.every(id=>x.data.contacts[id].contacted));assert.ok(Object.values(x.data.stage).every(stage=>stage==='waiting'));x.action('generate');x.action('confirm');const after=x.data;assert.throws(()=>x.action(r.proposal.action,r.proposal.payload),/过期/);assert.deepEqual(x.data,after);});
+
+test('voice boarding cannot mistake another active vehicle for the selected vehicle having started',()=>{const data=state();data.phase='executing';data.executionMode='per-vehicle';data.contacts.H1.contacted=true;data.fleet.V2.startedPlanId='P1-A';clarify(prepare('家庭01已上车',{data}));data.fleet.V1.startedPlanId='P0-A';clarify(prepare('家庭01已上车',{data}));data.fleet.V1.startedPlanId='P1-A';assert.equal(prepare('家庭01已上车',{data}).proposal.payload.stage,'board');});
+
+test('voice acknowledgement waits for next-trip publication when every old stop is already delivered',()=>{const data=state();data.phase='executing';data.stage.H1='arrived';data.stage.H2='verified';data.fleet.V1.finished=false;data.fleet.V1.delivered=['H1','H2'];data.fleet.V1.onboard=[];data.taskAcks={};const result=prepare('收到任务',{data});clarify(result);assert.ok(result.questions.some(x=>/下一趟正式发布/.test(x)));});

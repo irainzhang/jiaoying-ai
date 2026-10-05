@@ -65,7 +65,8 @@ test('public pages retain repo-relative links and every referenced script and st
   assert.ok(index.indexOf('exercise-browser.js')<index.indexOf('pages-runtime.js'));
   assert.ok(index.indexOf('pages-runtime.js')<index.indexOf('workspace-app.js'));
   const start=await read('start.html');
-  assert.match(start,/不同设备、浏览器或隐私窗口不共享数据/);
+  assert.match(start,/公开版各设备的数据独立/);
+  assert.match(start,/同 Wi-Fi/);
   assert.match(start,/capabilities.js/);
   const catalog=await read('capabilities.js');assert.equal((catalog.match(/id:'O\d+'/g)||[]).length,18);
 });
@@ -89,6 +90,6 @@ test('publication allowlist excludes local snapshots, credentials, transcripts a
   assert.ok(manifest.files.includes('assets/maps/SOURCES.md'));
   assert.ok(manifest.files.includes('vendor/leaflet/LICENSE'));
   assert.ok(manifest.files.includes('pages-runtime.js'));
-  for(const path of manifest.files)assert.doesNotMatch(path,/(?:^|\/)(?:\.env|tmp|\.git|node_modules)|before-v3|\.docx$|\.pdf$|legacy\.html$|meeting-status\.json$/);
+  for(const path of manifest.files)assert.doesNotMatch(path,/(?:^|\/)(?:\.env|tmp|\.git|node_modules)|before-v3|\.docx$|\.pdf$|legacy\.html$|meeting-status\.json$|lan-server|room-access|同WiFi协同/);
   for(const path of manifest.files.filter(p=>p.endsWith('.js')))new vm.Script(await read(path),{filename:path});
 });

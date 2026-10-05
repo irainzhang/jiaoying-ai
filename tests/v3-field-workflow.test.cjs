@@ -14,16 +14,16 @@ test('receiving a task is independent of contacting a household and rejects dupl
   unchangedOnError(x,()=>progress(x,'ack'),/已接收/);assert.throws(()=>x.action('start'),/未完成联系/);
 });
 
-test('contact requires acknowledgement and follows this vehicle next uncontacted household',()=>{
+test('contact requires acknowledgement and allows any uncontacted waiting household on this vehicle',()=>{
   const x=published(),r=x.data.activePlan.routes.find(r=>r.vehicleId==='V1'),other=x.data.activePlan.routes.find(r=>r.vehicleId==='V2').stops[0];
   unchangedOnError(x,()=>progress(x,'contact',{householdId:r.stops[0].id}),/先确认本车已接收/);
-  progress(x,'ack');unchangedOnError(x,()=>progress(x,'contact',{householdId:other.id}),/下一待联系/);
-  unchangedOnError(x,()=>progress(x,'contact',{householdId:r.stops[1].id}),/下一待联系/);
+  progress(x,'ack');unchangedOnError(x,()=>progress(x,'contact',{householdId:other.id}),/本车待接/);
+  progress(x,'contact',{householdId:r.stops[1].id});assert.equal(x.data.contacts[r.stops[1].id].contacted,true);
   progress(x,'contact',{householdId:r.stops[0].id,source:'voice',text:'第一户已联系'});
   assert.equal(x.data.contacts[r.stops[0].id].contacted,true);assert.equal(x.data.stage[r.stops[0].id],'waiting');
   assert.equal(x.data.fieldEvents[0].source,'voice');assert.equal(x.data.fieldEvents[0].text,'第一户已联系');
-  unchangedOnError(x,()=>progress(x,'contact',{householdId:r.stops[0].id}),/下一待联系/);
-  progress(x,'contact',{householdId:r.stops[1].id});assert.equal(x.data.contacts[r.stops[1].id].contacted,true);
+  unchangedOnError(x,()=>progress(x,'contact',{householdId:r.stops[0].id}),/本车待接/);
+  unchangedOnError(x,()=>progress(x,'contact',{householdId:r.stops[1].id}),/本车待接/);
 });
 
 test('boarding requires execution and the exact next assigned household; duplicate and early arrival do not mutate state',()=>{

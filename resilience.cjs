@@ -55,7 +55,7 @@ function validateState(d){
   inspectJSON(d);assert(object(d)&&d.schema==='jiaoying-v3','恢复数据必须为 jiaoying-v3 演练数据');const s=d.scenario;
   assert(object(s),'恢复数据缺少演练场景');
   const limits={nodes:2500,edges:8000,households:2000,vehicles:30,shelters:30};
-  for(const [key,max] of Object.entries(limits)){assert(Array.isArray(s[key])&&s[key].length>0&&s[key].length<=max&&s[key].every(x=>object(x)&&validId(x.id)),'恢复数据'+key+'目录无效或超过限额');assert(new Set(s[key].map(x=>x.id)).size===s[key].length,'恢复数据存在重复对象');}
+  for(const [key,max] of Object.entries(limits)){assert(Array.isArray(s[key])&&(key==='households'||s[key].length>0)&&s[key].length<=max&&s[key].every(x=>object(x)&&validId(x.id)),'恢复数据'+key+'目录无效或超过限额');assert(new Set(s[key].map(x=>x.id)).size===s[key].length,'恢复数据存在重复对象');}
   const nodes=new Set(s.nodes.map(n=>n.id));
   assert(object(s.region)&&['synthetic-topology','osm-road-network'].includes(s.region.mapKind),'恢复地图模式无效');
   const geographic=s.region.mapKind==='osm-road-network';
@@ -93,8 +93,17 @@ function validateState(d){
     for(const id of f.onboard){assert(d.stage[id]==='boarded'&&!onboard.has(id),'恢复已上车人员重复或阶段不符');onboard.add(id);}
     for(const id of f.delivered){assert(['arrived','verified'].includes(d.stage[id])&&!delivered.has(id),'恢复已到达人员重复或阶段不符');delivered.add(id);}
     const hs=f.onboard.map(id=>s.households.find(h=>h.id===id));assert(sum(hs,h=>h.people)<=v.capacity&&sum(hs,h=>h.wheelchairPeople??Number(h.wheelchair))<=Number(v.wheelchair),'恢复车载人数超载');
-    assert(!f.finished||!f.onboard.length,'已结束车辆仍有在途人员');assert(!f.delivered.length||f.finished&&s.shelters.some(sh=>sh.id===f.node),'已送达记录缺少有效到达点');
-    if(f.delivered.length)occupancy[f.node]=(occupancy[f.node]||0)+sum(f.delivered,id=>s.households.find(h=>h.id===id).people);
+    assert(!f.finished||!f.onboard.length,'已结束车辆仍有在途人员');
+    if(f.deliveries!==undefined){
+      assert(Array.isArray(f.deliveries)&&f.deliveries.length<=200,'多趟送达记录无效');const ids=[];
+      for(const trip of f.deliveries){assert(object(trip)&&s.shelters.some(sh=>sh.id===trip.shelterId)&&Array.isArray(trip.householdIds)&&trip.householdIds.length>0&&trip.householdIds.every(id=>f.delivered.includes(id))&&bounded(trip.minute,0,f.minute),'多趟送达记录关联无效');ids.push(...trip.householdIds);occupancy[trip.shelterId]=(occupancy[trip.shelterId]||0)+sum(trip.householdIds,id=>s.households.find(h=>h.id===id).people);}
+      assert(ids.length===f.delivered.length&&new Set(ids).size===ids.length&&f.delivered.every(id=>ids.includes(id)),'多趟送达人数不守恒');
+    }else{
+      assert(!f.delivered.length||f.finished&&s.shelters.some(sh=>sh.id===f.node),'已送达记录缺少有效到达点');
+      if(f.delivered.length)occupancy[f.node]=(occupancy[f.node]||0)+sum(f.delivered,id=>s.households.find(h=>h.id===id).people);
+    }
+    if(f.startedPlanId!==undefined&&f.startedPlanId!==null)assert(validId(f.startedPlanId),'车辆发车方案编号无效');
+    if(f.tripNumber!==undefined)assert(integer(f.tripNumber,1,200),'车辆趟次无效');
   }
   for(const h of s.households){assert((d.stage[h.id]==='boarded')===onboard.has(h.id),'恢复已上车人员守恒校验失败');assert(['arrived','verified'].includes(d.stage[h.id])===delivered.has(h.id),'恢复已到达人员守恒校验失败');}
   for(const sh of s.shelters)assert(integer(d.occupancy[sh.id],0,sh.capacity)&&d.occupancy[sh.id]===(occupancy[sh.id]||0),'恢复安置人数不守恒');
@@ -104,6 +113,9 @@ function validateState(d){
   assert(d.taskAcks===undefined||object(d.taskAcks)&&Object.entries(d.taskAcks).every(([id,a])=>s.vehicles.some(v=>v.id===id)&&object(a)&&typeof a.planId==='string'),'恢复接令记录无效');
   assert(d.log.every(row=>integer(row.id,1,Number.MAX_SAFE_INTEGER)&&typeof row.message==='string'&&row.message.length<=5000&&typeof row.type==='string'&&typeof row.time==='string'&&Number.isFinite(Date.parse(row.time))),'恢复日志内容无效');
   assert(d.lastAnnouncement===undefined||typeof d.lastAnnouncement==='string','恢复播报内容无效');
+  assert(d.executionMode===undefined||d.executionMode==='per-vehicle','执行方式无效');
+  assert(d.taskName===undefined||typeof d.taskName==='string'&&d.taskName.trim().length>0&&d.taskName.length<=80,'任务名称无效');
+  assert(d.seedMode===undefined||['blank','sample'].includes(d.seedMode),'任务底数模式无效');
   assert(d.exerciseId===undefined||typeof d.exerciseId==='string'&&d.exerciseId.length<=100,'恢复演练编号无效');
   assert(d.createdAt===undefined||typeof d.createdAt==='string'&&Number.isFinite(Date.parse(d.createdAt)),'恢复创建时间无效');
   if(d.lastDelta!==undefined){

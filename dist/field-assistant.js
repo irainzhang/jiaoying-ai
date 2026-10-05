@@ -84,6 +84,7 @@
     function ask(question) { result.questions.push(question); }
     function stop() { result.questions = unique(result.questions); return result; }
     if (!text) { ask('请先输入现场情况，或使用浏览器语音识别。'); return stop(); }
+    if (['completed','stopped'].includes(data.taskLifecycle?.status)) { ask('本场任务已结束，只读记录不能继续登记；请新建下一场。'); return stop(); }
     if (text.length > 2000) { ask('请将单条现场说明缩短至 2000 字以内。'); return stop(); }
     if (!Array.isArray(scenario.nodes) || !Array.isArray(scenario.edges)) { ask('演练数据尚未就绪，请等待两端连接后再整理。'); return stop(); }
     result.evidence.push('依据：本次输入原文及当前演练数据；未调用大模型。');
@@ -92,6 +93,7 @@
       ask('这段描述含否定、疑问、不确定或将来计划，请明确已经发生的单项结果后再确认。');
       return stop();
     }
+    const batchContact = /^(?:本车|当前车辆)(?:的)?(?:所有|全部)(?:待接)?(?:人员|人|接送组|家庭)(?:均|都)?已(?:经)?联系(?:完成|好了)?[。！!]?$/u.test(normalized)||/^(?:本车|当前车辆)(?:的)?(?:待接)?(?:人员|接送组|家庭)(?:全部|全都)已(?:经)?联系(?:完成|好了)?[。！!]?$/u.test(normalized);
     const progress = [];
     if (/(?:已)?收到(?:了)?(?:任务|调度|指令)|(?:任务|调度|指令)(?:已)?收到|确认接单|已接单/.test(normalized)) progress.push('ack');
     if (/已(?:经)?联[系络](?:上|到)?|联系(?:上|到|好了|完成)/.test(normalized)) progress.push('contact');
@@ -126,10 +128,25 @@
       if (mentionedPlans.some(id => id !== compact(plan.id)) || (context.planId && context.planId !== plan.id)) ask('描述或页面选择的方案不是当前已发布方案，请刷新并确认任务版本。');
       const route = (plan.routes || []).find(r => r.vehicleId === vehicle.id), fleet = data.fleet?.[vehicle.id];
       if (!route || !route.people || route.holding || !fleet || fleet.finished) ask('所选车辆当前没有可以推进的已发布任务。');
+      if(route&&fleet&&!fleet.onboard?.length&&!(route.stops||[]).some(st=>data.stage?.[st.id]==='waiting'))ask('本车原方案已完成，请等待下一趟正式发布后重新接令。');
       if (result.questions.length) return stop();
       const acknowledged = data.taskAcks?.[vehicle.id]?.planId === plan.id;
       if (stage !== 'ack' && !acknowledged) ask('请先为这辆车确认收到当前方案的任务。');
       if (stage === 'ack' && acknowledged) ask('这辆车已经确认收到当前任务，无需重复登记。');
+      if (stage==='contact'&&batchContact) {
+        const householdIds=(route.stops||[]).filter(st=>data.stage?.[st.id]==='waiting'&&!data.contacts?.[st.id]?.contacted).map(st=>st.id);
+        if(!householdIds.length)ask('本车没有尚待登记联系的人员组，无需重复提交。');
+        if(result.questions.length)return stop();
+        const households=householdIds.map(id=>(scenario.households||[]).find(h=>h.id===id));
+        if(households.some(h=>!h)){ask('本车人员信息不完整，请刷新任务后核对。');return stop();}
+        const people=households.reduce((n,h)=>n+h.people,0);
+        result.intent='progress';result.title='待确认：本车批量已联系';
+        result.summary=(vehicle.name||vehicle.id)+' · '+householdIds.length+' 组、'+people+' 人；请核对下方名单，确认后才登记联系，不会登记上车。';
+        result.proposal={action:'field-contact-batch',payload:{planId:plan.id,vehicleId:vehicle.id,householdIds,reporter,source:'voice',text}};
+        result.contactBatch=households.map(h=>({id:h.id,name:h.name,people:h.people}));
+        result.warnings.push('仅整理当前车辆尚待联系人员；已登记联系、其他车辆和已上车人员不在本次提交中。');
+        result.evidence.push('当前方案：'+plan.id+'；本次名单：'+households.map(h=>h.name+'（'+h.people+' 人）').join('、'));return result;
+      }
       const payload = {planId:plan.id, vehicleId:vehicle.id, stage, text, reporter, source:'voice'};
       let detail = vehicle.name || vehicle.id;
       if (stage === 'board' || stage === 'arrive') {
@@ -146,9 +163,10 @@
         const assigned = (route.stops || []).find(st => st.id === householdId);
         if (householdId && !assigned) ask('该家庭不在当前车辆的接人任务中，请核对任务分配。');
         const next = (route.stops || []).find(st => data.stage?.[st.id] === 'waiting' && (stage !== 'contact' || !data.contacts?.[st.id]?.contacted));
-        if (assigned && next?.id !== householdId) ask('请按当前任务顺序确认下一户，或先由指挥端调整方案。');
+        if(stage==='contact'&&assigned&&(data.stage?.[householdId]!=='waiting'||data.contacts?.[householdId]?.contacted))ask('该组不在待接且尚未联系状态，不能重复或补写联系登记。');
+        if (stage==='board' && assigned && next?.id !== householdId) ask('请按当前任务顺序确认下一户，或先由指挥端调整方案。');
         if (stage === 'board') {
-          if (data.phase !== 'executing') ask('指挥端尚未开始模拟执行，不能登记上车。');
+          if (data.phase !== 'executing'||(data.executionMode==='per-vehicle'&&fleet.startedPlanId!==plan.id)) ask('本车尚未开始执行，不能登记上车。');
           if (assigned && !data.contacts?.[householdId]?.contacted) ask('该家庭尚未确认联系，请先完成联系登记。');
         }
         if (householdId) payload.householdId = householdId;
@@ -158,7 +176,7 @@
         detail += household ? ' · ' + household.name : '';
       }
       if (stage === 'arrive') {
-        if (data.phase !== 'executing') ask('指挥端尚未开始模拟执行，不能登记到达。');
+        if (data.phase !== 'executing'||(data.executionMode==='per-vehicle'&&fleet.startedPlanId!==plan.id)) ask('本车尚未开始执行，不能登记到达。');
         if ((route.stops || []).some(st => data.stage?.[st.id] === 'waiting')) ask('本车仍有未接人员，不能登记全车到达。');
         if (!fleet.onboard?.length) ask('本车没有已登记上车人员，不能确认送达。');
         const destination = (scenario.shelters || []).find(s => s.id === route.shelterId);

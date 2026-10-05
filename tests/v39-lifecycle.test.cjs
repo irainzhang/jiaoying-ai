@@ -21,9 +21,9 @@ test('early closure preserves boarded passengers, pending facts, plans and all o
  assert.doesNotThrow(()=>X.restore(after));
 });
 
-test('closed task rejects all normal write actions, including reset and scenario, atomically',()=>{
+test('closed task rejects ordinary in-place writes atomically while explicit new-task operations remain available',()=>{
  const x=X.create();x.action('generate');x.action('end-task',{mode:'stopped'});const before=x.data;
- for(const action of ['end-task','generate','confirm','weather','report','village-report','village-review','command-intake','map-demand-locate','enable-road-map','field-progress','contact','start','step','verify','edit','resource-event','followup','reset','scenario']){
+ for(const action of ['end-task','generate','confirm','weather','report','village-report','village-review','command-intake','map-demand-locate','enable-road-map','field-progress','contact','start','step','verify','edit','resource-event','followup']){
    assert.throws(()=>x.action(action,{}),/已结束/);assert.deepEqual(x.data,before,action);
  }
 });
@@ -45,14 +45,14 @@ test('accepted unlocated demands remain unplanned and prevent complete closure',
 test('new task archives the entire closed task once and retains real road mode',()=>{
  const x=X.create();x.action('scenario',{id:'ruian-roads'});assert.throws(()=>x.action('new-task'),/先结束/);x.action('end-task',{mode:'stopped'});const closed=x.data;
  x.action('new-task');const next=x.data;
- assert.notEqual(next.exerciseId,closed.exerciseId);assert.equal(next.revision,closed.revision+1);assert.equal(next.scenario.region.mapKind,'osm-road-network');assert.equal(next.scenarioPreset,'ruian-roads');assert.equal(next.taskLifecycle.status,'active');assert.equal(next.taskArchives.length,1);assert.equal(next.taskArchives[0].data.taskArchives,undefined);
+ assert.notEqual(next.exerciseId,closed.exerciseId);assert.equal(next.revision,closed.revision+1);assert.equal(next.scenario.region.mapKind,'osm-road-network');assert.equal(next.scenarioPreset,'ruian-roads');assert.equal(next.taskLifecycle.status,'active');assert.equal(next.taskArchives.length,2);assert.equal(next.taskArchives[0].data.taskArchives,undefined);
  const source=clone(closed);delete source.taskArchives;assert.deepEqual(next.taskArchives[0].data,source);assert.equal(X.metrics(next).waiting,15);assert.equal(next.activePlan,null);assert.doesNotThrow(()=>X.restore(next));
- x.action('end-task',{mode:'stopped'});x.action('new-task');assert.equal(x.data.taskArchives.length,2);assert.ok(x.data.taskArchives.every(row=>row.data.taskArchives===undefined));
+ x.action('end-task',{mode:'stopped'});x.action('new-task');assert.equal(x.data.taskArchives.length,3);assert.ok(x.data.taskArchives.every(row=>row.data.taskArchives===undefined));
 });
 
 test('existing advanced reset and scenario preserve past task archives',()=>{
  const x=X.create();x.action('end-task',{mode:'stopped'});x.action('new-task');const archived=x.data.taskArchives;
- x.action('reset');assert.deepEqual(x.data.taskArchives,archived);x.action('scenario',{id:'resource-shortage'});assert.deepEqual(x.data.taskArchives,archived);
+ x.action('reset');assert.deepEqual(x.data.taskArchives.slice(1),archived);assert.equal(x.data.taskArchives[0].status,'stopped');x.action('scenario',{id:'resource-shortage'});assert.deepEqual(x.data.taskArchives.slice(2),archived);assert.equal(x.data.taskArchives.length,archived.length+2);
 });
 
 test('closed backups restore read-only without clearing published history or inventing new plans',()=>{

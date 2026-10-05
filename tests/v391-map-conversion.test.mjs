@@ -89,7 +89,8 @@ test('HTTP exposes precise conversion reasons and preserves revision checks on n
 });
 
 test('Pages exposes the same map conversion and archive behavior without a backend',async t=>{
-  let saved,tail=Promise.resolve();const storage={transact(update){const run=tail.then(()=>{const next=update(saved&&clone(saved));if(next.changed)saved=clone(next.record);return clone(next.value);});tail=run.catch(()=>{});return run;}};
+  const sample=X.create();sample.action('generate');
+  let saved={format:1,session:webcrypto.randomUUID(),data:sample.data,savedAt:new Date().toISOString(),seen:[]},tail=Promise.resolve();const storage={transact(update){const run=tail.then(()=>{const next=update(saved&&clone(saved));if(next.changed)saved=clone(next.record);return clone(next.value);});tail=run.catch(()=>{});return run;}};
   const environment={location:{href:'https://example.github.io/jiaoying-ai/'},crypto:webcrypto,Response,Headers,fetch(){throw new Error('Unexpected network');},setInterval,clearInterval};
   const runtime=createRuntime({Exercise:X,storage,environment});t.after(()=>runtime.close());
   const get=()=>runtime.fetch('/api/v3/state').then(r=>r.json());

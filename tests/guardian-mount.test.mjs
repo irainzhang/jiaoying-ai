@@ -2,9 +2,12 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import {readFile} from 'node:fs/promises';
+import {createRequire} from 'node:module';
+const require=createRequire(import.meta.url),X=require('../exercise.cjs');
 
 const source = await readFile(new URL('../dist/guardian/mount.js', import.meta.url), 'utf8');
 const styles = await readFile(new URL('../dist/guardian/mount.css', import.meta.url), 'utf8');
+const hostSource = await readFile(new URL('../dist/guardian/host-tools.js', import.meta.url),'utf8');
 
 // This small DOM double exercises the actual shipped integration, including its
 // async failure boundary. Browser QA separately checks layout and native focus.
@@ -14,12 +17,15 @@ function harness(options = {}) {
     setAttribute(k,v) { this.attrs[k]=String(v);if(k==='id')this.id=String(v);if(k==='src'||k==='href')this[k]=String(v); }
     getAttribute(k) { return this.attrs[k]??null; }
     appendChild(child) {
+      if(child.parentNode)child.parentNode.children=child.parentNode.children.filter(x=>x!==child);
       child.parentNode=this;this.children.push(child);
       if(this.tagName==='HEAD'&&(child.tagName==='LINK'||child.tagName==='SCRIPT'))queueMicrotask(()=>{
         if(options.failAsset===child.tagName)child.onerror?.();else child.onload?.();
       });
       return child;
     }
+    append(...children){for(const child of children)this.appendChild(child);}
+    replaceChildren(...children){for(const child of this.children)child.parentNode=null;this.children=[];this.append(...children);}
     insertAdjacentElement(where,child) { assert.equal(where,'afterend');child.parentNode=this.parentNode;this.parentNode.children.splice(this.parentNode.children.indexOf(this)+1,0,child); }
     remove() { if(this.parentNode)this.parentNode.children.splice(this.parentNode.children.indexOf(this),1);this.parentNode=null; }
     addEventListener(k,fn) { (this.events[k]??=[]).push(fn); }
@@ -57,13 +63,15 @@ function harness(options = {}) {
     setTimeout(){return ++timer;},clearTimeout(){},Promise,
     FloodAgent:{mount(opts){calls.mount++;mounted=opts;if(options.failMount)throw new Error('broken bridge');const iframe=document.createElement('iframe');iframe.contentDocument=frameDocument;
       document.getElementById('guardian-agent-body').appendChild(iframe);
-      api={iframe,state:{scenario:'rain-120'},destroy(){calls.destroy++;iframe.remove();},confirm(){calls.confirm++;},
+      api={iframe,state:{scenario:'rain-120'},getCapabilities:()=>caps,destroy(){calls.destroy++;iframe.remove();},confirm(){calls.confirm++;},
         whenReady:async()=>{if(options.failReady)throw new Error('no ready');opts.onReady({version:'3.7.0-guardian',capabilities:caps});return caps;}};
       return api;}}
   };
   context.window=context;
-  vm.createContext(context);vm.runInContext(source,context);
-  return {document,frameDocument,anchor,content,originalDialog,calls,navigator,get mounted(){return mounted;},get api(){return api;},
+  const events={};context.addEventListener=(type,fn)=>(events[type]??=[]).push(fn);context.removeEventListener=(type,fn)=>events[type]=(events[type]||[]).filter(x=>x!==fn);context.emit=type=>(events[type]||[]).forEach(fn=>fn());
+  if(options.host)context.JiaoyingGuardianHost=options.host;
+  vm.createContext(context);if(options.host)vm.runInContext(hostSource,context);vm.runInContext(source,context);
+  return {document,frameDocument,anchor,content,originalDialog,calls,navigator,context,get mounted(){return mounted;},get api(){return api;},
     get:id=>document.getElementById(id),async settle(){for(let i=0;i<15;i++)await Promise.resolve();}};
 }
 
@@ -78,6 +86,22 @@ test('adds an isolated body dialog and adjacent entry, retaining the original AI
   assert.match(h.get('guardian-provider').textContent,/离线规则引擎（API 接口已预留）/);
   assert.equal(h.mounted.agentUrl,'https://example.test/jiaoying-ai/guardian/agent/embed.html');
   assert.equal(h.get('guardian-launcher').getAttribute('data-ac'),null);
+});
+
+test('current-task mode uses actual host state, invalidates changed proposals and hands off human review',async()=>{
+  const exercise=X.create();exercise.action('generate');let h,published=0;
+  const snapshot=()=>({session:'test-session',data:exercise.data,metrics:X.metrics(exercise.data),taskSummary:X.taskSummary(exercise.data),villageLedger:X.villageMetrics(exercise.data)});
+  const host={readState:snapshot,async calculateDraft(){exercise.action('generate');return snapshot();},openPublicationReview(){assert.equal(h.get('guardian-agent-panel').open,false);published++;}};
+  h=harness({host});await h.settle();h.get('guardian-launcher').click();await h.settle();
+  assert.match(h.get('guardian-capabilities').textContent,/3 个主台工具/);assert.equal(h.get('guardian-agent-body').hidden,true);assert.equal(h.get('guardian-current-task').hidden,false);
+  const section=h.get('guardian-current-task'),actions=section.children.find(x=>x.className==='guardian-host-actions');
+  const facts=section.children.find(x=>x.className==='guardian-host-facts');assert.equal(facts.children.length,5);assert.ok(facts.children.some(x=>x.children[0].textContent==='到达待核验'));
+  const find=text=>actions.children.find(x=>x.textContent===text);
+  assert.equal(find('回主台核对并发布').disabled,true);find('计算安排草案').click();await h.settle();assert.equal(find('回主台核对并发布').disabled,false);assert.equal(exercise.data.activePlan,null);
+  exercise.action('weather',{rainfall:80});h.context.emit('jiaoying:state');await h.settle();assert.equal(find('回主台核对并发布').disabled,true);assert.match(section.children.find(x=>x.className==='guardian-host-status').textContent,/已同步/);
+  find('计算安排草案').click();await h.settle();find('回主台核对并发布').click();await h.settle();assert.equal(published,1);assert.equal(exercise.data.activePlan,null);
+  h.get('guardian-launcher').click();h.get('guardian-mode-sandbox').click();assert.equal(h.get('guardian-agent-body').hidden,false);assert.match(h.get('guardian-independence').textContent,/不是当前主台需求/);
+  h.get('guardian-mode-current').click();await h.settle();assert.equal(h.get('guardian-agent-body').hidden,true);assert.match(h.get('guardian-provider').textContent,/主台本地规则/);
 });
 
 test('closing and reopening preserves the same iframe, in-memory state, and returns focus',async()=>{

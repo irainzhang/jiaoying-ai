@@ -56,13 +56,18 @@ test('new task is an atomic same-session revision and retry never creates an ext
   assert.equal(next.data.taskLifecycle.status,'active');await reopened.api.close();await a.api.close();
 });
 
-test('fresh Pages visitors receive synthetic plans; same store restores and separate visitors are isolated',async()=>{
+test('fresh Pages visitors receive a zero-person road task; same store restores and separate visitors are isolated',async()=>{
   const a=setup(),initial=await a.get();
-  assert.equal(initial.metrics.people,15);assert.equal(initial.metrics.waiting,15);assert.equal(initial.metrics.arrived,0);
-  assert.ok(initial.data.plan);assert.equal(initial.capabilities.browserOnly,true);assert.equal(initial.capabilities.crossDeviceSync,false);
+  assert.equal(initial.metrics.people,0);assert.equal(initial.metrics.waiting,0);assert.equal(initial.metrics.arrived,0);
+  assert.equal(initial.data.plan,null);assert.equal(initial.data.seedMode,'blank');assert.equal(initial.data.scenario.region.mapKind,'osm-road-network');assert.equal(initial.capabilities.browserOnly,true);assert.equal(initial.capabilities.crossDeviceSync,false);
   const accepted=await (await a.post(initial,'weather',{preset:'strong'})).json();
   const reopened=await setup(a.storage).get();assert.deepEqual(reopened,accepted);
   const another=await setup().get();assert.notEqual(another.session,initial.session);assert.equal(another.data.weather.level,1);
+});
+
+test('a saved legacy sample is preserved instead of replaced by the new blank startup',async()=>{
+  const old=Exercise.create();old.action('generate');old.action('confirm');const saved={format:1,session:'legacy-session',data:old.data,savedAt:'2026-10-04T01:00:00.000Z',seen:[]};
+  const a=setup(database(saved)),current=await a.get();assert.deepEqual(current.data,saved.data);assert.equal(current.metrics.people,15);assert.equal(current.session,saved.session);assert.equal(current.connection.mode,'browser');
 });
 
 test('concurrent tabs cannot both commit against the same revision',async()=>{
@@ -95,12 +100,12 @@ test('failed storage commit never reports success and retry with same request ap
 test('village submission remains pending until review, then enters real solver without double counting',async()=>{
   const a=setup(),initial=await a.get();
   const pending=await (await a.post(initial,'village-report',report)).json();
-  assert.equal(pending.metrics.people,15);assert.equal(pending.metrics.pendingVillagePeople,7);
+  assert.equal(pending.metrics.people,0);assert.equal(pending.metrics.pendingVillagePeople,7);
   const id=pending.data.villageReports[0].id;
   const reviewed=await (await a.post(pending,'village-review',{id,decision:'accept',note:'演练核对通过，集合点和人数已确认'})).json();
-  assert.equal(reviewed.metrics.people,22);assert.equal(reviewed.metrics.pendingVillagePeople,0);
+  assert.equal(reviewed.metrics.people,7);assert.equal(reviewed.metrics.pendingVillagePeople,0);
   assert.deepEqual(Exercise.validate(Exercise.snapshot(reviewed.data),reviewed.data.plan),[]);
-  assert.equal((await a.get()).metrics.people,22);
+  assert.equal((await a.get()).metrics.people,7);
 });
 
 test('channel notification refreshes the other tab and fallback polling recovers missed messages',async()=>{

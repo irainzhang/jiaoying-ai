@@ -32,7 +32,8 @@ test('local HTTP accepts road conversion, locating and numeric weather through n
 });
 
 test('Pages runtime accepts the same new actions while retaining stale-revision conflicts',async t=>{
-  let saved,tail=Promise.resolve();
+  const sample=Exercise.create();sample.action('generate');
+  let saved={format:1,session:webcrypto.randomUUID(),data:sample.data,savedAt:new Date().toISOString(),seen:[]},tail=Promise.resolve();
   const storage={transact(update){const run=tail.then(()=>{const next=update(saved&&structuredClone(saved));if(next.changed)saved=structuredClone(next.record);return structuredClone(next.value);});tail=run.catch(()=>{});return run;}};
   const environment={location:{href:'https://example.github.io/jiaoying-ai/'},crypto:webcrypto,Response,Headers,fetch(){throw new Error('No real network expected');},setInterval,clearInterval};
   const runtime=createRuntime({Exercise,storage,environment});t.after(()=>runtime.close());

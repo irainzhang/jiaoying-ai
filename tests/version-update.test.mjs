@@ -24,7 +24,7 @@ function harness({recovery=false,offline=false,version='3.9.1',otherWorker=false
   Object.defineProperty(context,'localStorage',{get(){throw new Error('Update flow must not access task storage');}});
   Object.defineProperty(context,'sessionStorage',{get(){throw new Error('Update flow must not access draft storage');}});
   vm.runInNewContext(recovery?recoveryScript:script,context);
-  return {document,window,location,sw,worker,calls,get:id=>document.getElementById(id),async settle(){for(let i=0;i<30;i++)await Promise.resolve();},message(data,source=worker){sw.emit('message',{data:{type:'GUARDIAN_CACHE_STATUS',...data},source});}};
+  return {document,window,location,sw,worker,registration,calls,get:id=>document.getElementById(id),async settle(){for(let i=0;i<30;i++)await Promise.resolve();},message(data,source=worker){sw.emit('message',{data:{type:'GUARDIAN_CACHE_STATUS',...data},source});}};
 }
 
 test('new-version notice waits for matching complete cache controlled by the new worker; reload is explicit',async()=>{
@@ -59,4 +59,26 @@ test('self-contained recovery page enables navigation only for the complete inte
 test('recovery failure preserves records and does not replace unrelated service workers',async()=>{
   const offline=harness({recovery:true,offline:true});await offline.settle();assert.equal(offline.get('open').disabled,true);assert.match(offline.get('status').textContent,/offline/);
   const other=harness({recovery:true,otherWorker:true});await other.settle();assert.equal(other.calls.register.length,0);assert.equal(other.get('open').disabled,true);assert.match(other.get('status').textContent,/其他离线服务/);
+});
+
+test('old controller READY never overwrites matching target download progress or enables navigation',async()=>{
+  const h=harness({recovery:true});await h.settle();
+  h.message({ready:true,build:'older-same-version-build',version:'3.9.1',message:'离线文件已就绪；可断网刷新。在线 API 仍需网络。'});
+  assert.equal(h.get('open').disabled,true);assert.match(h.get('status').textContent,/旧网页控制/);assert.doesNotMatch(h.get('status').textContent,/已就绪/);
+  const next=events({scriptURL:h.worker.scriptURL,postMessage:()=>{}});h.registration.installing=next;h.registration.emit('updatefound');
+  h.message({ready:false,build,version:'3.9.1',message:'正在准备 V3.9.1 离线文件 6/104'},next);
+  assert.match(h.get('status').textContent,/6\/104/);
+  h.message({ready:true,build:'old',version:'3.9.1',message:'离线文件已就绪'});assert.match(h.get('status').textContent,/6\/104/);assert.equal(h.get('open').disabled,true);
+  h.message({ready:true,build,version:'3.9.1',message:'下载完成'},next);assert.match(h.get('status').textContent,/等待新网页接管/);assert.equal(h.get('open').disabled,true);
+  h.sw.controller=next;h.registration.active=next;h.registration.installing=null;h.sw.emit('controllerchange');
+  h.message({ready:true,build,version:'3.9.1'},next);assert.equal(h.get('open').disabled,false);assert.match(h.get('status').textContent,/已完整下载/);
+  h.message({ready:true,build:'old',version:'3.9.1',message:'旧缓存完成'});assert.equal(h.get('open').disabled,false);assert.match(h.get('status').textContent,/已完整下载/);
+});
+
+test('rechecking attaches to an already-installing worker and reports a failed download accurately',async()=>{
+  const h=harness({recovery:true});await h.settle();
+  const next=events({scriptURL:h.worker.scriptURL,state:'installing',postMessage:()=>{}});h.registration.installing=next;
+  h.get('retry').click();await h.settle();assert.equal(next.events.statechange.length,1);
+  next.state='redundant';next.emit('statechange');assert.match(h.get('status').textContent,/下载未完成/);assert.equal(h.get('open').disabled,true);
+  h.message({ready:true,build:'old',version:'3.9.1',message:'离线文件已就绪'});assert.match(h.get('status').textContent,/下载未完成/);
 });
