@@ -1,0 +1,27 @@
+.resource-overview { display:flex; align-items:center; justify-content:space-between; gap:16px; margin:16px 0; padding:14px 18px; background:#e9f5f4; border:1px solid #bddfd9; border-radius:14px; color:#214e60; }
+.resource-overview>div { display:flex; align-items:center; gap:10px 18px; flex-wrap:wrap; min-width:0; }
+.resource-overview small { flex-basis:100%; color:#507180; }
+.resource-overview button { flex-shrink:0; }
+.resource-dispatch { padding:14px; margin:12px 0; border:1px solid #cfdee6; border-left:4px solid #168d89; border-radius:12px; background:#f4fafa; }
+.resource-dispatch.is-special { border-color:#dfc489; border-left:4px solid #b5801b; background:#fff9ec; }
+.resource-dispatch-title,.resource-dispatch-load,.resource-crew { display:flex; justify-content:space-between; gap:8px; flex-wrap:wrap; align-items:center; }
+.resource-dispatch-title { font-size:.83rem; color:#446979; }
+.resource-dispatch-title strong { overflow-wrap:anywhere; }
+.resource-dispatch-load { margin:8px 0; }
+.resource-dispatch-load>b { font-size:1.9rem; line-height:1.2; color:#0d5463; }
+.resource-dispatch-load small { font-size:.8rem; font-weight:500; margin-left:5px; }
+.resource-dispatch-load>span { font-size:.82rem; color:#4b6c77; line-height:1.6; }
+.resource-badges { display:flex; flex-wrap:wrap; gap:6px; }
+.resource-tag,.resource-need { display:inline-block; border-radius:7px; padding:4px 8px; font-size:.78rem; font-weight:650; line-height:1.45; }
+.resource-tag.chair { color:#24568b; background:#dfedff; border:1px solid #a5c5eb; }
+.resource-tag.assistance,.resource-need { color:#82530d; background:#ffedbf; border:1px solid #e9ca85; }
+.resource-tag.warning,.resource-crew-alert { color:#a44235; background:#fff0eb; }
+.resource-crew { margin-top:10px; border-top:1px solid #dce5e7; padding-top:10px; font-size:.83rem; }
+.resource-crew b { color:#154d62; overflow-wrap:anywhere; }
+.resource-capacity-note { display:block; margin:8px 0 0; font-size:.72rem; color:#5c747e; line-height:1.5; }
+.resource-crew-alert,.resource-special-note { padding:8px; margin:8px 0 0; border-radius:6px; font-size:.8rem; }
+.resource-special-note { border:1px dashed #d6bc84; color:#74531c; }
+.resource-need { display:block; width:fit-content; margin-top:4px; }
+.resource-plan-list { display:grid; gap:10px; margin:16px 0; }
+.resource-plan-list>.route-card { margin:0; }
+@media(max-width:600px){.resource-overview{align-items:flex-start;padding:12px;gap:8px}.resource-overview>div{gap:6px 12px}.resource-dispatch{padding:12px}.resource-dispatch-load>b{font-size:1.65rem}.resource-crew{display:grid;justify-content:start}}

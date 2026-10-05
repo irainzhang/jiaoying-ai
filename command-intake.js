@@ -113,7 +113,7 @@
     const text=norm(value);
     if(!text||['UNKNOWN','未知','不详','待核实','待补充'].includes(text))return 'unknown';
     if(['SPLITTABLE','可拆分','可以拆分','可分组','可以分组','独立人员','允许分车','可分车','是','可'].includes(text))return 'splittable';
-    if(['TOGETHER','必须同行','同行','整组同行','不可拆分','不能拆分','一家人','同一家庭','否','不可'].includes(text))return 'together';
+    if(['TOGETHER','必须同行','须同行','同行','整组同行','不可拆分','不能拆分','一家人','同一家庭','否','不可'].includes(text))return 'together';
     errors.push('同行关系无法识别，请填“可拆分”“必须同行”或留空待核实。');return 'unknown';
   }
 

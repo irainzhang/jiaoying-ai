@@ -1,6 +1,6 @@
 {
-  "build": "00c89efefe1775dd21a1",
-  "version": "4.0.2",
+  "build": "c362a2f9d788d0118a53",
+  "version": "4.1.0",
   "files": [
     "assets/evaluation.json",
     "assets/logo-lockup.png",
@@ -86,6 +86,10 @@
     "real-map.css",
     "real-map.js",
     "release.json",
+    "resource-cards.css",
+    "resource-cards.js",
+    "resource-registry.css",
+    "resource-registry.js",
     "review-form.css",
     "review-form.js",
     "start-page.css",
