@@ -10,7 +10,7 @@ const require=createRequire(import.meta.url),capabilities=require('../dist/capab
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 export const output=resolve(root,'tmp/pages-release');
 const read=path=>readFile(resolve(root,path),'utf8');
-const included=['.nojekyll','index.html','engine.js','voice-input.js','transport-map.js','real-map.js','real-map.css','command-flow.css','weather-panel.js','weather-panel.css','review-form.js','review-form.css','workflow-ui.js','workflow-ui.css','workspace-app.js','workspace.css','command-theme.css','interface-motion.js','interface-motion.css','field-assistant.js','field-workspace.js','field-workspace.css','village-assistant.js','command-intake.js','intake-file.js','quick-context.js','intake-ui.js','village-workspace.js','village-workspace.css','pages-runtime.js','capabilities.js','evidence-library.js','operations-ui.js','operations-ui.css','start-page.js','start-page.css'];
+const included=['version-update.js','update.html','.nojekyll','index.html','engine.js','voice-input.js','transport-map.js','real-map.js','real-map.css','command-flow.css','weather-panel.js','weather-panel.css','review-form.js','review-form.css','workflow-ui.js','workflow-ui.css','workspace-app.js','workspace.css','command-theme.css','interface-motion.js','interface-motion.css','field-assistant.js','field-workspace.js','field-workspace.css','village-assistant.js','command-intake.js','intake-file.js','quick-context.js','intake-ui.js','village-workspace.js','village-workspace.css','pages-runtime.js','capabilities.js','evidence-library.js','operations-ui.js','operations-ui.css','start-page.js','start-page.css'];
 
 export async function buildPages({outputDirectory=output,manifestPath=resolve(root,'tmp/pages-manifest.json')}={}){
   const buildOutput=resolve(outputDirectory);
@@ -62,8 +62,9 @@ export async function buildPages({outputDirectory=output,manifestPath=resolve(ro
   files.push(...guardianFiles);
   const cached=[...new Set(files)].filter(path=>!['.nojekyll','README.md'].includes(path)).sort();
   const digest=createHash('sha256');for(const path of cached){digest.update(path);digest.update(await readFile(resolve(buildOutput,path)));}
+  digest.update(await read('dist/guardian-offline-sw.js'));
   const guardianBuild=digest.digest('hex').slice(0,20);
-  await write('guardian-cache-manifest.json',JSON.stringify({build:guardianBuild,files:cached},null,2));
+  await write('guardian-cache-manifest.json',JSON.stringify({build:guardianBuild,version:capabilities.version,files:cached},null,2));
   await write('guardian-offline-sw.js',(await read('dist/guardian-offline-sw.js')).replace('__GUARDIAN_BUILD__',guardianBuild));
   files.push('guardian-cache-manifest.json','guardian-offline-sw.js');
   await writeFile(manifestPath,JSON.stringify({directory:relative(root,buildOutput).split(sep).join('/'),files:[...new Set(files)].sort()},null,2));

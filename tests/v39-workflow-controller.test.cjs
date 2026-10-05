@@ -62,7 +62,7 @@ function harness(role='command'){
     respond(index,fixture,{reject=false}={}){const request=requests[index],body=JSON.parse(request.options.body);if(!reject)fixture.store.action(body.action,body.payload);request.resolve({ok:!reject,json:async()=>({...fixture.snapshot(),...(reject?{error:'依据已变化，请重新核对'}:{})})});return body;}
   };
 }
-function fixture(){const store=E.create();store.action('generate');return {store,snapshot(){const data=store.data;return {session:'workflow-controller-test',data,taskSummary:E.taskSummary(data),metrics:E.metrics(data),villageLedger:E.villageMetrics(data),blockedVehicles:[],capabilities:{villageReporting:true,commandIntake:true}};}};}
+function fixture(){const store=E.create();store.action('generate');return {store,snapshot(){const data=store.data;return {session:'workflow-controller-test',data,taskSummary:E.taskSummary(data),mapConversion:E.mapConversionStatus(data),metrics:E.metrics(data),villageLedger:E.villageMetrics(data),blockedVehicles:[],capabilities:{villageReporting:true,commandIntake:true}};}};}
 function finish(f){const x=f.store;x.action('confirm');x.action('contact',{ids:x.data.activePlan.servedIds});x.action('start');for(const route of x.data.activePlan.routes.filter(r=>r.people))while(!x.data.fleet[route.vehicleId].finished)x.action('step',{vehicleId:route.vehicleId});for(const [id,stage] of Object.entries(x.data.stage))if(stage==='arrived')x.action('verify',{id});}
 const csv='村庄,集合点,人数,需协助人数,轮椅人数,同行关系\n演示村 A,P-A1,2,0,0,可分组';
 function file(){const bytes=new TextEncoder().encode(csv);return {name:'任务需求.csv',size:bytes.length,arrayBuffer:async()=>bytes.buffer};}
@@ -122,7 +122,7 @@ test('starting a new task archives old work, returns to intake, and discards old
   const h=harness(),f=fixture();h.controller.seed(f.snapshot());await h.controller.readIntakeFile(file());h.input('quick-text','新增三人');
   f.store.action('end-task',{mode:'stopped'});h.controller.acceptState(f.snapshot());const oldId=f.store.data.exerciseId;
   await h.click('new-task-dialog');assert.match(h.elements['dialog-content'].innerHTML,/上一场的未完成人员不会自动带入/);
-  const revision=f.store.data.revision,pending=h.submit(),body=JSON.parse(h.requests[0].options.body);assert.equal(body.action,'new-task');assert.deepEqual(body.payload,{});assert.equal(body.expectedRevision,revision);assert.equal(body.session,'workflow-controller-test');
+  const revision=f.store.data.revision,pending=h.submit(),body=JSON.parse(h.requests[0].options.body);assert.equal(body.action,'new-task');assert.deepEqual(body.payload,{mapMode:'same'});assert.equal(body.expectedRevision,revision);assert.equal(body.session,'workflow-controller-test');
   h.respond(0,f);await pending;const ui=h.controller.inspect();assert.notEqual(f.store.data.exerciseId,oldId);assert.equal(f.store.data.taskArchives[0].exerciseId,oldId);assert.equal(ui.commandSection,'inbox');assert.equal(ui.intake.draft,null);assert.equal(ui.intake.filename,'');assert.equal(ui.quickText,'');assert.equal(ui.quickDraft,null);
 });
 
@@ -159,4 +159,31 @@ test('legacy plan, execution, more and report entry points remain routed through
   await h.click('workspace-section','plan');assert.equal(h.controller.inspect().commandSection,'plan');assert.match(h.controller.workspaceNavHTML(),/data-id="execution" class="active"/);
   await h.click('workspace-section','execution');assert.equal(h.controller.inspect().commandSection,'execution');await h.click('workspace-section','more');assert.equal(h.controller.inspect().commandSection,'more');await h.click('report');assert.equal(h.controller.inspect().commandSection,'records');
   const field=harness('field');field.controller.seed(f.snapshot());await field.click('workspace-section','history');assert.equal(field.controller.inspect().fieldSection,'history');assert.equal((field.controller.workspaceNavHTML().match(/data-ac="workspace-section"/g)||[]).length,2);assert.match(field.controller.workspaceNavHTML(),/data-id="report" class="active"/);
+});
+
+function savedProgress(){
+  const f=fixture(),x=f.store;x.action('confirm');x.action('contact',{ids:x.data.activePlan.servedIds});x.action('start');
+  const route=x.data.activePlan.routes.find(row=>row.people);x.action('step',{vehicleId:route.vehicleId});
+  x.action('report',{kind:'hazard',location:'H1',text:'现场补报一条待核实情况'});return f;
+}
+
+test('blocked map setup displays saved plan, passenger progress and pending report instead of an unusable convert button',()=>{
+  const f=savedProgress(),before=f.store.data,state=f.snapshot();assert.equal(state.mapConversion.allowed,false);assert.ok(state.taskSummary.boarded>0);assert.equal(state.taskSummary.pendingReports,1);
+  const html=Workflow.mapSetup(state);assert.ok(html.includes('已发布 '+before.activePlan.id));assert.ok(html.includes('车上 '+state.taskSummary.boarded+' 人'));assert.ok(html.includes('待核实 1 条'));assert.ok(html.includes('待接 '+state.taskSummary.waiting+' 人'));
+  assert.match(html,/“未选择文件”只表示没有上传新名单/);assert.match(html,/data-ac="workspace-section" data-id="execution"/);assert.match(html,/data-ac="end-for-road-dialog"/);assert.doesNotMatch(html,/data-ac="map-enable"/);assert.match(html,/旧场记录会保留/);
+  assert.deepEqual(f.store.data,before,'rendering the conversion explanation must never close, reset or modify saved work');
+  assert.match(Workflow.mapSetup(fixture().snapshot()),/data-ac="map-enable"/);
+});
+
+test('switching an in-progress task to Ruian roads requires separate end and new-task confirmations with an intact archive',async()=>{
+  const h=harness(),f=savedProgress(),old=f.store.data;h.controller.seed(f.snapshot());
+  await h.click('end-for-road-dialog');assert.equal(h.requests.length,0);assert.deepEqual(f.store.data,old);assert.equal(h.controller.inspect().modal.kind,'end-task');assert.match(h.elements['dialog-content'].innerHTML,/提前结束并保留记录/);
+  const end=h.submit(),endBody=JSON.parse(h.requests[0].options.body);assert.equal(endBody.action,'end-task');assert.equal(endBody.payload.mode,'stopped');assert.equal(endBody.expectedRevision,old.revision);assert.equal(endBody.session,'workflow-controller-test');h.respond(0,f);await end;
+  const closed=f.store.data;assert.equal(closed.taskLifecycle.status,'stopped');for(const key of ['stage','fleet','activePlan','reports'])assert.deepEqual(closed[key],old[key]);assert.equal(closed.exerciseId,old.exerciseId);assert.equal(closed.scenario.region.mapKind,old.scenario.region.mapKind);
+  assert.equal(h.requests.length,1,'opening the second dialog is not permission to create a new task');assert.equal(h.controller.inspect().modal.kind,'new-task');assert.equal(h.elements['task-map-mode'].value,'ruian-roads');assert.equal(h.elements.dialog.open,true);assert.match(h.elements['dialog-content'].innerHTML,/15 人合成演练样例/);
+  await h.click('close');assert.equal(h.requests.length,1);assert.deepEqual(f.store.data,closed,'cancelling the new-task dialog leaves the ended task intact');
+  await h.click('new-road-task-dialog');assert.equal(h.requests.length,1);assert.equal(h.elements['task-map-mode'].value,'ruian-roads');
+  const create=h.submit(),newBody=JSON.parse(h.requests[1].options.body);assert.equal(newBody.action,'new-task');assert.deepEqual(newBody.payload,{mapMode:'ruian-roads'});assert.equal(newBody.expectedRevision,closed.revision);assert.equal(newBody.session,'workflow-controller-test');assert.notEqual(newBody.requestId,endBody.requestId);h.respond(1,f);await create;
+  const next=f.store.data;assert.notEqual(next.exerciseId,old.exerciseId);assert.equal(next.scenario.region.mapKind,'osm-road-network');assert.equal(next.activePlan,null);assert.equal(E.metrics(next).waiting,15);assert.equal(next.taskArchives.length,1);assert.equal(next.taskArchives[0].exerciseId,old.exerciseId);for(const key of ['stage','fleet','activePlan','reports'])assert.deepEqual(next.taskArchives[0].data[key],old[key]);
+  assert.equal(h.controller.inspect().commandSection,'inbox');assert.deepEqual(h.requests.map(row=>JSON.parse(row.options.body).action),['end-task','new-task']);
 });

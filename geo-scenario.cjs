@@ -32,20 +32,40 @@ function apply(d){
   return d;
 }
 
-function convert(d){
-  const assert=(ok,message)=>{if(!ok)throw new Error(message);};
-  assert(d.scenario.region.mapKind!=='osm-road-network','当前已经是瑞安道路地图，无需重复转换');
-  assert(d.phase==='preparation'&&!d.activePlan&&!d.history.length&&
-    Object.values(d.stage).every(stage=>stage==='waiting'||stage==='superseded')&&
-    Object.values(d.contacts).every(c=>!c.ack&&!c.contacted)&&
-    Object.values(d.fleet).every(f=>!f.onboard.length&&!f.delivered.length&&!f.finished&&f.minute===0),
-    '已有发布或执行进度，不能转换地图；请保留当前演练，另建瑞安道路演练');
+function conversionStatus(d){
+  const reasons=[],add=(code,message)=>reasons.push({code,message});
+  const alreadyRoads=d.scenario.region.mapKind==='osm-road-network';
+  if(alreadyRoads)return {allowed:false,alreadyRoads:true,reasons:[{code:'already-roads',message:'当前已经是瑞安道路地图，无需重复转换'}]};
+  if(['completed','stopped'].includes(d.taskLifecycle?.status))add('task-closed','本场任务已结束；保留记录后，可新建瑞安道路任务');
+  if(d.activePlan)add('published-plan','本场仍保留已发布方案 '+d.activePlan.id+'；未上传新名单不代表没有已发布任务');
+  if(d.history.length)add('published-history','本场保留 '+d.history.length+' 份历史发布方案');
+  if(d.phase!=='preparation')add('execution-phase','本场已经开始模拟执行，不能直接替换路线依据');
+  const progressed=Object.entries(d.stage).filter(([,stage])=>stage!=='waiting'&&stage!=='superseded');
+  if(progressed.length){
+    const total=stage=>progressed.reduce((n,[id,value])=>n+(value===stage?(d.scenario.households.find(h=>h.id===id)?.people||0):0),0);
+    add('person-progress','人员记录：已上车 '+total('boarded')+' 人、到达待核验 '+total('arrived')+' 人、已核验 '+total('verified')+' 人');
+  }
+  const contacts=Object.entries(d.contacts).filter(([,c])=>c.ack||c.contacted);
+  if(contacts.length){
+    const people=contacts.reduce((n,[id])=>n+(d.scenario.households.find(h=>h.id===id)?.people||0),0);
+    add('contacts','已有联系或接收登记 '+contacts.length+' 组、'+people+' 人');
+  }
+  const vehicles=Object.values(d.fleet).filter(f=>f.onboard.length||f.delivered.length||f.finished||f.minute!==0);
+  if(vehicles.length)add('vehicle-progress',vehicles.length+' 辆车已有行程或送达记录');
   const nodes=new Set(network.nodes.map(n=>n.id));
-  assert(d.scenario.edges.every(e=>e.open)&&d.reports.every(r=>r.kind!=='road'&&nodes.has(r.location)),
-    '已有道路变化或无法对应的位置反馈，不能无损转换；请另建瑞安道路演练');
-  assert(d.scenario.households.every(h=>nodes.has(h.node))&&d.scenario.vehicles.every(v=>nodes.has(v.start)&&nodes.has(d.fleet[v.id].node))&&d.scenario.shelters.every(s=>nodes.has(s.id))&&
-    d.villages.every(v=>v.pickups.every(p=>!p.node||nodes.has(p.node))),
-    '现有需求或资源位置无法对应真实道路节点，不能无损转换；请先核对位置或另建演练');
+  if(d.scenario.edges.some(e=>!e.open)||d.reports.some(r=>r.kind==='road'))add('road-changes','已有道路变化或道路反馈，不能无损映射到另一套路网');
+  if(d.reports.some(r=>!nodes.has(r.location)))add('report-location','已有位置反馈无法对应真实道路节点');
+  if(!d.scenario.households.every(h=>nodes.has(h.node))||!d.scenario.vehicles.every(v=>nodes.has(v.start)&&nodes.has(d.fleet[v.id].node))||!d.scenario.shelters.every(s=>nodes.has(s.id))||
+    !d.villages.every(v=>v.pickups.every(p=>!p.node||nodes.has(p.node))))add('demand-location','现有需求或资源位置无法对应真实道路节点，不能无损转换');
+  return {allowed:reasons.length===0,alreadyRoads:false,reasons};
+}
+
+function convert(d){
+  const status=conversionStatus(d);
+  if(!status.allowed){
+    const executing=status.reasons.some(r=>['published-plan','published-history','execution-phase','person-progress','contacts','vehicle-progress'].includes(r.code));
+    throw new Error((executing?'已有发布或执行进度，不能转换地图；':'')+status.reasons.map(r=>r.message).join('；'));
+  }
   const s=d.scenario;s.name=network.region.name;s.region=clone(network.region);s.nodes=clone(network.nodes);s.edges=clone(network.edges);s.geographicMetadata=clone(network.metadata);
   for(const village of d.villages)for(const pickup of village.pickups){
     if(!pickup.node)continue;const node=s.nodes.find(n=>n.id===pickup.node);
@@ -57,4 +77,4 @@ function convert(d){
   d.scenarioPreset='ruian-roads';
   return d;
 }
-module.exports={apply,convert,metadata:clone(network.metadata)};
+module.exports={apply,convert,conversionStatus,metadata:clone(network.metadata)};

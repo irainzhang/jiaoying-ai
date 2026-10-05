@@ -172,7 +172,8 @@ function create(initialData=null){
       }
       else if(name==='new-task'){
         assert(T.isClosed(d),'请先结束当前任务，再新建下一场');
-        const revision=d.revision,realRoads=d.scenario.region.mapKind==='osm-road-network',archives=T.mergeArchives([T.archive(d)],d.taskArchives);
+        const mapMode=p.mapMode===undefined?'same':p.mapMode;assert(['same','ruian-roads'].includes(mapMode),'新任务地图请选择沿用当前地图或瑞安真实道路');
+        const revision=d.revision,realRoads=mapMode==='ruian-roads'||d.scenario.region.mapKind==='osm-road-network',archives=T.mergeArchives([T.archive(d)],d.taskArchives);
         d=initial();d.revision=revision;d.taskArchives=archives;
         if(realRoads){require('./geo-scenario.cjs').apply(d);d.scenarioPreset='ruian-roads';}
         generate('新场任务已建立，恢复 15 人演练底数');
@@ -345,4 +346,4 @@ function create(initialData=null){
   }
   return {get data(){return clone(d);},action,fresh};
 }
-module.exports={create,initial,snapshot,solve,baseline,validate,metrics,diagnostics,restore,taskSummary:T.summary,scenarioCatalog:R.catalog,villageMetrics:V.villageMetrics,blockedRoute,ALGORITHM,BASELINE};
+module.exports={create,initial,snapshot,solve,baseline,validate,metrics,diagnostics,restore,taskSummary:T.summary,mapConversionStatus:require('./geo-scenario.cjs').conversionStatus,scenarioCatalog:R.catalog,villageMetrics:V.villageMetrics,blockedRoute,ALGORITHM,BASELINE};
