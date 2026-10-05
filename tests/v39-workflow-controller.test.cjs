@@ -52,12 +52,12 @@ function harness(role='command'){
   context.window=context;vm.createContext(context);
   for(const name of ['village-assistant.js','village-workspace.js','command-intake.js','intake-file.js','quick-context.js','review-form.js','workflow-ui.js','task-workbench.js'])vm.runInContext(fs.readFileSync(path.join(__dirname,'../dist',name),'utf8'),context,{filename:name});
   const bootstrap='render();poll();setInterval(poll,1200);';
-  const bridge=`window.testWorkflow={seed(next){state=next;connected=true;draftLoaded=true;},inspect(){return {view,commandSection,fieldSection,modal,busy,intake,quickText,quickDraft,villageForm,fieldVehicle,fieldHousehold,fieldLocation,reviewBound:!!reviewBinding};},acceptState,clickAction,navigate,reveal,action,readIntakeFile,workspaceNavHTML};`;
+  const bridge=`window.testWorkflow={seed(next){state=next;connected=true;draftLoaded=true;},inspect(){return {view,commandSection,fieldSection,modal,busy,intake,quickText,quickDraft,villageForm,fieldVehicle,fieldHousehold,fieldLocation,reviewBound:!!reviewBinding};},acceptState,clickAction,navigate,reveal,action,readIntakeFile,workspaceNavHTML,commitIntakePlace,intakePlaceOptions,restoreIntakeDraft(){draftLoaded=false;restoreDraft();}};`;
   const source=fs.readFileSync(path.join(__dirname,'../dist/workspace-app.js'),'utf8');assert.ok(source.includes(bootstrap));vm.runInContext(source.replace(bootstrap,bridge),context,{filename:'workspace-app.js'});
   return {controller:context.testWorkflow,guardian:context.JiaoyingGuardianHost,elements,requests,downloads,blobs,storage,
     click(ac,id){return context.testWorkflow.clickAction({dataset:{ac,id},disabled:false});},
     change(id,value){for(const fn of listeners.change||[])fn({target:{id,value,dataset:{}}});},
-    input(id,value){for(const fn of listeners.input||[])fn({target:{id,value,dataset:{}}});},
+    input(id,value,dataset={}){for(const fn of listeners.input||[])fn({target:{id,value,dataset}});},
     submit(){return Promise.all((listeners.submit||[]).map(fn=>fn({target:{id:'modal-form'},preventDefault(){}})));},
     respond(index,fixture,{reject=false}={}){const request=requests[index],body=JSON.parse(request.options.body);if(!reject)fixture.store.action(body.action,body.payload);request.resolve({ok:!reject,json:async()=>({...fixture.snapshot(),...(reject?{error:'依据已变化，请重新核对'}:{})})});return body;}
   };
@@ -212,4 +212,28 @@ test('V4 stale vehicle-start dialog cannot silently start a newly published plan
 
 test('V4 Guardian publication review selects the freshly calculated primary draft rather than a leftover alternative toggle',async()=>{
  const h=harness(),f=fixture();assert.ok(f.store.data.alternative);h.controller.seed(f.snapshot());await h.click('alternative');const current={session:f.snapshot().session,revision:f.store.data.revision,inputVersion:f.store.data.inputVersion,executionVersion:f.store.data.executionVersion};h.guardian.openPublicationReview(current);assert.equal(h.controller.inspect().modal.alternative,false);assert.ok(h.elements['dialog-content'].innerHTML.includes(f.store.data.plan.id));assert.ok(!h.elements['dialog-content'].innerHTML.includes(f.store.data.alternative.id));assert.equal(h.requests.length,0);
+});
+
+test('V4.0.1 searchable quick entry preserves a new district and routes incomplete demand to follow-up',async()=>{
+ const h=harness(),f=fixture(E.createBlank({mapMode:'ruian-roads'}));h.controller.seed(f.snapshot());
+ const district={id:'intake-scope-village',value:'玉海街道',dataset:{intakeScope:'villageName'}};
+ h.controller.commitIntakePlace(district,'玉海街道',null,{reason:'blur'});
+ h.input('intake-fast-people','10',{intakeFast:'people'});await h.click('intake-fast-prepare');
+ const draft=h.controller.inspect().intake.draft;assert.equal(draft.rows.length,1);assert.equal(draft.rows[0].villageName,'玉海街道');assert.equal(draft.rows[0].people,10);assert.equal(draft.rows[0].villageId,'');assert.equal(draft.rows[0].assistancePeople,null);assert.equal(draft.errors.length,0);
+ const pending=h.click('intake-submit'),body=JSON.parse(h.requests[0].options.body);assert.equal(body.payload.rows[0].people,10);assert.equal(body.payload.rows[0].villageName,'玉海街道');h.respond(0,f);await pending;assert.equal(E.metrics(f.store.data).people,10);assert.equal(h.controller.inspect().commandSection,'inbox');assert.equal(f.store.data.plan?.servedPeople||0,0);
+});
+
+test('V4.0.1 switching selected district clears the old pickup and a changed fast count invalidates preview',async()=>{
+ const h=harness(),f=fixture();h.controller.seed(f.snapshot());const input={dataset:{intakeScope:'villageName'},value:''};
+ h.controller.commitIntakePlace(input,'VA',{id:'VA'},{reason:'selection'});
+ h.controller.commitIntakePlace({dataset:{intakeScope:'pickupName'},value:''},'P-A1',{id:'P-A1'},{reason:'selection'});
+ assert.equal(h.controller.inspect().intake.scope.pickupId,'P-A1');h.input('intake-fast-people','10',{intakeFast:'people'});await h.click('intake-fast-prepare');assert.equal(h.controller.inspect().intake.draft.rows[0].people,10);
+ h.input('intake-fast-people','12',{intakeFast:'people'});assert.equal(h.controller.inspect().intake.draft,null);
+ h.controller.commitIntakePlace(input,'VB',{id:'VB'},{reason:'blur'});const scope=h.controller.inspect().intake.scope;assert.equal(scope.villageId,'VB');assert.equal(scope.pickupId,'');assert.equal(scope.pickupName,'');const options=h.controller.intakePlaceOptions({dataset:{intakeScope:'pickupName'}});assert.ok(options.every(p=>p.id!=='P-A1'));
+ await h.click('intake-fast-prepare');assert.equal(h.controller.inspect().intake.draft.rows[0].people,12);assert.equal(h.controller.inspect().intake.draft.rows[0].pickupId,'');
+});
+
+test('V4.0.1 recovers the old unmatched-village draft as a reviewable row without writing a task',()=>{
+ const h=harness(),f=fixture(E.createBlank({mapMode:'ruian-roads'}));h.controller.seed(f.snapshot());h.storage.set('jiaoying-draft-v35:/jiaoying-ai/:command',JSON.stringify({exerciseId:f.store.data.exerciseId,intake:{text:'玉海街道，新增 10 人',source:'text',draft:{rows:[],errors:['第1条：未识别到已登记的村庄，请使用完整村名或编号。'],warnings:[]}}}));
+ h.controller.restoreIntakeDraft();const draft=h.controller.inspect().intake.draft;assert.equal(draft.rows.length,1);assert.equal(draft.rows[0].people,10);assert.equal(draft.rows[0].villageName,'玉海街道');assert.equal(h.requests.length,0);assert.equal(E.metrics(f.store.data).people,0);
 });

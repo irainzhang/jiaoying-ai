@@ -51,6 +51,18 @@
   }
   function finish(out) { out.errors=unique(out.errors);out.warnings=unique(out.warnings);return out; }
 
+  // These are labels from the utterance, not geocoding results. Unknown labels
+  // deliberately receive no registered ID or road anchor.
+  function spokenLocalities(text) {
+    const tokens=String(text).normalize('NFKC').match(/[\p{Script=Han}A-Za-z0-9·-]{1,60}?(?:街道|社区|行政村|片区|小区|乡|镇|村(?!民|庄|委|里|内))(?:[ \t]*[A-Za-z][A-Za-z0-9-]*)?/gu)||[];
+    return unique(tokens.map(value=>value.replace(/^(?:请将|请(?:帮我|帮忙)?|帮我|安排|接送|转移|来自|位于|我们在|在|新增|增加|补报)+/g,'').trim()).filter(value=>value.length>1&&!/^(?:本村|全村|该村|所选村|当前村|一个村|行政村)$/.test(value)));
+  }
+  function spokenPickup(text) {
+    const t=String(text).normalize('NFKC');
+    const match=t.match(/(?:在|位于|前往)([^，,。；;\r\n]{2,80}?)(?:集合|等车|等待接送)(?=[，,。；;]|$)/)||t.match(/(?:集合点|接人点|接人地点)\s*[:：]\s*([^，,。；;\r\n]{2,80})/);
+    return match?match[1].trim():'';
+  }
+
   function parseCSV(input) {
     if (typeof input!=='string') throw new Error('CSV 内容必须是文本。');
     let text=input.replace(/^\uFEFF/,'');
@@ -164,7 +176,9 @@
     for(const paragraph of paragraphs) {
       let current='';
       for(const clause of paragraph.split(/[,，]/)) {
-        if(villagesIn(clause,villages).length && villagesIn(current,villages).length) {out.push(current);current=clause;}
+        const startsPlace=!!(villagesIn(clause,villages).length||spokenLocalities(clause).length);
+        const hasDemand=/(?:新增|增加|补报|新发现|新登记|再增|安排|接送|转移).*[0-9零〇一二两三四五六七八九十百千]+/.test(current);
+        if(startsPlace && (villagesIn(current,villages).length||hasDemand)) {out.push(current);current=clause;}
         else current+=(current?'，':'')+clause;
       }
       if(!current)continue;
@@ -202,15 +216,49 @@
       const rowIndex=index+1, prefix='第 '+rowIndex+' 条：';
       if(/(?:不要|无需|不用|不必|不再|取消|不需要|不能|未|不)(?:再)?(?:安排|转移|接送)|(?:安排|转移|接送)(?:取消|不了)/.test(norm(part))) {out.errors.push(prefix+'包含取消或否定安排，请明确本次新增需求。');return;}
       if(/(?:总计|共计|合计|总共|共有|总量|总人数)/.test(norm(part))&&!/(?:新增|新发现|增加|补报|新登记|再增)/.test(norm(part))){out.errors.push(prefix+'总量不能直接当作新增人数，请明确本次新增需求；总量盘点请使用村级台账。');return;}
-      if(!context.villageId&&!villagesIn(part,villages).length){out.errors.push(prefix+'未识别到已登记的村庄，请使用完整村名或编号。');return;}
-      const prepared=villageAssistant.prepare(prepareText(part,villages),{...context,mode:'increment'});
+      const explicit=villagesIn(part,villages),selected=villages.find(v=>v.id===context.villageId);
+      if(explicit.length>1){out.errors.push(prefix+'一条记录涉及多个或同名地区，请按地区分开，并选择唯一的登记编号。');return;}
+      if(context.villageId&&!selected){out.errors.push(prefix+'当前所选地区已失效，请重新选择。');return;}
+      if(explicit.length===1&&selected&&explicit[0].id!==selected.id){out.errors.push(prefix+'口述地区与当前选择不一致，请核对所属地区。');return;}
+      const localities=spokenLocalities(part).filter(value=>!villages.some(v=>names(v).includes(norm(value))));
+      // A known village can sit inside an explicitly spoken township. Do not
+      // silently discard that extra place: the user can select one unambiguous
+      // area instead of routing a potentially different village.
+      if(localities.length>1||explicit.length&&localities.length){out.errors.push(prefix+'一条记录涉及多个地区名称，请分条录入或先明确所属地区。');return;}
+      const freeVillage=localities[0]||(!explicit.length&&!selected?string(context.villageName):'');
+      const village=freeVillage?null:(explicit[0]||selected||null);
+      const villageName=village?.name||freeVillage;
+      const contextVillageName=selected?.name||string(context.villageName),spokenVillageName=explicit[0]?.name||localities[0];
+      const changedVillage=!!(contextVillageName&&spokenVillageName&&norm(contextVillageName)!==norm(spokenVillageName));
+      const locationWarnings=[];
+      if(changedVillage)locationWarnings.push('口述地区与已选地区不同，已保留口述原名并清空原接人点，请核对。');
+      if(!village)locationWarnings.push(villageName?'地区未在本场目录中登记，保留原名待定位；不会自动映射真实位置。':'未提供所属地区，已保留人数；请在本行搜索选择或填写地区。');
+      const pickupItems=village?.pickups||[];
+      const foreign= villages.filter(v=>v.id!==village?.id).flatMap(v=>v.pickups||[]).filter(p=>includesName(norm(part),norm(p.id)));
+      if(foreign.length){out.errors.push(prefix+'口述接人点编号不属于当前地区，请核对地区与接人点。');return;}
+      const registeredPickups=pickupItems.filter(p=>[p.id,p.name,...(p.aliases||[]),norm(p.name).replace(/\(演示\)/g,'')].some(value=>includesName(norm(part),norm(value))));
+      if(registeredPickups.length>1){out.errors.push(prefix+'接人点名称不唯一，请选择登记编号或按接人点分条录入。');return;}
+      const selectedPickup=pickupItems.find(p=>p.id===context.pickupId);
+      if(!changedVillage&&context.pickupId&&village&&!selectedPickup){out.errors.push(prefix+'所选接人点不属于当前地区，请重新选择。');return;}
+      const spokenPoint=spokenPickup(part);
+      const unknownPoint=spokenPoint&&!registeredPickups.length?spokenPoint:'';
+      const pointName=unknownPoint||(!changedVillage&&!registeredPickups.length&&!selectedPickup?string(context.pickupName):'');
+      const effectivePickup=registeredPickups[0]||(!unknownPoint&&!changedVillage?selectedPickup:null);
+      if(registeredPickups[0]&&selectedPickup&&registeredPickups[0].id!==selectedPickup.id)locationWarnings.push('口述接人点与当前选择不同，已按明确的口述登记点整理，请核对。');
+      if(unknownPoint&&selectedPickup)locationWarnings.push('口述接人位置与所选登记点不同，已保留口述位置并清空旧接人点，请核对。');
+      // Reuse the existing conservative count/negation rules with a temporary
+      // label-only directory. Temporary IDs never leave this parsing adapter.
+      const temporaryVillage={...(village||{}),id:village?.id||'__draft-area__',name:villageName||'未提供地区',pickups:[...pickupItems]};
+      if(pointName)temporaryVillage.pickups.push({id:'__draft-pickup__',name:pointName});
+      const prepared=villageAssistant.prepare(prepareText(part,villages),{...context,data:{...context.data,villages:[temporaryVillage]},villageId:temporaryVillage.id,pickupId:effectivePickup?.id||(pointName?'__draft-pickup__':''),mode:'increment'});
       if(prepared.proposal?.payload.mode && prepared.proposal.payload.mode!=='increment') {out.errors.push(prefix+'当前总量或更正不能作为新增任务导入，请在村级台账中核对。');return;}
       if(prepared.questions.length){out.errors.push(...prepared.questions.map(question=>prefix+question));return;}
-      if(prepared.warnings.some(w=>w.includes('口述集合位置尚未登记'))){out.errors.push(prefix+'口述集合位置尚未登记，请使用本村已登记集合点；位置不确定时请明确说“集合点待补充”。');return;}
       const p=prepared.proposal?.payload;
       if(!p){out.errors.push(prefix+'没有识别到可登记的新增需求。');return;}
-      const row={villageId:p.villageId,pickupId:p.pickupId,people:p.people,assistancePeople:p.assistancePeople,wheelchairPeople:p.wheelchairPeople,groupPolicy:p.groupPolicy,text:part,rowIndex,warnings:prepared.warnings};
-      out.rows.push(row);out.warnings.push(...prepared.warnings.map(w=>prefix+w));
+      const pickup=pickupItems.find(item=>item.id===p.pickupId);
+      const row={villageId:village?.id||'',villageName,pickupId:pickup?.id||'',pickupName:pickup?.name||pointName,people:p.people,assistancePeople:p.assistancePeople,wheelchairPeople:p.wheelchairPeople,groupPolicy:p.groupPolicy,text:part,rowIndex};
+      row.warnings=unique([...prepared.warnings,...locationWarnings,...(!pickup?['接人位置待定位；可以先保存需求，补齐位置后再安排路线。']:[])]);
+      out.rows.push(row);out.warnings.push(...row.warnings.map(w=>prefix+w));
     });
     return finish(out);
   }
@@ -234,16 +282,22 @@
     let next=remember(row,context);
     if(!editableFields.includes(key))return next;
     const edited=['people','assistancePeople','wheelchairPeople'].includes(key)?(value===''||value==null?null:Number(value)):string(value);
+    // A dropdown returns IDs while the input displays canonical names. Picking
+    // the current item again must not discard its verified location anchor.
+    if(key==='villageName'&&next.villageId&&norm(edited)===norm(next.villageId)&&(context.data?.villages||[]).some(v=>v.id===next.villageId))return next;
+    if(key==='pickupName'&&next.pickupId&&norm(edited)===norm(next.pickupId)&&(context.data?.villages||[]).find(v=>v.id===next.villageId)?.pickups?.some(p=>p.id===next.pickupId))return next;
     if(next[key]===edited)return next;
     next[key]=edited;
     if(key==='villageName'||key==='pickupName') {
-      const villages=context.data?.villages||[],matches=villageFor(next.villageName,villages),village=matches.length===1?matches[0]:null;
+      const villages=context.data?.villages||[],matches=villageFor(next.villageName,villages);
+      const selectedVillage=key==='villageName'?villages.find(v=>norm(v.id)===norm(edited)):villages.find(v=>v.id===next.villageId);
+      const village=selectedVillage||(matches.length===1?matches[0]:null);
       next.villageId=village?.id||'';
       next.pickupId='';next.locationNodeId=null;next.longitude=null;next.latitude=null;next.coordinateSystem=null;
       // An old village's pickup is not reused merely because it has a generic
       // name shared by another village. The operator chooses the new point.
-      if(key==='villageName')next.pickupName='';
-      else if(village){const points=pickupFor(next.pickupName,village);if(points.length===1)next.pickupId=points[0].id;}
+      if(key==='villageName'){next.villageName=village?.name||edited;next.pickupName='';}
+      else if(village){const points=pickupFor(next.pickupName,village),selectedPoint=village.pickups?.find(p=>norm(p.id)===norm(edited)),point=selectedPoint||(points.length===1?points[0]:null);if(point){next.pickupId=point.id;next.pickupName=point.name;}}
     }
     next.editedFields=editableFields.filter(field=>next[field]!==next.original[field]);
     return next;

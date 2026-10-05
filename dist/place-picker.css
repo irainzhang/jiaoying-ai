@@ -1,0 +1,24 @@
+.place-picker { min-width: 0; margin: 0 0 10px; }
+.place-picker-label { display: block; margin: 0 0 5px; color: #365f72; font-size: .82rem; font-weight: 600; }
+.place-picker-control { display: flex; align-items: stretch; min-height: 44px; border: 1px solid #b9d3df; border-radius: 10px; background: #fff; transition: border-color .16s, box-shadow .16s; }
+.place-picker-control:focus-within { border-color: #048b86; box-shadow: 0 0 0 3px #0ba5a51c; }
+.place-picker-control .place-picker-input { width: 100%; min-width: 0; min-height: 44px; margin: 0; padding: 10px 11px; border: 0; border-radius: 10px 0 0 10px; box-shadow: none; background: transparent; color: #18485c; font: inherit; }
+.place-picker-control .place-picker-input:focus { outline: none; box-shadow: none; }
+.place-picker-control .place-picker-toggle { display: grid; place-items: center; flex: 0 0 44px; width: 44px; min-width: 44px; margin: 0; padding: 0; border: 0; border-left: 1px solid #dce9ef; border-radius: 0 9px 9px 0; background: #ebf6f6; color: #008782; box-shadow: none; font-size: 25px; line-height: 1; cursor: pointer; }
+.place-picker-control .place-picker-toggle:hover { background: #d7f1ed; transform: none; }
+.place-picker-control .place-picker-toggle[aria-expanded="true"] { background: #d7f1ed; }
+.place-picker-control .place-picker-toggle[aria-expanded="true"] span { transform: rotate(180deg); }
+.place-picker-control :disabled { cursor: not-allowed; opacity: .65; }
+.place-picker-popup { position: fixed; z-index: 15000; display: flex; flex-direction: column; overflow: hidden; box-sizing: border-box; border: 1px solid #afd4d9; border-radius: 12px; background: #fff; color: #18485c; box-shadow: 0 12px 34px #173d542e; font: 14px/1.5 system-ui, "Microsoft YaHei", sans-serif; }
+.place-picker-caption { flex-shrink: 0; padding: 10px 12px; background: #eff8f9; border-bottom: 1px solid #dcebee; color: #547480; font-size: 12px; }
+.place-picker-list { overflow: auto; overscroll-behavior: contain; padding: 5px; scrollbar-width: thin; }
+.place-picker-option { padding: 10px 9px; border: 1px solid transparent; border-radius: 7px; cursor: pointer; overflow-wrap: anywhere; }
+.place-picker-option + .place-picker-option { margin-top: 2px; }
+.place-picker-option strong { font-size: 14px; font-weight: 650; }
+.place-picker-option small { display: block; padding-top: 2px; color: #607f8c; font-size: 12px; }
+.place-picker-option-id { margin-left: 8px; color: #5d7c8a; font-size: 12px; font-weight: 400; }
+.place-picker-option:hover, .place-picker-option.is-active { background: #e7f6f3; border-color: #b1ddd4; }
+.place-picker-manual { margin-top: 7px !important; border-top: 1px solid #dce9ed; background: #f5fafc; }
+.place-picker-manual strong { color: #007f7c; }
+.place-picker-empty { padding: 12px 9px; color: #637d89; font-size: 13px; }
+@media (max-width: 600px) { .place-picker-control .place-picker-input { font-size: 16px; } .place-picker-option { padding: 12px 9px; } }
