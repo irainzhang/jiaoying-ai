@@ -1,6 +1,6 @@
 {
-  "build": "2bdd7a5b829b935ff05a",
-  "version": "4.0.1",
+  "build": "00c89efefe1775dd21a1",
+  "version": "4.0.2",
   "files": [
     "assets/evaluation.json",
     "assets/logo-lockup.png",
@@ -8,6 +8,7 @@
     "assets/maps/SOURCES.md",
     "assets/maps/query.overpassql",
     "assets/maps/ruian-osm-raw.json",
+    "assets/maps/ruian-places.json",
     "assets/maps/ruian-routing.json",
     "assets/maps/ruian-urban.geojson",
     "assets/maps/source-metadata.json",
@@ -78,6 +79,7 @@
     "operations-ui.css",
     "operations-ui.js",
     "pages-runtime.js",
+    "place-directory.js",
     "place-picker.css",
     "place-picker.js",
     "quick-context.js",

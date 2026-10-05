@@ -1,4 +1,4 @@
-(function(root,factory){if(typeof module==='object'&&module.exports)module.exports=factory();else root.JiaoyingTransportMap=factory();})(typeof globalThis!=='undefined'?globalThis:this,function(){
+(function(root,factory){if(typeof module==='object'&&module.exports)module.exports=factory(require('./place-directory.js'));else root.JiaoyingTransportMap=factory(root.JiaoyingPlaceDirectory);})(typeof globalThis!=='undefined'?globalThis:this,function(directory){
   'use strict';
   const coordinate=(longitude,latitude)=>typeof longitude==='number'&&typeof latitude==='number'&&Number.isFinite(longitude)&&Number.isFinite(latitude)&&Math.abs(longitude)<=180&&Math.abs(latitude)<=90;
   function distance(a,b){const r=Math.PI/180,dy=(b[1]-a[1])*r,dx=(b[0]-a[0])*r,q=Math.sin(dy/2)**2+Math.cos(a[1]*r)*Math.cos(b[1]*r)*Math.sin(dx/2)**2;return 6371000*2*Math.atan2(Math.sqrt(Math.min(1,q)),Math.sqrt(Math.max(0,1-q)));}
@@ -69,7 +69,7 @@
   function draftPoints(d,rows){
     const points=[],unknown=[],nodes=new Map((d.scenario?.nodes||[]).map(n=>[n.id,n]));
     for(const [index,row] of (rows||[]).entries()){
-      const pickup=d.villages?.find(v=>v.id===row.villageId)?.pickups?.find(p=>p.id===row.pickupId);
+      const pickup=(directory?.pickups(d,row.villageId)||d.villages?.find(v=>v.id===row.villageId)?.pickups||[]).find(p=>p.id===row.pickupId);
       const nodeId=row.locationNodeId||pickup?.locationNodeId||pickup?.node,node=nodes.get(nodeId);
       const hasCoordinates=coordinate(row.longitude,row.latitude);
       const explicitPending=row.locationStatus==='pending'||pickup?.locationStatus==='pending';

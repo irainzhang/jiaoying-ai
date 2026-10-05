@@ -1,0 +1,1348 @@
+{
+  "version": "ruian-places-v1",
+  "schema": "jiaoying-place-directory-v1",
+  "generatedOn": "2026-10-05",
+  "coordinateSystem": "WGS84",
+  "coverage": {
+    "name": "瑞安城区与周边已收录地名",
+    "mapBounds": [
+      120.6,
+      27.74,
+      120.7,
+      27.82
+    ],
+    "routingBounds": [
+      120.633,
+      27.777,
+      120.652,
+      27.791
+    ],
+    "scope": "8 个街道和公开文件所列部分城区社区；不是瑞安市全量村社目录。",
+    "administrativeBoundariesAvailable": false
+  },
+  "sources": [
+    {
+      "name": "OpenStreetMap contributors",
+      "url": "https://www.openstreetmap.org/copyright",
+      "snapshotTime": "2026-09-22T08:45:51Z",
+      "license": "ODbL 1.0",
+      "licenseUrl": "https://opendatacommons.org/licenses/odbl/1-0/"
+    },
+    {
+      "name": "瑞安市水域保护规划报告",
+      "url": "https://www.ruian.gov.cn/module/download/downfile.jsp?classid=0&filename=6b54135a13814c949ba973b51c85b2df.pdf",
+      "mirrorUrl": "https://zjjcmspublic.oss-cn-hangzhou-zwynet-d01-a.internet.cloud.zj.gov.cn/jcms_files/jcms1/web2631/site/attach/0/6b54135a13814c949ba973b51c85b2df.pdf",
+      "page": 106,
+      "use": "核对部分社区名称及上级街道；不提供接人点坐标或保证当前行政隶属。"
+    },
+    {
+      "name": "瑞安市气象探测环境保护专项规划（修编）公示",
+      "url": "https://www.ruian.gov.cn/art/2021/3/8/art_1229181511_3854837.html",
+      "publishedOn": "2021-03-08",
+      "use": "辅助核对街道名称，不用于天气或通行数据。"
+    }
+  ],
+  "provenance": {
+    "builder": "scripts/build-place-directory.py",
+    "inputSha256": {
+      "ruian-osm-raw.json": "f9064823d77b5f689984c34ac89a4bffeecd0ebed8d121968da9d7442f69a133",
+      "ruian-urban.geojson": "dbeaf6ffc42fb1d6ae5784901d65ca723d0a40b2c457c40334a2b88bf47142fe",
+      "ruian-routing.json": "df0de5c3f74059bbdccf82a9669ddfbdf043c6e7e46cec1b3262b23628dc65c8"
+    }
+  },
+  "notes": [
+    "真实道路节点与地名来自公开资料；人员、车辆、容量及道路可通行状态仍是演练设定。",
+    "不按最近街道标注点猜测行政归属；道路候选作为全片区公共列表，辖属待核。",
+    "社区只有公开文件名称；没有坐标时不伪造村委会位置，不自动分配接人点。",
+    "片区东/西/南/北侧道路点是目录内的相对方位描述，不是官方地名或道路全长端点。",
+    "公园保留面状地理参考，不以面中心冒充车辆入口或安全集合点。"
+  ],
+  "districts": [
+    {
+      "id": "RA-AREA-8402085478",
+      "name": "玉海街道",
+      "kind": "subdistrict",
+      "township": "玉海街道",
+      "sourceName": "OpenStreetMap 地名快照 / 瑞安市政府公开规划",
+      "sourceUrl": "https://www.openstreetmap.org/node/8402085478",
+      "sourceUrls": [
+        "https://www.openstreetmap.org/node/8402085478",
+        "https://www.ruian.gov.cn/art/2021/3/8/art_1229181511_3854837.html"
+      ],
+      "center": [
+        120.6338471,
+        27.7853326
+      ],
+      "centerUse": "地图地名标注点，非行政边界或接人点",
+      "pickups": []
+    },
+    {
+      "id": "RA-AREA-5144881171",
+      "name": "安阳街道",
+      "kind": "subdistrict",
+      "township": "安阳街道",
+      "sourceName": "OpenStreetMap 地名快照 / 瑞安市政府公开规划",
+      "sourceUrl": "https://www.openstreetmap.org/node/5144881171",
+      "sourceUrls": [
+        "https://www.openstreetmap.org/node/5144881171",
+        "https://www.ruian.gov.cn/art/2021/3/8/art_1229181511_3854837.html"
+      ],
+      "center": [
+        120.6359124,
+        27.780392
+      ],
+      "centerUse": "地图地名标注点，非行政边界或接人点",
+      "pickups": []
+    },
+    {
+      "id": "RA-AREA-8402085477",
+      "name": "锦湖街道",
+      "kind": "subdistrict",
+      "township": "锦湖街道",
+      "sourceName": "OpenStreetMap 地名快照 / 瑞安市政府公开规划",
+      "sourceUrl": "https://www.openstreetmap.org/node/8402085477",
+      "sourceUrls": [
+        "https://www.openstreetmap.org/node/8402085477",
+        "https://www.ruian.gov.cn/art/2021/3/8/art_1229181511_3854837.html"
+      ],
+      "center": [
+        120.6308967,
+        27.7910133
+      ],
+      "centerUse": "地图地名标注点，非行政边界或接人点",
+      "pickups": []
+    },
+    {
+      "id": "RA-AREA-8402085458",
+      "name": "东山街道",
+      "kind": "subdistrict",
+      "township": "东山街道",
+      "sourceName": "OpenStreetMap 地名快照 / 瑞安市政府公开规划",
+      "sourceUrl": "https://www.openstreetmap.org/node/8402085458",
+      "sourceUrls": [
+        "https://www.openstreetmap.org/node/8402085458",
+        "https://www.ruian.gov.cn/art/2021/3/8/art_1229181511_3854837.html"
+      ],
+      "center": [
+        120.6416201,
+        27.7636843
+      ],
+      "centerUse": "地图地名标注点，非行政边界或接人点",
+      "pickups": []
+    },
+    {
+      "id": "RA-AREA-7245129298",
+      "name": "上望街道",
+      "kind": "subdistrict",
+      "township": "上望街道",
+      "sourceName": "OpenStreetMap 地名快照 / 瑞安市政府公开规划",
+      "sourceUrl": "https://www.openstreetmap.org/node/7245129298",
+      "sourceUrls": [
+        "https://www.openstreetmap.org/node/7245129298",
+        "https://www.ruian.gov.cn/art/2021/3/8/art_1229181511_3854837.html"
+      ],
+      "center": [
+        120.684025,
+        27.7530168
+      ],
+      "centerUse": "地图地名标注点，非行政边界或接人点",
+      "pickups": []
+    },
+    {
+      "id": "RA-AREA-8402085452",
+      "name": "莘塍街道",
+      "kind": "subdistrict",
+      "township": "莘塍街道",
+      "sourceName": "OpenStreetMap 地名快照 / 瑞安市政府公开规划",
+      "sourceUrl": "https://www.openstreetmap.org/node/8402085452",
+      "sourceUrls": [
+        "https://www.openstreetmap.org/node/8402085452",
+        "https://www.ruian.gov.cn/art/2021/3/8/art_1229181511_3854837.html"
+      ],
+      "center": [
+        120.675137,
+        27.7824613
+      ],
+      "centerUse": "地图地名标注点，非行政边界或接人点",
+      "pickups": []
+    },
+    {
+      "id": "RA-AREA-8402085435",
+      "name": "汀田街道",
+      "kind": "subdistrict",
+      "township": "汀田街道",
+      "sourceName": "OpenStreetMap 地名快照 / 瑞安市政府公开规划",
+      "sourceUrl": "https://www.openstreetmap.org/node/8402085435",
+      "sourceUrls": [
+        "https://www.openstreetmap.org/node/8402085435",
+        "https://www.ruian.gov.cn/art/2021/3/8/art_1229181511_3854837.html"
+      ],
+      "center": [
+        120.6902969,
+        27.8008078
+      ],
+      "centerUse": "地图地名标注点，非行政边界或接人点",
+      "pickups": []
+    },
+    {
+      "id": "RA-AREA-8402085427",
+      "name": "飞云街道",
+      "kind": "subdistrict",
+      "township": "飞云街道",
+      "sourceName": "OpenStreetMap 地名快照 / 瑞安市政府公开规划",
+      "sourceUrl": "https://www.openstreetmap.org/node/8402085427",
+      "sourceUrls": [
+        "https://www.openstreetmap.org/node/8402085427",
+        "https://www.ruian.gov.cn/art/2021/3/8/art_1229181511_3854837.html"
+      ],
+      "center": [
+        120.6159782,
+        27.7643109
+      ],
+      "centerUse": "地图地名标注点，非行政边界或接人点",
+      "pickups": []
+    },
+    {
+      "id": "RA-AREA-8402085478-C1",
+      "name": "东镇社区",
+      "kind": "community",
+      "township": "玉海街道",
+      "parentId": "RA-AREA-8402085478",
+      "sourceName": "瑞安市水域保护规划报告 · 公开文件中的部分社区名称",
+      "sourceUrl": "https://www.ruian.gov.cn/module/download/downfile.jsp?classid=0&filename=6b54135a13814c949ba973b51c85b2df.pdf",
+      "sourcePage": 106,
+      "pickups": [],
+      "locationStatus": "未取得经核实的社区接人点坐标"
+    },
+    {
+      "id": "RA-AREA-8402085478-C2",
+      "name": "宾阳门社区",
+      "kind": "community",
+      "township": "玉海街道",
+      "parentId": "RA-AREA-8402085478",
+      "sourceName": "瑞安市水域保护规划报告 · 公开文件中的部分社区名称",
+      "sourceUrl": "https://www.ruian.gov.cn/module/download/downfile.jsp?classid=0&filename=6b54135a13814c949ba973b51c85b2df.pdf",
+      "sourcePage": 106,
+      "pickups": [],
+      "locationStatus": "未取得经核实的社区接人点坐标"
+    },
+    {
+      "id": "RA-AREA-8402085478-C3",
+      "name": "永胜门社区",
+      "kind": "community",
+      "township": "玉海街道",
+      "parentId": "RA-AREA-8402085478",
+      "sourceName": "瑞安市水域保护规划报告 · 公开文件中的部分社区名称",
+      "sourceUrl": "https://www.ruian.gov.cn/module/download/downfile.jsp?classid=0&filename=6b54135a13814c949ba973b51c85b2df.pdf",
+      "sourcePage": 106,
+      "pickups": [],
+      "locationStatus": "未取得经核实的社区接人点坐标"
+    },
+    {
+      "id": "RA-AREA-8402085478-C4",
+      "name": "水心社区",
+      "kind": "community",
+      "township": "玉海街道",
+      "parentId": "RA-AREA-8402085478",
+      "sourceName": "瑞安市水域保护规划报告 · 公开文件中的部分社区名称",
+      "sourceUrl": "https://www.ruian.gov.cn/module/download/downfile.jsp?classid=0&filename=6b54135a13814c949ba973b51c85b2df.pdf",
+      "sourcePage": 106,
+      "pickups": [],
+      "locationStatus": "未取得经核实的社区接人点坐标"
+    },
+    {
+      "id": "RA-AREA-8402085478-C5",
+      "name": "忠义街社区",
+      "kind": "community",
+      "township": "玉海街道",
+      "parentId": "RA-AREA-8402085478",
+      "sourceName": "瑞安市水域保护规划报告 · 公开文件中的部分社区名称",
+      "sourceUrl": "https://www.ruian.gov.cn/module/download/downfile.jsp?classid=0&filename=6b54135a13814c949ba973b51c85b2df.pdf",
+      "sourcePage": 106,
+      "pickups": [],
+      "locationStatus": "未取得经核实的社区接人点坐标"
+    },
+    {
+      "id": "RA-AREA-8402085478-C6",
+      "name": "殿巷社区",
+      "kind": "community",
+      "township": "玉海街道",
+      "parentId": "RA-AREA-8402085478",
+      "sourceName": "瑞安市水域保护规划报告 · 公开文件中的部分社区名称",
+      "sourceUrl": "https://www.ruian.gov.cn/module/download/downfile.jsp?classid=0&filename=6b54135a13814c949ba973b51c85b2df.pdf",
+      "sourcePage": 106,
+      "pickups": [],
+      "locationStatus": "未取得经核实的社区接人点坐标"
+    },
+    {
+      "id": "RA-AREA-5144881171-C1",
+      "name": "育才社区",
+      "kind": "community",
+      "township": "安阳街道",
+      "parentId": "RA-AREA-5144881171",
+      "sourceName": "瑞安市水域保护规划报告 · 公开文件中的部分社区名称",
+      "sourceUrl": "https://www.ruian.gov.cn/module/download/downfile.jsp?classid=0&filename=6b54135a13814c949ba973b51c85b2df.pdf",
+      "sourcePage": 106,
+      "pickups": [],
+      "locationStatus": "未取得经核实的社区接人点坐标"
+    },
+    {
+      "id": "RA-AREA-5144881171-C2",
+      "name": "康佳社区",
+      "kind": "community",
+      "township": "安阳街道",
+      "parentId": "RA-AREA-5144881171",
+      "sourceName": "瑞安市水域保护规划报告 · 公开文件中的部分社区名称",
+      "sourceUrl": "https://www.ruian.gov.cn/module/download/downfile.jsp?classid=0&filename=6b54135a13814c949ba973b51c85b2df.pdf",
+      "sourcePage": 106,
+      "pickups": [],
+      "locationStatus": "未取得经核实的社区接人点坐标"
+    },
+    {
+      "id": "RA-AREA-5144881171-C3",
+      "name": "广场社区",
+      "kind": "community",
+      "township": "安阳街道",
+      "parentId": "RA-AREA-5144881171",
+      "sourceName": "瑞安市水域保护规划报告 · 公开文件中的部分社区名称",
+      "sourceUrl": "https://www.ruian.gov.cn/module/download/downfile.jsp?classid=0&filename=6b54135a13814c949ba973b51c85b2df.pdf",
+      "sourcePage": 106,
+      "pickups": [],
+      "locationStatus": "未取得经核实的社区接人点坐标"
+    },
+    {
+      "id": "RA-AREA-5144881171-C4",
+      "name": "风荷社区",
+      "kind": "community",
+      "township": "安阳街道",
+      "parentId": "RA-AREA-5144881171",
+      "sourceName": "瑞安市水域保护规划报告 · 公开文件中的部分社区名称",
+      "sourceUrl": "https://www.ruian.gov.cn/module/download/downfile.jsp?classid=0&filename=6b54135a13814c949ba973b51c85b2df.pdf",
+      "sourcePage": 106,
+      "pickups": [],
+      "locationStatus": "未取得经核实的社区接人点坐标"
+    },
+    {
+      "id": "RA-AREA-5144881171-C5",
+      "name": "华瑞社区",
+      "kind": "community",
+      "township": "安阳街道",
+      "parentId": "RA-AREA-5144881171",
+      "sourceName": "瑞安市水域保护规划报告 · 公开文件中的部分社区名称",
+      "sourceUrl": "https://www.ruian.gov.cn/module/download/downfile.jsp?classid=0&filename=6b54135a13814c949ba973b51c85b2df.pdf",
+      "sourcePage": 106,
+      "pickups": [],
+      "locationStatus": "未取得经核实的社区接人点坐标"
+    },
+    {
+      "id": "RA-AREA-5144881171-C6",
+      "name": "进源社区",
+      "kind": "community",
+      "township": "安阳街道",
+      "parentId": "RA-AREA-5144881171",
+      "sourceName": "瑞安市水域保护规划报告 · 公开文件中的部分社区名称",
+      "sourceUrl": "https://www.ruian.gov.cn/module/download/downfile.jsp?classid=0&filename=6b54135a13814c949ba973b51c85b2df.pdf",
+      "sourcePage": 106,
+      "pickups": [],
+      "locationStatus": "未取得经核实的社区接人点坐标"
+    },
+    {
+      "id": "RA-AREA-5144881171-C7",
+      "name": "兴隆社区",
+      "kind": "community",
+      "township": "安阳街道",
+      "parentId": "RA-AREA-5144881171",
+      "sourceName": "瑞安市水域保护规划报告 · 公开文件中的部分社区名称",
+      "sourceUrl": "https://www.ruian.gov.cn/module/download/downfile.jsp?classid=0&filename=6b54135a13814c949ba973b51c85b2df.pdf",
+      "sourcePage": 106,
+      "pickups": [],
+      "locationStatus": "未取得经核实的社区接人点坐标"
+    },
+    {
+      "id": "RA-AREA-5144881171-C8",
+      "name": "祥云社区",
+      "kind": "community",
+      "township": "安阳街道",
+      "parentId": "RA-AREA-5144881171",
+      "sourceName": "瑞安市水域保护规划报告 · 公开文件中的部分社区名称",
+      "sourceUrl": "https://www.ruian.gov.cn/module/download/downfile.jsp?classid=0&filename=6b54135a13814c949ba973b51c85b2df.pdf",
+      "sourcePage": 106,
+      "pickups": [],
+      "locationStatus": "未取得经核实的社区接人点坐标"
+    },
+    {
+      "id": "RA-AREA-5144881171-C9",
+      "name": "万松社区",
+      "kind": "community",
+      "township": "安阳街道",
+      "parentId": "RA-AREA-5144881171",
+      "sourceName": "瑞安市水域保护规划报告 · 公开文件中的部分社区名称",
+      "sourceUrl": "https://www.ruian.gov.cn/module/download/downfile.jsp?classid=0&filename=6b54135a13814c949ba973b51c85b2df.pdf",
+      "sourcePage": 106,
+      "pickups": [],
+      "locationStatus": "未取得经核实的社区接人点坐标"
+    },
+    {
+      "id": "RA-AREA-5144881171-C10",
+      "name": "隆山社区",
+      "kind": "community",
+      "township": "安阳街道",
+      "parentId": "RA-AREA-5144881171",
+      "sourceName": "瑞安市水域保护规划报告 · 公开文件中的部分社区名称",
+      "sourceUrl": "https://www.ruian.gov.cn/module/download/downfile.jsp?classid=0&filename=6b54135a13814c949ba973b51c85b2df.pdf",
+      "sourcePage": 106,
+      "pickups": [],
+      "locationStatus": "未取得经核实的社区接人点坐标"
+    },
+    {
+      "id": "RA-AREA-5144881171-C11",
+      "name": "之江社区",
+      "kind": "community",
+      "township": "安阳街道",
+      "parentId": "RA-AREA-5144881171",
+      "sourceName": "瑞安市水域保护规划报告 · 公开文件中的部分社区名称",
+      "sourceUrl": "https://www.ruian.gov.cn/module/download/downfile.jsp?classid=0&filename=6b54135a13814c949ba973b51c85b2df.pdf",
+      "sourcePage": 106,
+      "pickups": [],
+      "locationStatus": "未取得经核实的社区接人点坐标"
+    },
+    {
+      "id": "RA-AREA-8402085477-C1",
+      "name": "河埭桥社区",
+      "kind": "community",
+      "township": "锦湖街道",
+      "parentId": "RA-AREA-8402085477",
+      "sourceName": "瑞安市水域保护规划报告 · 公开文件中的部分社区名称",
+      "sourceUrl": "https://www.ruian.gov.cn/module/download/downfile.jsp?classid=0&filename=6b54135a13814c949ba973b51c85b2df.pdf",
+      "sourcePage": 106,
+      "pickups": [],
+      "locationStatus": "未取得经核实的社区接人点坐标"
+    },
+    {
+      "id": "RA-AREA-8402085477-C2",
+      "name": "瑞湖社区",
+      "kind": "community",
+      "township": "锦湖街道",
+      "parentId": "RA-AREA-8402085477",
+      "sourceName": "瑞安市水域保护规划报告 · 公开文件中的部分社区名称",
+      "sourceUrl": "https://www.ruian.gov.cn/module/download/downfile.jsp?classid=0&filename=6b54135a13814c949ba973b51c85b2df.pdf",
+      "sourcePage": 106,
+      "pickups": [],
+      "locationStatus": "未取得经核实的社区接人点坐标"
+    },
+    {
+      "id": "RA-AREA-8402085477-C3",
+      "name": "集云社区",
+      "kind": "community",
+      "township": "锦湖街道",
+      "parentId": "RA-AREA-8402085477",
+      "sourceName": "瑞安市水域保护规划报告 · 公开文件中的部分社区名称",
+      "sourceUrl": "https://www.ruian.gov.cn/module/download/downfile.jsp?classid=0&filename=6b54135a13814c949ba973b51c85b2df.pdf",
+      "sourcePage": 106,
+      "pickups": [],
+      "locationStatus": "未取得经核实的社区接人点坐标"
+    },
+    {
+      "id": "RA-URBAN-ROADS",
+      "name": "瑞安市城区道路",
+      "kind": "road-group",
+      "sourceName": "OpenStreetMap 道路快照",
+      "sourceUrl": "https://www.openstreetmap.org/copyright",
+      "description": "按当前道路演练片区组织的公共候选组，不是行政区划。",
+      "pickups": [
+        {
+          "id": "RA-ROAD-5306991299",
+          "name": "万松东路 / 万松路 / 商城大道交叉口",
+          "kind": "road-junction",
+          "nodeId": "O5306991299",
+          "osmNodeId": 5306991299,
+          "longitude": 120.6387095,
+          "latitude": 27.7829825,
+          "coordinateSystem": "WGS84",
+          "sourceName": "OpenStreetMap 道路快照",
+          "sourceUrl": "https://www.openstreetmap.org/node/5306991299",
+          "sourceUrls": [
+            "https://www.openstreetmap.org/node/5306991299",
+            "https://www.openstreetmap.org/way/1287029338",
+            "https://www.openstreetmap.org/way/549400233",
+            "https://www.openstreetmap.org/way/904722545"
+          ],
+          "roadNames": [
+            "万松东路",
+            "万松路",
+            "商城大道"
+          ],
+          "administrativeAreaId": null,
+          "administrativeAffiliation": "unverified",
+          "routable": true,
+          "officialAssemblyPoint": false,
+          "description": "真实道路位置；接人用途为演练选择，非已核定集合点。街道辖属待核。"
+        },
+        {
+          "id": "RA-ROAD-5306991224",
+          "name": "商城大道 / 解放东路交叉口",
+          "kind": "road-junction",
+          "nodeId": "O5306991224",
+          "osmNodeId": 5306991224,
+          "longitude": 120.637726,
+          "latitude": 27.7812273,
+          "coordinateSystem": "WGS84",
+          "sourceName": "OpenStreetMap 道路快照",
+          "sourceUrl": "https://www.openstreetmap.org/node/5306991224",
+          "sourceUrls": [
+            "https://www.openstreetmap.org/node/5306991224",
+            "https://www.openstreetmap.org/way/549400233",
+            "https://www.openstreetmap.org/way/987512153"
+          ],
+          "roadNames": [
+            "商城大道",
+            "解放东路"
+          ],
+          "administrativeAreaId": null,
+          "administrativeAffiliation": "unverified",
+          "routable": true,
+          "officialAssemblyPoint": false,
+          "description": "真实道路位置；接人用途为演练选择，非已核定集合点。街道辖属待核。"
+        },
+        {
+          "id": "RA-ROAD-5306991193",
+          "name": "瑞祥大道 / 隆山东路交叉口",
+          "kind": "road-junction",
+          "nodeId": "O5306991193",
+          "osmNodeId": 5306991193,
+          "longitude": 120.6414799,
+          "latitude": 27.7776123,
+          "coordinateSystem": "WGS84",
+          "sourceName": "OpenStreetMap 道路快照",
+          "sourceUrl": "https://www.openstreetmap.org/node/5306991193",
+          "sourceUrls": [
+            "https://www.openstreetmap.org/node/5306991193",
+            "https://www.openstreetmap.org/way/1009393960",
+            "https://www.openstreetmap.org/way/549400214"
+          ],
+          "roadNames": [
+            "瑞祥大道",
+            "隆山东路"
+          ],
+          "administrativeAreaId": null,
+          "administrativeAffiliation": "unverified",
+          "routable": true,
+          "officialAssemblyPoint": false,
+          "description": "真实道路位置；接人用途为演练选择，非已核定集合点。街道辖属待核。"
+        },
+        {
+          "id": "RA-ROAD-3458135061",
+          "name": "万松东路（片区东侧道路点）",
+          "kind": "road-point",
+          "nodeId": "O3458135061",
+          "osmNodeId": 3458135061,
+          "longitude": 120.6489153,
+          "latitude": 27.7807531,
+          "coordinateSystem": "WGS84",
+          "sourceName": "OpenStreetMap 道路快照",
+          "sourceUrl": "https://www.openstreetmap.org/node/3458135061",
+          "sourceUrls": [
+            "https://www.openstreetmap.org/node/3458135061",
+            "https://www.openstreetmap.org/way/1294774631"
+          ],
+          "roadNames": [
+            "万松东路"
+          ],
+          "administrativeAreaId": null,
+          "administrativeAffiliation": "unverified",
+          "routable": true,
+          "officialAssemblyPoint": false,
+          "description": "真实道路位置；接人用途为演练选择，非已核定集合点。街道辖属待核。"
+        },
+        {
+          "id": "RA-ROAD-5306991469",
+          "name": "万松路（片区西侧道路点）",
+          "kind": "road-point",
+          "nodeId": "O5306991469",
+          "osmNodeId": 5306991469,
+          "longitude": 120.6333053,
+          "latitude": 27.784858,
+          "coordinateSystem": "WGS84",
+          "sourceName": "OpenStreetMap 道路快照",
+          "sourceUrl": "https://www.openstreetmap.org/node/5306991469",
+          "sourceUrls": [
+            "https://www.openstreetmap.org/node/5306991469",
+            "https://www.openstreetmap.org/way/904722544"
+          ],
+          "roadNames": [
+            "万松路"
+          ],
+          "administrativeAreaId": null,
+          "administrativeAffiliation": "unverified",
+          "routable": true,
+          "officialAssemblyPoint": false,
+          "description": "真实道路位置；接人用途为演练选择，非已核定集合点。街道辖属待核。"
+        },
+        {
+          "id": "RA-ROAD-5306991298",
+          "name": "商城大道（片区北侧道路点）",
+          "kind": "road-point",
+          "nodeId": "O5306991298",
+          "osmNodeId": 5306991298,
+          "longitude": 120.6393113,
+          "latitude": 27.7838592,
+          "coordinateSystem": "WGS84",
+          "sourceName": "OpenStreetMap 道路快照",
+          "sourceUrl": "https://www.openstreetmap.org/node/5306991298",
+          "sourceUrls": [
+            "https://www.openstreetmap.org/node/5306991298",
+            "https://www.openstreetmap.org/way/549400233"
+          ],
+          "roadNames": [
+            "商城大道"
+          ],
+          "administrativeAreaId": null,
+          "administrativeAffiliation": "unverified",
+          "routable": true,
+          "officialAssemblyPoint": false,
+          "description": "真实道路位置；接人用途为演练选择，非已核定集合点。街道辖属待核。"
+        },
+        {
+          "id": "RA-ROAD-3461903693",
+          "name": "商城大道（片区南侧道路点）",
+          "kind": "road-point",
+          "nodeId": "O3461903693",
+          "osmNodeId": 3461903693,
+          "longitude": 120.6359982,
+          "latitude": 27.7799266,
+          "coordinateSystem": "WGS84",
+          "sourceName": "OpenStreetMap 道路快照",
+          "sourceUrl": "https://www.openstreetmap.org/node/3461903693",
+          "sourceUrls": [
+            "https://www.openstreetmap.org/node/3461903693",
+            "https://www.openstreetmap.org/way/549400233"
+          ],
+          "roadNames": [
+            "商城大道"
+          ],
+          "administrativeAreaId": null,
+          "administrativeAffiliation": "unverified",
+          "routable": true,
+          "officialAssemblyPoint": false,
+          "description": "真实道路位置；接人用途为演练选择，非已核定集合点。街道辖属待核。"
+        },
+        {
+          "id": "RA-ROAD-5306991227",
+          "name": "瑞湖路（片区北侧道路点）",
+          "kind": "road-point",
+          "nodeId": "O5306991227",
+          "osmNodeId": 5306991227,
+          "longitude": 120.6350751,
+          "latitude": 27.7886232,
+          "coordinateSystem": "WGS84",
+          "sourceName": "OpenStreetMap 道路快照",
+          "sourceUrl": "https://www.openstreetmap.org/node/5306991227",
+          "sourceUrls": [
+            "https://www.openstreetmap.org/node/5306991227",
+            "https://www.openstreetmap.org/way/277621411"
+          ],
+          "roadNames": [
+            "瑞湖路"
+          ],
+          "administrativeAreaId": null,
+          "administrativeAffiliation": "unverified",
+          "routable": true,
+          "officialAssemblyPoint": false,
+          "description": "真实道路位置；接人用途为演练选择，非已核定集合点。街道辖属待核。"
+        },
+        {
+          "id": "RA-ROAD-5306991217",
+          "name": "瑞祥大道（片区北侧道路点）",
+          "kind": "road-point",
+          "nodeId": "O5306991217",
+          "osmNodeId": 5306991217,
+          "longitude": 120.6430323,
+          "latitude": 27.7795471,
+          "coordinateSystem": "WGS84",
+          "sourceName": "OpenStreetMap 道路快照",
+          "sourceUrl": "https://www.openstreetmap.org/node/5306991217",
+          "sourceUrls": [
+            "https://www.openstreetmap.org/node/5306991217",
+            "https://www.openstreetmap.org/way/549400249"
+          ],
+          "roadNames": [
+            "瑞祥大道"
+          ],
+          "administrativeAreaId": null,
+          "administrativeAffiliation": "unverified",
+          "routable": true,
+          "officialAssemblyPoint": false,
+          "description": "真实道路位置；接人用途为演练选择，非已核定集合点。街道辖属待核。"
+        },
+        {
+          "id": "RA-ROAD-5306991225",
+          "name": "解放东路（片区西侧道路点）",
+          "kind": "road-point",
+          "nodeId": "O5306991225",
+          "osmNodeId": 5306991225,
+          "longitude": 120.6351909,
+          "latitude": 27.7817351,
+          "coordinateSystem": "WGS84",
+          "sourceName": "OpenStreetMap 道路快照",
+          "sourceUrl": "https://www.openstreetmap.org/node/5306991225",
+          "sourceUrls": [
+            "https://www.openstreetmap.org/node/5306991225",
+            "https://www.openstreetmap.org/way/987512153"
+          ],
+          "roadNames": [
+            "解放东路"
+          ],
+          "administrativeAreaId": null,
+          "administrativeAffiliation": "unverified",
+          "routable": true,
+          "officialAssemblyPoint": false,
+          "description": "真实道路位置；接人用途为演练选择，非已核定集合点。街道辖属待核。"
+        }
+      ]
+    }
+  ],
+  "sharedPickups": [
+    {
+      "id": "RA-ROAD-5306991299",
+      "name": "万松东路 / 万松路 / 商城大道交叉口",
+      "kind": "road-junction",
+      "nodeId": "O5306991299",
+      "osmNodeId": 5306991299,
+      "longitude": 120.6387095,
+      "latitude": 27.7829825,
+      "coordinateSystem": "WGS84",
+      "sourceName": "OpenStreetMap 道路快照",
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991299",
+      "sourceUrls": [
+        "https://www.openstreetmap.org/node/5306991299",
+        "https://www.openstreetmap.org/way/1287029338",
+        "https://www.openstreetmap.org/way/549400233",
+        "https://www.openstreetmap.org/way/904722545"
+      ],
+      "roadNames": [
+        "万松东路",
+        "万松路",
+        "商城大道"
+      ],
+      "administrativeAreaId": null,
+      "administrativeAffiliation": "unverified",
+      "routable": true,
+      "officialAssemblyPoint": false,
+      "description": "真实道路位置；接人用途为演练选择，非已核定集合点。街道辖属待核。"
+    },
+    {
+      "id": "RA-ROAD-5306991224",
+      "name": "商城大道 / 解放东路交叉口",
+      "kind": "road-junction",
+      "nodeId": "O5306991224",
+      "osmNodeId": 5306991224,
+      "longitude": 120.637726,
+      "latitude": 27.7812273,
+      "coordinateSystem": "WGS84",
+      "sourceName": "OpenStreetMap 道路快照",
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991224",
+      "sourceUrls": [
+        "https://www.openstreetmap.org/node/5306991224",
+        "https://www.openstreetmap.org/way/549400233",
+        "https://www.openstreetmap.org/way/987512153"
+      ],
+      "roadNames": [
+        "商城大道",
+        "解放东路"
+      ],
+      "administrativeAreaId": null,
+      "administrativeAffiliation": "unverified",
+      "routable": true,
+      "officialAssemblyPoint": false,
+      "description": "真实道路位置；接人用途为演练选择，非已核定集合点。街道辖属待核。"
+    },
+    {
+      "id": "RA-ROAD-5306991193",
+      "name": "瑞祥大道 / 隆山东路交叉口",
+      "kind": "road-junction",
+      "nodeId": "O5306991193",
+      "osmNodeId": 5306991193,
+      "longitude": 120.6414799,
+      "latitude": 27.7776123,
+      "coordinateSystem": "WGS84",
+      "sourceName": "OpenStreetMap 道路快照",
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991193",
+      "sourceUrls": [
+        "https://www.openstreetmap.org/node/5306991193",
+        "https://www.openstreetmap.org/way/1009393960",
+        "https://www.openstreetmap.org/way/549400214"
+      ],
+      "roadNames": [
+        "瑞祥大道",
+        "隆山东路"
+      ],
+      "administrativeAreaId": null,
+      "administrativeAffiliation": "unverified",
+      "routable": true,
+      "officialAssemblyPoint": false,
+      "description": "真实道路位置；接人用途为演练选择，非已核定集合点。街道辖属待核。"
+    },
+    {
+      "id": "RA-ROAD-3458135061",
+      "name": "万松东路（片区东侧道路点）",
+      "kind": "road-point",
+      "nodeId": "O3458135061",
+      "osmNodeId": 3458135061,
+      "longitude": 120.6489153,
+      "latitude": 27.7807531,
+      "coordinateSystem": "WGS84",
+      "sourceName": "OpenStreetMap 道路快照",
+      "sourceUrl": "https://www.openstreetmap.org/node/3458135061",
+      "sourceUrls": [
+        "https://www.openstreetmap.org/node/3458135061",
+        "https://www.openstreetmap.org/way/1294774631"
+      ],
+      "roadNames": [
+        "万松东路"
+      ],
+      "administrativeAreaId": null,
+      "administrativeAffiliation": "unverified",
+      "routable": true,
+      "officialAssemblyPoint": false,
+      "description": "真实道路位置；接人用途为演练选择，非已核定集合点。街道辖属待核。"
+    },
+    {
+      "id": "RA-ROAD-5306991469",
+      "name": "万松路（片区西侧道路点）",
+      "kind": "road-point",
+      "nodeId": "O5306991469",
+      "osmNodeId": 5306991469,
+      "longitude": 120.6333053,
+      "latitude": 27.784858,
+      "coordinateSystem": "WGS84",
+      "sourceName": "OpenStreetMap 道路快照",
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991469",
+      "sourceUrls": [
+        "https://www.openstreetmap.org/node/5306991469",
+        "https://www.openstreetmap.org/way/904722544"
+      ],
+      "roadNames": [
+        "万松路"
+      ],
+      "administrativeAreaId": null,
+      "administrativeAffiliation": "unverified",
+      "routable": true,
+      "officialAssemblyPoint": false,
+      "description": "真实道路位置；接人用途为演练选择，非已核定集合点。街道辖属待核。"
+    },
+    {
+      "id": "RA-ROAD-5306991298",
+      "name": "商城大道（片区北侧道路点）",
+      "kind": "road-point",
+      "nodeId": "O5306991298",
+      "osmNodeId": 5306991298,
+      "longitude": 120.6393113,
+      "latitude": 27.7838592,
+      "coordinateSystem": "WGS84",
+      "sourceName": "OpenStreetMap 道路快照",
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991298",
+      "sourceUrls": [
+        "https://www.openstreetmap.org/node/5306991298",
+        "https://www.openstreetmap.org/way/549400233"
+      ],
+      "roadNames": [
+        "商城大道"
+      ],
+      "administrativeAreaId": null,
+      "administrativeAffiliation": "unverified",
+      "routable": true,
+      "officialAssemblyPoint": false,
+      "description": "真实道路位置；接人用途为演练选择，非已核定集合点。街道辖属待核。"
+    },
+    {
+      "id": "RA-ROAD-3461903693",
+      "name": "商城大道（片区南侧道路点）",
+      "kind": "road-point",
+      "nodeId": "O3461903693",
+      "osmNodeId": 3461903693,
+      "longitude": 120.6359982,
+      "latitude": 27.7799266,
+      "coordinateSystem": "WGS84",
+      "sourceName": "OpenStreetMap 道路快照",
+      "sourceUrl": "https://www.openstreetmap.org/node/3461903693",
+      "sourceUrls": [
+        "https://www.openstreetmap.org/node/3461903693",
+        "https://www.openstreetmap.org/way/549400233"
+      ],
+      "roadNames": [
+        "商城大道"
+      ],
+      "administrativeAreaId": null,
+      "administrativeAffiliation": "unverified",
+      "routable": true,
+      "officialAssemblyPoint": false,
+      "description": "真实道路位置；接人用途为演练选择，非已核定集合点。街道辖属待核。"
+    },
+    {
+      "id": "RA-ROAD-5306991227",
+      "name": "瑞湖路（片区北侧道路点）",
+      "kind": "road-point",
+      "nodeId": "O5306991227",
+      "osmNodeId": 5306991227,
+      "longitude": 120.6350751,
+      "latitude": 27.7886232,
+      "coordinateSystem": "WGS84",
+      "sourceName": "OpenStreetMap 道路快照",
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991227",
+      "sourceUrls": [
+        "https://www.openstreetmap.org/node/5306991227",
+        "https://www.openstreetmap.org/way/277621411"
+      ],
+      "roadNames": [
+        "瑞湖路"
+      ],
+      "administrativeAreaId": null,
+      "administrativeAffiliation": "unverified",
+      "routable": true,
+      "officialAssemblyPoint": false,
+      "description": "真实道路位置；接人用途为演练选择，非已核定集合点。街道辖属待核。"
+    },
+    {
+      "id": "RA-ROAD-5306991217",
+      "name": "瑞祥大道（片区北侧道路点）",
+      "kind": "road-point",
+      "nodeId": "O5306991217",
+      "osmNodeId": 5306991217,
+      "longitude": 120.6430323,
+      "latitude": 27.7795471,
+      "coordinateSystem": "WGS84",
+      "sourceName": "OpenStreetMap 道路快照",
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991217",
+      "sourceUrls": [
+        "https://www.openstreetmap.org/node/5306991217",
+        "https://www.openstreetmap.org/way/549400249"
+      ],
+      "roadNames": [
+        "瑞祥大道"
+      ],
+      "administrativeAreaId": null,
+      "administrativeAffiliation": "unverified",
+      "routable": true,
+      "officialAssemblyPoint": false,
+      "description": "真实道路位置；接人用途为演练选择，非已核定集合点。街道辖属待核。"
+    },
+    {
+      "id": "RA-ROAD-5306991225",
+      "name": "解放东路（片区西侧道路点）",
+      "kind": "road-point",
+      "nodeId": "O5306991225",
+      "osmNodeId": 5306991225,
+      "longitude": 120.6351909,
+      "latitude": 27.7817351,
+      "coordinateSystem": "WGS84",
+      "sourceName": "OpenStreetMap 道路快照",
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991225",
+      "sourceUrls": [
+        "https://www.openstreetmap.org/node/5306991225",
+        "https://www.openstreetmap.org/way/987512153"
+      ],
+      "roadNames": [
+        "解放东路"
+      ],
+      "administrativeAreaId": null,
+      "administrativeAffiliation": "unverified",
+      "routable": true,
+      "officialAssemblyPoint": false,
+      "description": "真实道路位置；接人用途为演练选择，非已核定集合点。街道辖属待核。"
+    }
+  ],
+  "landmarks": [
+    {
+      "id": "way/845240341",
+      "name": "隆山",
+      "kind": "park-reference",
+      "sourceUrl": "https://www.openstreetmap.org/way/845240341",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              120.6360034,
+              27.7792323
+            ],
+            [
+              120.6361707,
+              27.7795475
+            ],
+            [
+              120.6364883,
+              27.779445
+            ],
+            [
+              120.6365656,
+              27.7793045
+            ],
+            [
+              120.6378231,
+              27.7788569
+            ],
+            [
+              120.6377783,
+              27.7787379
+            ],
+            [
+              120.6380249,
+              27.7786685
+            ],
+            [
+              120.6379165,
+              27.7784305
+            ],
+            [
+              120.6378306,
+              27.7784471
+            ],
+            [
+              120.6377783,
+              27.7783347
+            ],
+            [
+              120.6378381,
+              27.7782553
+            ],
+            [
+              120.6379352,
+              27.7776868
+            ],
+            [
+              120.6378381,
+              27.7776075
+            ],
+            [
+              120.6378269,
+              27.7774488
+            ],
+            [
+              120.6379464,
+              27.7773728
+            ],
+            [
+              120.6379128,
+              27.777148
+            ],
+            [
+              120.6378194,
+              27.7769497
+            ],
+            [
+              120.6378082,
+              27.7767051
+            ],
+            [
+              120.6378904,
+              27.7766919
+            ],
+            [
+              120.6379614,
+              27.7764472
+            ],
+            [
+              120.6380249,
+              27.7764373
+            ],
+            [
+              120.6380286,
+              27.77572
+            ],
+            [
+              120.6376513,
+              27.7755713
+            ],
+            [
+              120.6376699,
+              27.7754159
+            ],
+            [
+              120.6376027,
+              27.7752738
+            ],
+            [
+              120.6378455,
+              27.7749531
+            ],
+            [
+              120.6380734,
+              27.7748606
+            ],
+            [
+              120.6381257,
+              27.7748936
+            ],
+            [
+              120.6382416,
+              27.7748308
+            ],
+            [
+              120.6382266,
+              27.7747251
+            ],
+            [
+              120.6368667,
+              27.7733532
+            ],
+            [
+              120.6361307,
+              27.7742358
+            ],
+            [
+              120.6360747,
+              27.7744573
+            ],
+            [
+              120.6362503,
+              27.77493
+            ],
+            [
+              120.6360971,
+              27.7752209
+            ],
+            [
+              120.6359178,
+              27.7751614
+            ],
+            [
+              120.6354284,
+              27.7761663
+            ],
+            [
+              120.6356114,
+              27.7762721
+            ],
+            [
+              120.6354246,
+              27.7765134
+            ],
+            [
+              120.6354059,
+              27.7767381
+            ],
+            [
+              120.6355292,
+              27.7767877
+            ],
+            [
+              120.6353574,
+              27.7772373
+            ],
+            [
+              120.6350473,
+              27.7774025
+            ],
+            [
+              120.6348605,
+              27.777581
+            ],
+            [
+              120.6349688,
+              27.7777694
+            ],
+            [
+              120.6346288,
+              27.7779182
+            ],
+            [
+              120.6347783,
+              27.7781727
+            ],
+            [
+              120.6349614,
+              27.7783347
+            ],
+            [
+              120.6349427,
+              27.7784438
+            ],
+            [
+              120.6351407,
+              27.7784305
+            ],
+            [
+              120.6355367,
+              27.7790883
+            ],
+            [
+              120.6356712,
+              27.779052
+            ],
+            [
+              120.6358094,
+              27.7792371
+            ],
+            [
+              120.6359701,
+              27.7791974
+            ],
+            [
+              120.6360034,
+              27.7792323
+            ]
+          ]
+        ]
+      },
+      "routable": false,
+      "officialAssemblyPoint": false,
+      "description": "地图地标参考；未核实可停车入口，不能直接当作接人点。"
+    },
+    {
+      "id": "way/881149633",
+      "name": "明镜公园",
+      "kind": "park-reference",
+      "sourceUrl": "https://www.openstreetmap.org/way/881149633",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              120.6633165,
+              27.7790108
+            ],
+            [
+              120.6634648,
+              27.7789876
+            ],
+            [
+              120.6644847,
+              27.7788277
+            ],
+            [
+              120.6651485,
+              27.7787237
+            ],
+            [
+              120.6661785,
+              27.7784721
+            ],
+            [
+              120.6659612,
+              27.7775537
+            ],
+            [
+              120.6660336,
+              27.7772737
+            ],
+            [
+              120.6657869,
+              27.7760753
+            ],
+            [
+              120.6626246,
+              27.7766828
+            ],
+            [
+              120.6631851,
+              27.778783
+            ],
+            [
+              120.6633165,
+              27.7790108
+            ]
+          ]
+        ]
+      },
+      "routable": false,
+      "officialAssemblyPoint": false,
+      "description": "地图地标参考；未核实可停车入口，不能直接当作接人点。"
+    },
+    {
+      "id": "way/904722539",
+      "name": "莘兴公园",
+      "kind": "park-reference",
+      "sourceUrl": "https://www.openstreetmap.org/way/904722539",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              120.6723019,
+              27.7835362
+            ],
+            [
+              120.6728142,
+              27.7833345
+            ],
+            [
+              120.6729484,
+              27.7834959
+            ],
+            [
+              120.6739113,
+              27.7830877
+            ],
+            [
+              120.6734204,
+              27.7820744
+            ],
+            [
+              120.672377,
+              27.7822216
+            ],
+            [
+              120.6721437,
+              27.782326
+            ],
+            [
+              120.6721598,
+              27.7830925
+            ],
+            [
+              120.6723019,
+              27.7835362
+            ]
+          ]
+        ]
+      },
+      "routable": false,
+      "officialAssemblyPoint": false,
+      "description": "地图地标参考；未核实可停车入口，不能直接当作接人点。"
+    },
+    {
+      "id": "way/1483322840",
+      "name": "玉海广场",
+      "kind": "park-reference",
+      "sourceUrl": "https://www.openstreetmap.org/way/1483322840",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              120.6308951,
+              27.7853038
+            ],
+            [
+              120.6304912,
+              27.7842083
+            ],
+            [
+              120.6310197,
+              27.7839712
+            ],
+            [
+              120.6312198,
+              27.7844789
+            ],
+            [
+              120.6316652,
+              27.7844221
+            ],
+            [
+              120.6318351,
+              27.7851201
+            ],
+            [
+              120.6308951,
+              27.7853038
+            ]
+          ]
+        ]
+      },
+      "routable": false,
+      "officialAssemblyPoint": false,
+      "description": "地图地标参考；未核实可停车入口，不能直接当作接人点。"
+    }
+  ]
+}

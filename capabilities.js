@@ -1,5 +1,5 @@
 (function(root){
-  const data={version:'4.0.1',date:'2026-10-05',title:'叫应 AI · 瑞安转移协同演练',modelConnected:false,agentConnected:false,weatherConnected:false,crossDeviceSync:'lan-optional',entries:[
+  const data={version:'4.0.2',date:'2026-10-05',title:'叫应 AI · 瑞安转移协同演练',modelConnected:false,agentConnected:false,weatherConnected:false,crossDeviceSync:'lan-optional',entries:[
     {id:'O01',name:'数据来源目录',status:'已实现 / 待外部核实',detail:'道路、合成业务、天气与预案列明出处。地图来源和合成数据的赛事适用性仍需组委会确认。'},
     {id:'O02',name:'模型与 Agent',status:'离线协同已接通 / 模型暂缓',detail:'守护面板读取本场真实演练快照、生成算法草案与报告，发布返回主台人工核对；21工具独立沙盘另列。DeepSeek 未连接，不将规则当作模型。'},
     {id:'O03',name:'真实道路与调度统一',status:'已实现',detail:'瑞安局部道路绑定演练点位，遵守单向通行，计算路线并支持点选上报；速度和开放状态为演练假设。'},

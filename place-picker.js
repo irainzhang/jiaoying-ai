@@ -8,7 +8,7 @@
   function html({id,label='地点',value='',options=[],placeholder='搜索名称 / 编号，或手动填写',disabled=false,attributes={}}={}){
     if(!id)throw new Error('地点选择器需要唯一 id');
     const attrs=Object.entries(attributes).filter(([key])=>/^data-[a-z][a-z0-9-]*$/.test(key)&&!key.startsWith('data-place-')).map(([key,v])=>`${key}="${escape(v)}"`).join(' ');
-    return `<div class="place-picker" data-place-picker data-place-options="${escape(JSON.stringify(cleanOptions(options)))}"><label class="place-picker-label" for="${escape(id)}">${escape(label)}</label><div class="place-picker-control"><input id="${escape(id)}" class="place-picker-input" type="text" value="${escape(value)}" placeholder="${escape(placeholder)}" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-haspopup="listbox" aria-controls="${escape(id)}-options" aria-label="${escape(label)}" autocomplete="off" spellcheck="false" ${attrs} ${disabled?'disabled':''}><button class="place-picker-toggle" type="button" aria-label="展开${escape(label)}候选地点" aria-expanded="false" tabindex="-1" ${disabled?'disabled':''}><span aria-hidden="true">⌄</span></button></div></div>`;
+    return `<div class="place-picker" data-place-picker data-place-options="${escape(JSON.stringify(cleanOptions(options)))}"><label class="place-picker-label" for="${escape(id)}">${escape(label)}</label><div class="place-picker-control"><input id="${escape(id)}" class="place-picker-input" type="text" value="${escape(value)}" placeholder="${escape(placeholder)}" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-haspopup="listbox" aria-controls="${escape(id)}-options" aria-label="${escape(label)}" autocomplete="off" spellcheck="false" ${attrs} ${disabled?'disabled':''}><button class="place-picker-toggle" type="button" aria-label="展开${escape(label)}候选地点" aria-expanded="false" tabindex="-1" ${disabled?'disabled':''}><svg class="place-picker-chevron" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></button></div></div>`;
   }
   function bind(container,{onCommit=()=>{},getOptions}={}){
     if(!container?.querySelectorAll)return ()=>{};
@@ -20,7 +20,7 @@
     function close(){if(opened){opened.input.setAttribute('aria-expanded','false');opened.toggle.setAttribute('aria-expanded','false');opened.input.removeAttribute('aria-activedescendant');}opened=null;if(portal){portal.remove();portal=null;}}
     function position(){
       if(!portal||!opened)return;
-      const rect=opened.input.getBoundingClientRect(),viewWidth=win?.innerWidth||doc.documentElement.clientWidth||1024,viewHeight=win?.innerHeight||doc.documentElement.clientHeight||768;
+      const rect=opened.control.getBoundingClientRect(),viewWidth=win?.innerWidth||doc.documentElement.clientWidth||1024,viewHeight=win?.innerHeight||doc.documentElement.clientHeight||768;
       if(rect.bottom<0||rect.top>viewHeight){close();return;}
       const width=Math.min(Math.max(rect.width,280),Math.max(200,viewWidth-24)),below=viewHeight-rect.bottom-12,above=rect.top-12,up=below<180&&above>below,room=Math.max(120,up?above:below);
       portal.style.width=width+'px';portal.style.left=Math.max(12,Math.min(rect.left,viewWidth-width-12))+'px';portal.style.maxHeight=Math.min(390,room)+'px';
@@ -54,8 +54,9 @@
     function choose(index){const entry=opened;if(!entry)return;const choice=entry.visible[index];if(choice)commit(entry,choice.label,choice,'selection');else if(index===entry.visible.length&&entry.manual)commit(entry,entry.manual,null,'manual');}
     for(const wrapper of container.querySelectorAll('[data-place-picker]')){
       const input=wrapper.querySelector('.place-picker-input'),toggle=wrapper.querySelector('.place-picker-toggle');if(!input||!toggle)continue;
+      const control=wrapper.querySelector('.place-picker-control')||input;
       let options=[];try{options=cleanOptions(JSON.parse(wrapper.dataset.placeOptions||'[]'));}catch{}
-      const entry={wrapper,input,toggle,options,label:input.getAttribute('aria-label')||'地点',lastValue:input.value,query:'',visible:[],active:-1,manual:''};
+      const entry={wrapper,input,toggle,control,options,label:input.getAttribute('aria-label')||'地点',lastValue:input.value,query:'',visible:[],active:-1,manual:''};
       listen(input,'input',event=>{event.stopPropagation();open(entry,input.value);});
       listen(input,'change',event=>event.stopPropagation());
       listen(input,'click',event=>{event.stopPropagation();if(opened!==entry)open(entry);});

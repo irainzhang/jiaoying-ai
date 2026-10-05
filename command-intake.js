@@ -1,7 +1,7 @@
 (function (root, factory) {
-  if (typeof module === 'object' && module.exports) module.exports = factory(require('./village-assistant.js'));
-  else root.JiaoyingCommandIntake = factory(root.JiaoyingVillageAssistant);
-})(typeof globalThis !== 'undefined' ? globalThis : this, function (villageAssistant) {
+  if (typeof module === 'object' && module.exports) module.exports = factory(require('./village-assistant.js'),require('./place-directory.js'));
+  else root.JiaoyingCommandIntake = factory(root.JiaoyingVillageAssistant,root.JiaoyingPlaceDirectory);
+})(typeof globalThis !== 'undefined' ? globalThis : this, function (villageAssistant,directory) {
   'use strict';
 
   // Pure local normalization: a preview is never a submission or an allocation.
@@ -38,9 +38,12 @@
   }
   function villagesIn(text, villages) { const t=norm(text);return villages.filter(v => names(v).some(name => includesName(t,name))); }
   function villageFor(value, villages) { const key=norm(value);return villages.filter(v => names(v).includes(key)); }
-  function pickupFor(value, village) {
+  const pickupItemsFor=(village,data)=>directory?directory.pickups(data,village?.id):(village?.pickups||[]);
+  const distinctPoints=points=>points.filter((p,i)=>points.findIndex(x=>(x.publicPlaceId||x.id)===(p.publicPlaceId||p.id))===i);
+  function pickupFor(value, village, data) {
     const key=norm(value);
-    return (village.pickups || []).filter(p => [p.id,p.name,...(p.aliases || []),norm(p.name).replace(/\(演示\)/g,'')].some(name => norm(name)===key));
+    const points=pickupItemsFor(village,data),byId=points.filter(p=>norm(p.id)===key);
+    return byId.length?byId:distinctPoints(points.filter(p => [p.name,...(p.aliases || []),norm(p.name).replace(/\(演示\)/g,'')].some(name => norm(name)===key)));
   }
   function warningsFor(row) {
     const out=[];
@@ -138,7 +141,7 @@
       if(!villageValue||villageValue.length>100)rowErrors.push('村庄名称不能为空且不能超过100字。');
       if(match.length>1)rowErrors.push('村庄名称不唯一，请使用已登记编号。');
       const pickupValue=string(get('pickupId'))||context.pickupId||'';
-      const point=pickupValue&&village?pickupFor(pickupValue,village):[];
+      const point=pickupValue&&village?pickupFor(pickupValue,village,context.data):[];
       if(pickupValue.length>100)rowErrors.push('集合点名称不能超过100字。');
       if(point.length>1||pickupValue&&!point.length&&villages.some(v=>(v.pickups||[]).some(p=>p.id===pickupValue)))rowErrors.push('集合点“'+pickupValue+'”不属于该村或名称不唯一。');
       const lon=string(get('longitude')),lat=string(get('latitude')),hasCoordinates=!!(lon||lat);
@@ -178,7 +181,8 @@
       for(const clause of paragraph.split(/[,，]/)) {
         const startsPlace=!!(villagesIn(clause,villages).length||spokenLocalities(clause).length);
         const hasDemand=/(?:新增|增加|补报|新发现|新登记|再增|安排|接送|转移).*[0-9零〇一二两三四五六七八九十百千]+/.test(current);
-        if(startsPlace && (villagesIn(current,villages).length||hasDemand)) {out.push(current);current=clause;}
+        const parentPrefix=!hasDemand&&!/[0-9零〇一二两三四五六七八九十百千]+\s*(?:名|位|个)?人/.test(current)&&villagesIn(clause,villages).some(child=>villagesIn(current,villages).some(parent=>child.parentId===(parent.catalogDistrictId||parent.id)));
+        if(startsPlace && !parentPrefix && (villagesIn(current,villages).length||hasDemand)) {out.push(current);current=clause;}
         else current+=(current?'，':'')+clause;
       }
       if(!current)continue;
@@ -216,11 +220,11 @@
       const rowIndex=index+1, prefix='第 '+rowIndex+' 条：';
       if(/(?:不要|无需|不用|不必|不再|取消|不需要|不能|未|不)(?:再)?(?:安排|转移|接送)|(?:安排|转移|接送)(?:取消|不了)/.test(norm(part))) {out.errors.push(prefix+'包含取消或否定安排，请明确本次新增需求。');return;}
       if(/(?:总计|共计|合计|总共|共有|总量|总人数)/.test(norm(part))&&!/(?:新增|新发现|增加|补报|新登记|再增)/.test(norm(part))){out.errors.push(prefix+'总量不能直接当作新增人数，请明确本次新增需求；总量盘点请使用村级台账。');return;}
-      const explicit=villagesIn(part,villages),selected=villages.find(v=>v.id===context.villageId);
+      const named=villagesIn(part,villages),explicit=named.filter(v=>!named.some(child=>child.parentId===(v.catalogDistrictId||v.id))),selected=villages.find(v=>v.id===context.villageId);
       if(explicit.length>1){out.errors.push(prefix+'一条记录涉及多个或同名地区，请按地区分开，并选择唯一的登记编号。');return;}
       if(context.villageId&&!selected){out.errors.push(prefix+'当前所选地区已失效，请重新选择。');return;}
-      if(explicit.length===1&&selected&&explicit[0].id!==selected.id){out.errors.push(prefix+'口述地区与当前选择不一致，请核对所属地区。');return;}
-      const localities=spokenLocalities(part).filter(value=>!villages.some(v=>names(v).includes(norm(value))));
+      if(explicit.length===1&&selected&&explicit[0].id!==selected.id&&explicit[0].parentId!==(selected.catalogDistrictId||selected.id)){out.errors.push(prefix+'口述地区与当前选择不一致，请核对所属地区。');return;}
+      const localities=spokenLocalities(part).filter(value=>!villages.some(v=>names(v).includes(norm(value)))&&!explicit.some(v=>norm(v.name).startsWith(norm(value))));
       // A known village can sit inside an explicitly spoken township. Do not
       // silently discard that extra place: the user can select one unambiguous
       // area instead of routing a potentially different village.
@@ -233,10 +237,10 @@
       const locationWarnings=[];
       if(changedVillage)locationWarnings.push('口述地区与已选地区不同，已保留口述原名并清空原接人点，请核对。');
       if(!village)locationWarnings.push(villageName?'地区未在本场目录中登记，保留原名待定位；不会自动映射真实位置。':'未提供所属地区，已保留人数；请在本行搜索选择或填写地区。');
-      const pickupItems=village?.pickups||[];
-      const foreign= villages.filter(v=>v.id!==village?.id).flatMap(v=>v.pickups||[]).filter(p=>includesName(norm(part),norm(p.id)));
+      const pickupItems=pickupItemsFor(village,context.data);
+      const foreign= villages.filter(v=>v.id!==village?.id).flatMap(v=>v.pickups||[]).filter(p=>!pickupItems.some(x=>x.id===p.id)&&includesName(norm(part),norm(p.id)));
       if(foreign.length){out.errors.push(prefix+'口述接人点编号不属于当前地区，请核对地区与接人点。');return;}
-      const registeredPickups=pickupItems.filter(p=>[p.id,p.name,...(p.aliases||[]),norm(p.name).replace(/\(演示\)/g,'')].some(value=>includesName(norm(part),norm(value))));
+      const registeredPickups=distinctPoints(pickupItems.filter(p=>[p.id,p.name,...(p.aliases||[]),norm(p.name).replace(/\(演示\)/g,'')].some(value=>includesName(norm(part),norm(value)))));
       if(registeredPickups.length>1){out.errors.push(prefix+'接人点名称不唯一，请选择登记编号或按接人点分条录入。');return;}
       const selectedPickup=pickupItems.find(p=>p.id===context.pickupId);
       if(!changedVillage&&context.pickupId&&village&&!selectedPickup){out.errors.push(prefix+'所选接人点不属于当前地区，请重新选择。');return;}
@@ -248,7 +252,7 @@
       if(unknownPoint&&selectedPickup)locationWarnings.push('口述接人位置与所选登记点不同，已保留口述位置并清空旧接人点，请核对。');
       // Reuse the existing conservative count/negation rules with a temporary
       // label-only directory. Temporary IDs never leave this parsing adapter.
-      const temporaryVillage={...(village||{}),id:village?.id||'__draft-area__',name:villageName||'未提供地区',pickups:[...pickupItems]};
+      const temporaryVillage={...(village||{}),id:village?.id||'__draft-area__',name:villageName||'未提供地区',pickups:distinctPoints([effectivePickup,...pickupItems].filter(Boolean))};
       if(pointName)temporaryVillage.pickups.push({id:'__draft-pickup__',name:pointName});
       const prepared=villageAssistant.prepare(prepareText(part,villages),{...context,data:{...context.data,villages:[temporaryVillage]},villageId:temporaryVillage.id,pickupId:effectivePickup?.id||(pointName?'__draft-pickup__':''),mode:'increment'});
       if(prepared.proposal?.payload.mode && prepared.proposal.payload.mode!=='increment') {out.errors.push(prefix+'当前总量或更正不能作为新增任务导入，请在村级台账中核对。');return;}
@@ -267,7 +271,7 @@
   const fieldLabels={people:'人数',villageName:'村庄',pickupName:'接人点',assistancePeople:'协助人数',wheelchairPeople:'轮椅人数',groupPolicy:'同行关系'};
   const fieldText=(key,value)=>value==null||value===''?'待补':key==='groupPolicy'?({unknown:'待补',splittable:'可分组',together:'须同行'}[value]||String(value)):String(value);
   function withNames(row,context={}) {
-    const village=(context.data?.villages||[]).find(v=>v.id===row.villageId),point=village?.pickups?.find(p=>p.id===row.pickupId);
+    const village=(context.data?.villages||[]).find(v=>v.id===row.villageId),point=pickupItemsFor(village,context.data).find(p=>p.id===row.pickupId);
     return {...row,villageName:row.villageName||village?.name||'',pickupName:row.pickupName||point?.name||''};
   }
   function remember(row,context={}) {
@@ -285,7 +289,7 @@
     // A dropdown returns IDs while the input displays canonical names. Picking
     // the current item again must not discard its verified location anchor.
     if(key==='villageName'&&next.villageId&&norm(edited)===norm(next.villageId)&&(context.data?.villages||[]).some(v=>v.id===next.villageId))return next;
-    if(key==='pickupName'&&next.pickupId&&norm(edited)===norm(next.pickupId)&&(context.data?.villages||[]).find(v=>v.id===next.villageId)?.pickups?.some(p=>p.id===next.pickupId))return next;
+    if(key==='pickupName'&&next.pickupId&&norm(edited)===norm(next.pickupId)&&pickupItemsFor((context.data?.villages||[]).find(v=>v.id===next.villageId),context.data).some(p=>p.id===next.pickupId))return next;
     if(next[key]===edited)return next;
     next[key]=edited;
     if(key==='villageName'||key==='pickupName') {
@@ -297,13 +301,13 @@
       // An old village's pickup is not reused merely because it has a generic
       // name shared by another village. The operator chooses the new point.
       if(key==='villageName'){next.villageName=village?.name||edited;next.pickupName='';}
-      else if(village){const points=pickupFor(next.pickupName,village),selectedPoint=village.pickups?.find(p=>norm(p.id)===norm(edited)),point=selectedPoint||(points.length===1?points[0]:null);if(point){next.pickupId=point.id;next.pickupName=point.name;}}
+      else if(village){const points=pickupFor(next.pickupName,village,context.data),selectedPoint=pickupItemsFor(village,context.data).find(p=>norm(p.id)===norm(edited)),point=selectedPoint||(points.length===1?points[0]:null);if(point){next.pickupId=point.id;next.pickupName=point.name;}}
     }
     next.editedFields=editableFields.filter(field=>next[field]!==next.original[field]);
     return next;
   }
   function locationReview(row,data={}) {
-    const scenario=data.scenario||{},villages=data.villages||[],village=villages.find(v=>v.id===row.villageId),pickup=village?.pickups?.find(p=>p.id===row.pickupId);
+    const scenario=data.scenario||{},villages=data.villages||[],village=villages.find(v=>v.id===row.villageId),pickup=pickupItemsFor(village,data).find(p=>p.id===row.pickupId);
     const nodeId=row.locationNodeId||pickup?.node;
     const hasCoordinates=row.longitude!=null||row.latitude!=null;
     if(pickup&&row.locationNodeId&&pickup.node!==row.locationNodeId)return {ready:false,label:'接人点与选点冲突',error:'已登记接人点与人工选点不一致，请修改接人点后重新选点。'};
@@ -344,7 +348,7 @@
       if(row.villageId&&!byId)errors.push('所选村庄已不在本场目录中，请重新核对。');
       if(matches.length>1&&!byId)errors.push('同名村庄不唯一，请在村庄栏使用已登记编号。');
       if(village){
-        const points=pickupFor(row.pickupName,village),point=(village.pickups||[]).find(p=>p.id===row.pickupId);
+        const points=pickupFor(row.pickupName,village,data),point=pickupItemsFor(village,data).find(p=>p.id===row.pickupId);
         if(row.pickupId&&!point)errors.push('接人点不属于当前村庄，请重新选择。');
         if(points.length>1&&!point)errors.push('同名接人点不唯一，请在接人点栏使用已登记编号。');
         if(!row.pickupId&&!row.locationNodeId&&points.length===1&&!Number.isFinite(row.longitude)&&!Number.isFinite(row.latitude))row.pickupId=points[0].id;
@@ -356,6 +360,8 @@
       row.review={ready:!errors.length&&!missing.length,missing,location,errors};out.rows.push(row);
       out.errors.push(...errors.map(error=>prefix+error));
       if(location.warning)out.warnings.push(prefix+location.warning);
+      const candidate=pickupItemsFor(village,data).find(p=>p.id===row.pickupId);
+      if(candidate?.sharedCandidate||candidate?.administrativeRelation==='user-selected-unverified')out.warnings.push(prefix+'接人点为瑞安城区道路候选，所属街道尚未核实，请按地图确认现场位置。');
       const people=Number.isInteger(row.people)&&row.people>0?row.people:0;
       if(row.review.ready){out.readyRows++;out.readyPeople+=people;}else{out.pendingRows++;out.pendingPeople+=people;}
     }
