@@ -22,7 +22,7 @@ export function createExerciseServer({initialData=null,persistenceFile=null,star
   if(persistenceFile)persist(store.data);
   const transport={preferred:'sse',eventsUrl:'/api/v3/events',eventName:'state',pollIntervalMs:1200};
   const connection={mode:room?'lan-room':'local',roomId:room?.roomId||null,shared:!!room,scopeLabel:room?'同 Wi-Fi 房间':'仅本机浏览器',speechNote:room?'手机 HTTP 页面可能不支持浏览器语音识别，可使用系统键盘语音听写。':''};
-  const capabilities={realtimeEvents:true,villageReporting:true,commandIntake:true,mapDemandLocation:true,roadMapConversion:true,numericRainfall:true,taskLifecycle:true,resourceRegistry:true,version:'4.1.1',operations:true,stateRestore:true,persistentStorage:!!persistenceFile,crossDeviceSync:!!room};
+  const capabilities={realtimeEvents:true,villageReporting:true,commandIntake:true,mapDemandLocation:true,roadMapConversion:true,numericRainfall:true,taskLifecycle:true,resourceRegistry:true,version:'4.2.0',operations:true,stateRestore:true,persistentStorage:!!persistenceFile,crossDeviceSync:!!room};
   const state=()=>{const data=store.data;return {session,data,savedAt,connection,diagnostics:Exercise.diagnostics?.(data),metrics:Exercise.metrics(data),taskSummary:Exercise.taskSummary?.(data),mapConversion:Exercise.mapConversionStatus(data),villageLedger:Exercise.villageMetrics(data),blockedVehicles:data.activePlan?.routes.filter(r=>Exercise.blockedRoute(data,r)).map(r=>r.vehicleId)||[],integrations:integrationStatus,transport,capabilities};};
   // Road snapshots and retained task history can exceed 128 KiB. Permit one
   // bounded full snapshot while still disconnecting readers that stop draining.

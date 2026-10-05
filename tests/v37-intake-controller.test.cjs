@@ -24,7 +24,7 @@ function harness(role='command'){
     setTimeout:()=>1,clearTimeout(){},setInterval(){},matchMedia:()=>({matches:true}),
     fetch:(url,options)=>new Promise((resolve,reject)=>requests.push({url,options,resolve,reject}))};
   context.window=context;vm.createContext(context);
-  for(const name of ['village-assistant.js','village-workspace.js','place-directory.js','command-intake.js','intake-file.js','quick-context.js'])vm.runInContext(fs.readFileSync(path.join(__dirname,'../dist',name),'utf8'),context,{filename:name});
+  for(const name of ['village-assistant.js','village-workspace.js','place-directory.js','command-intake.js','intake-file.js','entry-kit.js','resource-intake.js','quick-context.js'])vm.runInContext(fs.readFileSync(path.join(__dirname,'../dist',name),'utf8'),context,{filename:name});
   const bootstrap='render();poll();setInterval(poll,1200);';
   const bridge=`window.testIntake={seed(next){state=next;connected=true;draftLoaded=true;},
     inspect(){return {intake,quickText,quickSource,quickDraft,quickReceipt,quickSelection,commandSection,fieldSection,mapMode,mapLocation,busy,revision:d().revision};},

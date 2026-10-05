@@ -4,7 +4,7 @@ const W=require('../dist/task-workbench.js'),E=require('../exercise.cjs');
 
 test('first-time entry exposes add/import/demo actions before categorized form fields',()=>{
   const html=W.resourceForm({data:E.createBlank()}),editor=html.indexOf('id="resource-editor"');
-  for(const marker of ['id="resource-staff-add"','data-resource-add="vehicle"','id="resource-seed"','id="resource-staff-import"'])assert.ok(html.indexOf(marker)>0&&html.indexOf(marker)<editor);
+  for(const marker of ['id="resource-staff-add"','data-resource-add="vehicle"','id="resource-seed"','id="resource-capture"'])assert.ok(html.indexOf(marker)>0&&html.indexOf(marker)<editor);
   assert.match(html,/data-registry-panel="staff" aria-label="工作人员" >/);
   assert.match(html,/data-registry-panel="vehicle" aria-label="车辆与编组" hidden/);
   assert.match(html,/data-registry-panel="shelter" aria-label="安置接收点" hidden/);
@@ -19,7 +19,7 @@ test('saved registry opens vehicles without claiming unsaved edits',()=>{
 test('active readonly registry gives operational paths without editable actions',()=>{
   const html=W.resourceForm({data:E.createBlank()},{readonly:true});
   assert.match(html,/data-ac="resource-status-dialog"/);assert.match(html,/结束本场并登记下一场/);assert.match(html,/要录入新车辆或工作人员/);
-  for(const marker of ['id="resource-seed"','id="resource-staff-add"','data-resource-add=','id="resource-staff-import"','type="submit"'])assert.ok(!html.includes(marker),marker);
+  for(const marker of ['id="resource-seed"','id="resource-staff-add"','data-resource-add=','id="resource-capture"','type="submit"'])assert.ok(!html.includes(marker),marker);
 });
 test('closed readonly registry routes straight to creating next task, never changes old task status',()=>{
   const data=E.createBlank();data.taskLifecycle.status='completed';const before=JSON.stringify(data),html=W.resourceForm({data},{readonly:true});
