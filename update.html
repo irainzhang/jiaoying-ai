@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>更新叫应 AI 网页</title>
+<style>body{margin:0;background:#edf5f8;color:#193d54;font:16px/1.8 system-ui,sans-serif}main{max-width:620px;margin:12vh auto;padding:30px;background:#fff;border:1px solid #d6e6ec;border-radius:20px;box-shadow:0 15px 60px #16394d10}h1{font-size:26px;margin-top:0}p{color:#516c7c}#status{padding:16px;background:#e8f6f3;border-radius:12px;color:#175951}button{padding:13px 22px;border:0;border-radius:10px;background:#07887f;color:#fff;font:600 16px system-ui;cursor:pointer;margin:6px 10px 0 0}button:disabled{opacity:.5;cursor:wait}#retry{background:#eaf2f5;color:#264d62}a{color:#07887f}@media(max-width:700px){main{margin:8vh 16px;padding:24px}}</style></head>
+<body><main><h1>更新叫应 AI 网页</h1><p>此页只更新网页文件，保留当前浏览器的任务、历史记录和已保存草稿。不会结束任务，也不会清空演练。</p><p id="status" role="status" aria-live="polite">正在检查最新网页版本…</p><button id="open" type="button" disabled>等待更新就绪</button><button id="retry" type="button">重新检查</button><p>请先保存其他标签页尚未提交的内容。更新完成后，点击按钮回到指挥台；其他已打开的标签页也需要自行刷新。</p><a href="./#command">暂时返回指挥台</a></main>
+<script>
+(function () {
+  'use strict';
+  var root = new URL('./', location.href), workerURL = new URL('guardian-offline-sw.js?v=1', root);
+  var status = document.getElementById('status'), open = document.getElementById('open');
+  var retry = document.getElementById('retry'), sw = navigator.serviceWorker, target, registration, ready = false, running = false;
+  function own(worker) { return worker && worker.scriptURL && new URL(worker.scriptURL).pathname === workerURL.pathname; }
+  function ask() { if (sw && own(sw.controller)) sw.controller.postMessage({type:'GUARDIAN_CACHE_STATUS'}); }
+  function pending() { ready = false; open.disabled = true; open.textContent = '等待更新就绪'; }
+  async function check() {
+    if (running) return;
+    running = true; pending(); retry.disabled = true;
+    try {
+      if (!sw || !/^https?:$/.test(location.protocol)) throw new Error('请从已发布的 HTTPS 网页打开此链接。');
+      status.textContent = '正在联网检查并下载完整网页，期间保留所有演练记录…';
+      var response = await fetch(new URL('guardian-cache-manifest.json', root).href, {cache:'no-store'});
+      if (!response.ok) throw new Error('暂时无法读取发布版本，请联网后重试。');
+      var manifest = await response.json();
+      if (!/^[a-f0-9]{20}$/.test(manifest.build || '') || !/^\d+\.\d+\.\d+$/.test(manifest.version || '')) throw new Error('网页更新尚未发布完成，请稍后重试。');
+      target = manifest;
+      var existing = await sw.getRegistration(root.href), worker = existing && (existing.active || existing.waiting || existing.installing);
+      if (worker && !own(worker)) throw new Error('此地址有其他离线服务，本页未修改它。');
+      registration = await sw.register(workerURL.href, {scope:root.href, updateViaCache:'none'});
+      registration.addEventListener('updatefound', function () {
+        var installing = registration.installing;
+        if (installing) installing.addEventListener('statechange', function () {
+          ask();
+          if (installing.state === 'redundant' && !ready) status.textContent = '下载未完成，请检查网络后重新检查。当前演练记录未改变。';
+        });
+      });
+      await registration.update();
+      if (!ready) status.textContent = '正在准备 V' + target.version + ' 的完整离线文件，请保持联网…';
+      ask();
+    } catch (error) { status.textContent = error.message || '更新暂未完成，请稍后重试。'; }
+    finally { running = false; retry.disabled = false; }
+  }
+  if (sw) {
+    sw.addEventListener('controllerchange', function () { pending(); ask(); });
+    sw.addEventListener('message', function (event) {
+      var data = event.data;
+      if (!target || !data || data.type !== 'GUARDIAN_CACHE_STATUS' || event.source !== sw.controller || !own(event.source)) return;
+      ready = data.ready === true && data.build === target.build && data.version === target.version;
+      open.disabled = !ready;
+      if (ready) { status.textContent = 'V' + target.version + ' 已完整下载，演练记录保持原样。'; open.textContent = '打开新版指挥台'; }
+      else if (data.message) status.textContent = data.message;
+    });
+  }
+  open.addEventListener('click', function () { if (ready) location.href = new URL('./?v=' + target.version + '#command', root).href; });
+  retry.addEventListener('click', check);
+  check();
+})();
+</script></body></html>

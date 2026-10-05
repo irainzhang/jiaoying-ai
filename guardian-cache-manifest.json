@@ -1,5 +1,6 @@
 {
-  "build": "0226dfccbaf5202f4fbf",
+  "build": "6908125ef0fbe2242ec7",
+  "version": "3.9.1",
   "files": [
     "assets/evaluation.json",
     "assets/logo-lockup.png",
@@ -86,9 +87,11 @@
     "start-page.js",
     "start.html",
     "transport-map.js",
+    "update.html",
     "vendor/leaflet/LICENSE",
     "vendor/leaflet/leaflet.css",
     "vendor/leaflet/leaflet.js",
+    "version-update.js",
     "village-assistant.js",
     "village-workspace.css",
     "village-workspace.js",
