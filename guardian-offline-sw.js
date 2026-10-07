@@ -1,6 +1,6 @@
 /* Generated manifest contains only this site's public static assets. Never cache APIs or model requests. */
 'use strict';
-const BUILD='7dfeea25d66160fea8e9';
+const BUILD='ba471256e0e74b9f205b';
 const CACHE_NAME='jiaoying-guardian-'+BUILD;
 const PREFIX='jiaoying-guardian-';
 const ROOT=new URL('./',self.location.href);

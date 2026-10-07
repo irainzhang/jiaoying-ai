@@ -178,7 +178,52 @@ factories["./dist/resource-registry.js"]=function(module,exports,require){
     staff.push({ id: 'R01', role: 'reserve', available: true });
     return normalize({ staff, vehicles: proposed });
   }
-  return { VERSION, ROLES, VEHICLE_TYPES, TYPE_LABELS, ROLE_LABELS, isEnabled, normalize, validateScenario,
+  function resourceChangePolicy(data) {
+    const active = !!data.activePlan || !!data.history?.length || data.phase === 'executing';
+    const lockedVehicleIds = [], startLockedVehicleIds = [], lockedStaffIds = new Set();
+    for (const vehicle of data.scenario.vehicles) {
+      const fleet = data.fleet?.[vehicle.id] || {};
+      const running = (fleet.onboard || []).length > 0 || (!fleet.finished && (!!fleet.startedPlanId || (data.phase === 'executing' && data.executionMode !== 'per-vehicle' && data.activePlan?.routes.some(r => r.vehicleId === vehicle.id && r.people))));
+      if (running) { lockedVehicleIds.push(vehicle.id); for (const id of [vehicle.driverId, ...(vehicle.escortIds || [])].filter(Boolean)) lockedStaffIds.add(id); }
+      if (running || fleet.minute || (fleet.delivered || []).length || fleet.finished) startLockedVehicleIds.push(vehicle.id);
+    }
+    return { active, lockedVehicleIds, startLockedVehicleIds, lockedStaffIds: [...lockedStaffIds] };
+  }
+  function resourceDiff(before, after) {
+    const rows = [];
+    for (const kind of ['staff', 'vehicles', 'shelters']) {
+      const old = new Map((before[kind] || []).map(x => [x.id, x]));
+      for (const item of after[kind] || []) {
+        const prior = old.get(item.id), changes = [];
+        for (const key of Object.keys(item)) if (!['color', 'synthetic', 'capacity', 'wheelchair', 'nodeId'].includes(key) || kind === 'shelters' && key === 'capacity') {
+          if (!prior || JSON.stringify(prior[key]) !== JSON.stringify(item[key])) changes.push({ field: key, before: prior?.[key] ?? null, after: item[key] });
+        }
+        if (changes.length) rows.push({ kind, id: item.id, operation: prior ? 'update' : 'add', changes });
+      }
+      for (const item of before[kind] || []) if (!(after[kind] || []).some(x => x.id === item.id)) rows.push({ kind, id: item.id, operation: 'remove', changes: [] });
+    }
+    return rows;
+  }
+  // The same policy runs in the Node core and the browser bundle. UI controls
+  // merely explain these constraints; they are never the enforcement boundary.
+  function validateResourceChange(data, next) {
+    const policy = resourceChangePolicy(data); if (!policy.active) return policy;
+    const prior = data.scenario;
+    for (const kind of ['vehicles', 'shelters', 'staff']) for (const item of prior[kind] || []) assert((next[kind] || []).some(x => x.id === item.id), '发布后不能移除资源 ' + item.id + '；请登记停用，历史与在途记录必须保留');
+    for (const vehicle of next.vehicles) {
+      const old = prior.vehicles.find(x => x.id === vehicle.id); if (!old) { assert(vehicle.available, '增援车辆必须核实可用后加入'); continue; }
+      if (policy.lockedVehicleIds.includes(vehicle.id)) for (const key of ['name', 'model', 'vehicleType', 'totalCapacity', 'wheelchairSlots', 'driverId', 'escortIds']) assert(JSON.stringify(old[key]) === JSON.stringify(vehicle[key]), vehicle.id + ' 已出发或仍有车上人员，不能修改车型、运力或编组；可登记停用并协调');
+      if (policy.startLockedVehicleIds.includes(vehicle.id)) assert(old.start === vehicle.start, vehicle.id + ' 已有行驶记录，不能改写出发位置');
+    }
+    for (const member of next.staff || []) {
+      const old = (prior.staff || []).find(x => x.id === member.id);
+      if (!old) assert(member.available, '增援工作人员 ' + member.id + ' 必须核实到岗后加入');
+      if (old && policy.lockedStaffIds.includes(member.id)) assert(old.role === member.role, member.id + ' 正随已出发车辆执行，不能更换角色');
+    }
+    for (const shelter of next.shelters) assert(shelter.capacity >= (data.occupancy[shelter.id] || 0), shelter.id + ' 容量不能小于本场已接收人数');
+    return policy;
+  }
+  return { VERSION, ROLES, VEHICLE_TYPES, TYPE_LABELS, ROLE_LABELS, isEnabled, normalize, validateScenario, resourceChangePolicy, resourceDiff, validateResourceChange,
     wheelchairCapacity, routeIssues, crew, suggestAssignments, demoStaffAndAssignments };
 });
 
@@ -778,14 +823,21 @@ function validateState(d){
   }
   if(d.fieldEvents!==undefined)assert(d.fieldEvents.every(row=>validId(row.id)&&['report','progress','village'].includes(row.kind)&&typeof row.time==='string'&&Number.isFinite(Date.parse(row.time))),'恢复现场事件无效');
   if(d.followups!==undefined)assert(object(d.followups)&&Object.keys(d.followups).length<=500&&Object.entries(d.followups).every(([key,r])=>validId(key)&&object(r)&&['open','working','resolved'].includes(r.status)&&typeof r.owner==='string'&&r.owner.length<=40&&typeof r.note==='string'&&r.note.length<=500&&(r.dueAt===null||typeof r.dueAt==='string'&&Number.isFinite(Date.parse(r.dueAt)))),'恢复责任跟进记录无效');
-  for(const key of ['plan','baseline','alternative','activePlan'])checkPlan(d[key],s,'恢复'+key);
+  const resourceSnapshots=d.resourcePlanSnapshots||{};
+  assert(object(resourceSnapshots)&&Object.keys(resourceSnapshots).length<=21,'恢复资源历史快照数量无效');
+  for(const [version,entry] of Object.entries(resourceSnapshots)){
+    assert(/^\d+$/.test(version)&&Number(version)<=d.inputVersion&&object(entry)&&Object.keys(entry).every(key=>['resourceRegistryVersion','vehicles','staff'].includes(key))&&entry.resourceRegistryVersion===1&&Array.isArray(entry.vehicles)&&entry.vehicles.length<=30&&entry.vehicles.every(v=>s.vehicles.some(current=>current.id===v.id)),'恢复资源历史快照结构无效');
+    G.validateScenario({...s,...entry});
+  }
+  const resourcesAt=plan=>plan&&resourceSnapshots[plan.inputVersion]?{...s,...resourceSnapshots[plan.inputVersion]}:s;
+  for(const key of ['plan','baseline','alternative','activePlan'])checkPlan(d[key],key==='activePlan'?resourcesAt(d[key]):s,'恢复'+key);
   if(d.plan){
     assert(d.baseline!==null&&object(d.planSnapshot),'恢复草案缺少配套基线或快照');
     const i=d.planSnapshot;
     assert(object(i.scenario)&&['nodes','edges','households','vehicles','shelters'].every(key=>Array.isArray(i.scenario[key]))&&object(i.stage)&&object(i.fleet)&&object(i.occupancy)&&Array.isArray(i.unplannedRequests),'恢复草案快照结构无效');
     G.validateScenario(i.scenario);
   }else assert(d.baseline===null&&d.alternative===null&&(d.planSnapshot===null||d.planSnapshot===undefined),'恢复草案与配套结果不一致');
-  for(const p of d.history)checkPlan(p,s,'历史方案');
+  for(const p of d.history)checkPlan(p,resourcesAt(p),'历史方案');
   require('./lifecycle.cjs').validate(d,archived=>{
     validateState(archived);
     // Validate village references and limits in archived snapshots as strictly
@@ -994,6 +1046,65 @@ function validate(d,validateSnapshot){
 module.exports={ensure,isClosed,summary,close,archive,mergeArchives,validate,MAX_ARCHIVES,MAX_ARCHIVE_BYTES};
 
 };
+factories["./intake-audit.cjs"]=function(module,exports,require){
+'use strict';
+// Reviewed intake provenance, not proof that a vendor authenticated a result.
+// Keep only business fields; never persist arbitrary provider responses/config.
+const kinds={
+  demand:['rowIndex','villageId','villageName','pickupId','pickupName','pickupDisposition','locationNodeId','longitude','latitude','coordinateSystem','people','assistancePeople','wheelchairPeople','groupPolicy','intent','evidence','text'],
+  staff:['id','role','available','intent','targetId','evidence'],
+  vehicle:['id','name','vehicleType','type','model','totalCapacity','capacity','wheelchairSlots','wheelchair','start','available','driverId','escortIds','notes','intent','targetId','evidence'],
+  shelter:['id','name','nodeId','capacity','available','intent','targetId','evidence']
+};
+const cleanText=(x,max=200)=>typeof x==='string'?x.slice(0,max):'';
+const clone=x=>JSON.parse(JSON.stringify(x));
+function rows(values,kind){
+  if(!Array.isArray(values))return [];
+  if(values.length>150)throw Error('录入来源记录超出单批限制，请拆分提交');
+  return values.map(row=>Object.fromEntries(kinds[kind].filter(key=>row&&Object.hasOwn(row,key)).map(key=>{
+    const value=row[key];return [key,value===null||typeof value==='boolean'||typeof value==='number'&&Number.isFinite(value)?value:Array.isArray(value)?value.slice(0,30).map(v=>cleanText(v,80)):cleanText(value,key==='text'||key==='evidence'?2000:500)];
+  })));
+}
+function normalize(input){
+  if(!input||typeof input!=='object'||!Object.hasOwn(kinds,input.kind))throw Error('录入来源记录类型无效');
+  const kind=input.kind,modelRows=rows(input.modelRows,kind),normalizedRows=rows(input.normalizedRows,kind),confirmedRows=rows(input.confirmedRows,kind);
+  const source=['voice','text','file','manual'].includes(input.source)?input.source:'manual';
+  const online=input.provider==='deepseek'&&input.mode==='online';
+  const changes=[],key=(row,i)=>kind==='demand'?'row:'+(row.rowIndex??i+1):'id:'+(row.targetId||row.id||row.nodeId||i+1),original=new Map(normalizedRows.map((r,i)=>[key(r,i),r])),confirmedKeys=new Set();
+  for(let index=0;index<confirmedRows.length;index++){
+    const row=confirmedRows[index],rowKey=key(row,index),old=original.get(rowKey);confirmedKeys.add(rowKey);
+    if(!old)continue;
+    for(const field of kinds[kind]){
+      if(['rowIndex','text','evidence'].includes(field)||!Object.hasOwn(row,field))continue;
+      const before=old[field]??null,after=row[field];
+      if(JSON.stringify(before)!==JSON.stringify(after))changes.push({row:index+1,rowKey,field,before,after});
+    }
+  }
+  return {schemaVersion:1,kind,source,provider:online?'deepseek':input.provider==='offline'?'offline':'manual',mode:online?'online':'offline',model:online?cleanText(input.model,100):'',requestId:cleanText(input.requestId,100),at:cleanText(input.at,40),utterance:cleanText(input.utterance,8000),reason:cleanText(input.reason,300),sent:input.sent===true,modelRows,normalizedRows,confirmedRows,changes,reviewIssues:(Array.isArray(input.reviewIssues)?input.reviewIssues:[]).slice(0,150).map(issue=>typeof issue==='string'?cleanText(issue,500):{field:cleanText(issue?.field,50),code:cleanText(issue?.code,80),message:cleanText(issue?.message,500)}),attestation:'reviewed-client-provenance'};
+}
+function append(data,{name,payload={},before,at=new Date().toISOString()}){
+  if(!['command-intake','village-report','configure-resources'].includes(name))return;
+  const incoming=payload.semanticAudit;
+  if(incoming===undefined)return;
+  const list=Array.isArray(incoming)?incoming:[incoming];
+  if(list.length>30)throw Error('一次最多保存 30 批录入来源，请分批保存');
+  const accepted=list.map(normalize);
+  const previous=data.intakeAudit||[],ids=new Set((before?.villageReports||[]).map(r=>r.id));
+  const reportIds=(data.villageReports||[]).filter(r=>!ids.has(r.id)).map(r=>r.id);
+  const entries=accepted.map((item,i)=>({...item,id:'IA-'+(data.revision+1)+'-'+(previous.length+i+1),action:name,savedAt:at,revision:data.revision+1,exerciseId:data.exerciseId,reportIds,reporter:cleanText(payload.reporter||'指挥值守',40)}));
+  const next=[...previous,...entries];
+  if(next.length>500||JSON.stringify(next).length>2000000)throw Error('本场录入来源记录已达保存上限，请先结束并归档本场');
+  data.intakeAudit=next;
+  for(const report of data.villageReports||[])if(reportIds.includes(report.id))report.intakeAuditIds=entries.map(e=>e.id);
+}
+function validate(data){
+  if(data.intakeAudit===undefined)return;
+  if(!Array.isArray(data.intakeAudit)||data.intakeAudit.length>500||JSON.stringify(data.intakeAudit).length>2000000)throw Error('存档录入来源记录无效');
+  data.intakeAudit=data.intakeAudit.map(value=>({...normalize(value),id:cleanText(value.id,100),action:cleanText(value.action,50),savedAt:cleanText(value.savedAt,40),revision:Number.isSafeInteger(value.revision)?value.revision:0,exerciseId:cleanText(value.exerciseId,100),reporter:cleanText(value.reporter,40),reportIds:(Array.isArray(value.reportIds)?value.reportIds:[]).slice(0,150).map(v=>cleanText(v,80))}));
+}
+module.exports={append,normalize,validate};
+
+};
 factories["./exercise.cjs"]=function(module,exports,require){
 'use strict';
 // Server-owned synthetic exercise. No weather/model/notification service is called.
@@ -1003,6 +1114,7 @@ const R=require('./resilience.cjs');
 const L=require('./intake-location.cjs');
 const T=require('./lifecycle.cjs');
 const G=require('./dist/resource-registry.js');
+const A=require('./intake-audit.cjs');
 const clone=E.clone;
 const ALGORITHM='ruian-candidate-search-3.0';
 const BASELINE='risk-nearest-feasible-3.0';
@@ -1172,7 +1284,7 @@ function restore(initialData,{external=false}={}){
     assert(JSON.stringify(d.planSnapshot.scenario)===JSON.stringify(d.scenario)&&JSON.stringify(d.planSnapshot.stage)===JSON.stringify(d.stage)&&JSON.stringify(d.planSnapshot.fleet)===JSON.stringify(d.fleet)&&JSON.stringify(d.planSnapshot.occupancy)===JSON.stringify(d.occupancy),'恢复草案与输入快照不符');
     for(const p of [d.plan,d.baseline,d.alternative].filter(Boolean))assert(!validate(snapshot(d),p).length,'恢复草案约束校验失败');
   }
-  return d;
+  A.validate(d);return d;
 }
 function diagnostics(d){return R.diagnostics(d,{E,snapshot,validate,blockedRoute});}
 function create(initialData=null){
@@ -1291,7 +1403,8 @@ function create(initialData=null){
           log('文件恢复完成：保留人员执行台账，所有剩余安排须重新人工确认。','restore');}
       }
       else if(name==='configure-resources'){
-        assert(d.phase==='preparation'&&!d.activePlan&&!d.history.length&&!Object.values(d.fleet).some(f=>f.onboard.length||f.delivered.length||f.minute||f.finished),'仅可在未发布、未执行的准备阶段配置资源；执行中请登记资源变化');
+        const policy=G.resourceChangePolicy(d);
+        assert(!policy.active||G.isEnabled(d.scenario),'已发布的旧版资源请先结束本场；本场不能把未核实的旧运力转换为人员编组');
         assert(p.resourceRegistryVersion===undefined||p.resourceRegistryVersion===1,'资源登记库版本无效');
         const registry=p.resourceRegistryVersion===1;
         assert(!G.isEnabled(d.scenario)||registry,'已启用的资源登记库不可由旧配置覆盖，请同时提交车辆和工作人员');
@@ -1305,9 +1418,18 @@ function create(initialData=null){
         if(registration)vehicles=registration.vehicles;
         const shelters=p.shelters.map(sh=>{assert(sh&&typeof sh==='object','安置点配置无效');const id=cleanId(sh.id,'安置点');assert(nodes.has(id)&&(!sh.nodeId||sh.nodeId===id),'安置点编号须选用当前地图节点');assert(typeof sh.available==='boolean','请明确安置点可用性');return {id,name:text(sh.name,80,'安置点名称'),capacity:integer(sh.capacity,0,10000,'接收容量'),available:sh.available,synthetic:true};});
         assert(new Set(vehicles.map(v=>v.id)).size===vehicles.length&&new Set(shelters.map(sh=>sh.id)).size===shelters.length,'资源编号不能重复');
-        d.scenario.vehicles=vehicles;d.scenario.shelters=shelters;d.fleet=Object.fromEntries(vehicles.map(v=>[v.id,{node:v.start,minute:0,onboard:[],delivered:[],finished:false}]));d.occupancy=Object.fromEntries(shelters.map(sh=>[sh.id,0]));d.taskAcks={};
-        if(registration){d.scenario.resourceRegistryVersion=1;d.scenario.staff=registration.staff;G.validateScenario(d.scenario);}
-        invalidate('人工核对本场资源：'+vehicles.length+' 辆车、'+shelters.length+' 个安置点');generate('资源配置更新');
+        const next={vehicles,shelters,staff:registration?.staff||[]};G.validateResourceChange(d,next);
+        if(policy.active){d.resourcePlanSnapshots=d.resourcePlanSnapshots||{};const plans=[d.activePlan,...d.history].filter(Boolean),retained=new Set(plans.map(plan=>String(plan.inputVersion)));for(const key of Object.keys(d.resourcePlanSnapshots))if(!retained.has(key))delete d.resourcePlanSnapshots[key];for(const plan of plans)if(!d.resourcePlanSnapshots[plan.inputVersion])d.resourcePlanSnapshots[plan.inputVersion]={resourceRegistryVersion:d.scenario.resourceRegistryVersion,vehicles:clone(d.scenario.vehicles),staff:clone(d.scenario.staff||[])};}
+        const changes=G.resourceDiff(d.scenario,next),oldFleet=d.fleet,oldOccupancy=d.occupancy,oldScenario=clone(d.scenario),elapsed=policy.active?Math.max(0,...Object.values(oldFleet).map(f=>f.minute||0)):0;
+        d.scenario.vehicles=vehicles.map(v=>({...oldScenario.vehicles.find(old=>old.id===v.id),...v}));d.scenario.shelters=shelters.map(sh=>({...oldScenario.shelters.find(old=>old.id===sh.id),...sh}));
+        d.fleet=Object.fromEntries(vehicles.map(v=>{const old=oldFleet[v.id];return [v.id,policy.active&&old?{...old,...(!policy.startLockedVehicleIds.includes(v.id)?{node:v.start}:{})}:{node:v.start,minute:elapsed,onboard:[],delivered:[],finished:false}];}));
+        d.occupancy=Object.fromEntries(shelters.map(sh=>[sh.id,policy.active?(oldOccupancy[sh.id]||0):0]));if(!policy.active)d.taskAcks={};
+        if(registration){d.scenario.resourceRegistryVersion=1;d.scenario.staff=registration.staff.map(member=>({...oldScenario.staff?.find(old=>old.id===member.id),...member}));G.validateScenario(d.scenario);}
+        d.resourceChanges=d.resourceChanges||[];d.resourceChanges.push({at:now(),inputVersion:d.inputVersion+1,changes});if(d.resourceChanges.length>200)d.resourceChanges.shift();
+        invalidate((policy.active?'人工核对增援与资源调整，保留在途进度：':'人工核对本场资源：')+vehicles.length+' 辆车、'+shelters.length+' 个安置点');
+        if(policy.active)for(const v of d.scenario.vehicles){const old=oldScenario.vehicles.find(x=>x.id===v.id);const crewChanged=(registration?.staff||[]).some(member=>[v.driverId,...(v.escortIds||[])].includes(member.id)&&JSON.stringify(oldScenario.staff?.find(x=>x.id===member.id))!==JSON.stringify(member));if(!old||JSON.stringify(old)!==JSON.stringify(v)||crewChanged)v.resourceChangeVersion=d.inputVersion;}
+        if(policy.active)for(const key of ['shelters','staff'])for(const item of d.scenario[key]||[]){const old=(oldScenario[key]||[]).find(x=>x.id===item.id);if(!old||JSON.stringify(old)!==JSON.stringify(item))item.resourceChangeVersion=d.inputVersion;}
+        generate('资源配置更新');
       }
       else if(name==='resource-event'){
         assert(['vehicle','shelter','staff'].includes(p.kind),'资源事件类型无效');assert(typeof p.available==='boolean','请明确资源是否可用');
@@ -1475,7 +1597,7 @@ function create(initialData=null){
         const old=impact(before),current=impact(d),rows=Object.keys(current).filter(key=>current[key]!==old[key]).map(key=>({key,before:old[key],after:current[key],delta:current[key]-old[key]}));
         if(rows.length)d.lastDelta={time:now(),reason:d.log[0]?.message,rows};
       }
-      d.revision++;return clone(d);
+      A.append(d,{name,payload:p,before,at:now()});d.revision++;return clone(d);
     }catch(error){d=before;throw error;}
   }
   return {get data(){return clone(d);},action,fresh};

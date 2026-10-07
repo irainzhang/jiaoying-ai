@@ -189,7 +189,7 @@
       const prior=previousFleet[vehicle.id],changed=prior&&prior!==position.node;if(changed)moved.push(vehicle.name+' → '+node.label);
       const colocated=scenario.vehicles.filter(v=>d.fleet[v.id]?.node===position.node).map(v=>v.id),index=colocated.indexOf(vehicle.id);
       L.marker([node.latitude,node.longitude],{keyboard:true,title:vehicle.name+' 回执登记位置',zIndexOffset:150,icon:L.divIcon({className:'geo-vehicle-marker'+(changed&&!reduced()?' geo-receipt-updated':''),html:`<span style="border-color:${color(vehicle.color)};transform:translate(${(index-(colocated.length-1)/2)*30}px,-29px)">${escapeHTML(vehicle.id)}</span>`,iconSize:[32,25],iconAnchor:[16,13]})})
-        .bindPopup(selectionPopup(vehicle.name,`${node.label}；${position.finished?'本趟完成':vehicle.available?'可执行任务':'车辆不可用'}。车载 ${position.onboard.reduce((sum,id)=>sum+(scenario.households.find(h=>h.id===id)?.people||0),0)} 人；按节点登记更新，非实时 GPS。`,'查看登记点位',()=>options.onSelectNode?.(node.id))).addTo(overlay);
+        .bindPopup(selectionPopup(vehicle.name,`${node.label}；${position.finished?'本趟完成':vehicle.available?'可执行任务':'车辆不可用'}。车载 ${position.onboard.reduce((sum,id)=>sum+(scenario.households.find(h=>h.id===id)?.people||0),0)} 人；${escapeHTML(window.JiaoyingWorkflowStatus?.receipt(d,vehicle.id).label||'按节点登记更新，非实时 GPS')}。`,'查看登记点位',()=>options.onSelectNode?.(node.id))).addTo(overlay);
     }
     if(moved.length)root.querySelector('.geo-coordinate').textContent='新现场回执：'+moved.join('；')+'（登记位置，非 GPS）';
     previousFleet=Object.fromEntries(scenario.vehicles.map(v=>[v.id,d.fleet[v.id]?.node]));
