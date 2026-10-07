@@ -1,0 +1,10 @@
+{
+  "version": "4.3.2-showcase",
+  "channel": "showcase",
+  "mode": "browser-exercise",
+  "scope": "same-browser-tabs",
+  "storageScope": "showcase/",
+  "modelConnected": false,
+  "agentConnected": false,
+  "weatherConnected": false
+}

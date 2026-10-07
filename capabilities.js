@@ -1,5 +1,5 @@
 (function(root){
-  const data={version:'4.3.1',date:'2026-10-07',title:'叫应 AI · 瑞安转移协同演练',modelConnected:false,agentConnected:false,weatherConnected:false,crossDeviceSync:'lan-optional',entries:[
+  const data={version:'4.3.2',date:'2026-10-07',title:'叫应 AI · 瑞安转移协同演练',modelConnected:false,agentConnected:false,weatherConnected:false,crossDeviceSync:'lan-optional',entries:[
     {id:'O01',name:'数据来源目录',status:'已实现 / 待外部核实',detail:'道路、合成业务、天气与预案列明出处。地图来源和合成数据的赛事适用性仍需组委会确认。'},
     {id:'O02',name:'模型与 Agent',status:'本机语义接入 / Agent 工具编排待接',detail:'守护面板读取本场真实演练快照、生成算法草案与报告，发布返回主台人工核对；21工具独立沙盘另列。本机可配置 DeepSeek 整理人员需求、车辆、工作人员与安置点；核对表检查关键字段依据，明确未知地点不沿用旧点；正式记录保存模型来源、原话与人工改动。顶部 AI 录入 / 帮助统一入口。GitHub 静态版仍离线；自主工具编排未接入。'},
     {id:'O03',name:'真实道路与调度统一',status:'已实现',detail:'瑞安局部道路绑定演练点位，遵守单向通行，计算路线并支持点选上报；速度和开放状态为演练假设。'},

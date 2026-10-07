@@ -1,0 +1,6365 @@
+{
+  "schema": "jiaoying-osm-roads-v1",
+  "region": {
+    "name": "浙江省瑞安市 · 城区道路演练片区",
+    "mapKind": "osm-road-network",
+    "coordinateSystem": "WGS84",
+    "bounds": [
+      120.633,
+      27.777,
+      120.652,
+      27.791
+    ],
+    "longitude": 120.6425,
+    "latitude": 27.784
+  },
+  "metadata": {
+    "source": "OpenStreetMap contributors",
+    "sourceTime": "2026-09-22T08:45:51Z",
+    "license": "ODbL 1.0",
+    "sourceUrl": "https://www.openstreetmap.org/copyright",
+    "licenseUrl": "https://opendatacommons.org/licenses/odbl/1-0/",
+    "originalFile": "ruian-osm-raw.json",
+    "originalSha256": "f9064823d77b5f689984c34ac89a4bffeecd0ebed8d121968da9d7442f69a133",
+    "builder": "scripts/build-road-network.py",
+    "algorithm": "shared OSM IDs + largest SCC + same-way degree-2 compression v1",
+    "rawConnectedNodes": 212,
+    "nodeCount": 101,
+    "edgeCount": 138,
+    "onewayEdges": 73,
+    "excluded": {},
+    "assumptions": [
+      "真实道路几何与单行标签来自公开历史快照；业务用途、人员、车辆、容量和通行时间均为演练设定。",
+      "演练集合点与接收点绑定道路节点，不表示真实村委会、建筑入口或官方避难场所。",
+      "只在共享 OSM 节点连接，不以几何交叉推断路口；仅保留可双向互达的有限片区。",
+      "保留单行方向，排除明示禁止机动车/私人道路；未收录完整转向限制、车型限高、实时路况与临时交通管制。",
+      "每路段 15 km/h 并向上取整分钟是可复现演练参数，不用于安全导航。",
+      "OSM 来源与许可不等于比赛已审核地图来源，参赛资格仍待团队核实。"
+    ]
+  },
+  "nodes": [
+    {
+      "id": "O3458135047",
+      "longitude": 120.6488075,
+      "latitude": 27.7807659,
+      "osmNodeId": 3458135047,
+      "x": 619.1,
+      "y": 357.02,
+      "kind": "junction",
+      "label": "道路节点 3458135047",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/3458135047"
+    },
+    {
+      "id": "O3458135061",
+      "longitude": 120.6489153,
+      "latitude": 27.7807531,
+      "osmNodeId": 3458135061,
+      "x": 622.85,
+      "y": 357.41,
+      "kind": "junction",
+      "label": "道路节点 3458135061",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/3458135061"
+    },
+    {
+      "id": "O3458135293",
+      "longitude": 120.6483789,
+      "latitude": 27.7774023,
+      "osmNodeId": 3458135293,
+      "x": 604.21,
+      "y": 457.93,
+      "kind": "junction",
+      "label": "道路节点 3458135293",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/3458135293"
+    },
+    {
+      "id": "O3458135305",
+      "longitude": 120.6482716,
+      "latitude": 27.7774402,
+      "osmNodeId": 3458135305,
+      "x": 600.49,
+      "y": 456.79,
+      "kind": "junction",
+      "label": "道路节点 3458135305",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/3458135305"
+    },
+    {
+      "id": "O3458145804",
+      "longitude": 120.6487914,
+      "latitude": 27.7806779,
+      "osmNodeId": 3458145804,
+      "x": 618.54,
+      "y": 359.66,
+      "kind": "junction",
+      "label": "道路节点 3458145804",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/3458145804"
+    },
+    {
+      "id": "O3458145812",
+      "longitude": 120.6457878,
+      "latitude": 27.7811648,
+      "osmNodeId": 3458145812,
+      "x": 514.21,
+      "y": 345.06,
+      "kind": "junction",
+      "label": "道路节点 3458145812",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/3458145812"
+    },
+    {
+      "id": "O3458145817",
+      "longitude": 120.641301,
+      "latitude": 27.7817032,
+      "osmNodeId": 3458145817,
+      "x": 358.35,
+      "y": 328.9,
+      "kind": "junction",
+      "label": "道路节点 3458145817",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/3458145817"
+    },
+    {
+      "id": "O3458145819",
+      "longitude": 120.6413435,
+      "latitude": 27.7818019,
+      "osmNodeId": 3458145819,
+      "x": 359.83,
+      "y": 325.94,
+      "kind": "junction",
+      "label": "道路节点 3458145819",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/3458145819"
+    },
+    {
+      "id": "O3458145822",
+      "longitude": 120.6489009,
+      "latitude": 27.7806627,
+      "osmNodeId": 3458145822,
+      "x": 622.35,
+      "y": 360.12,
+      "kind": "junction",
+      "label": "道路节点 3458145822",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/3458145822"
+    },
+    {
+      "id": "O3458151392",
+      "longitude": 120.6452329,
+      "latitude": 27.7817442,
+      "osmNodeId": 3458151392,
+      "x": 494.93,
+      "y": 327.67,
+      "kind": "junction",
+      "label": "道路节点 3458151392",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/3458151392"
+    },
+    {
+      "id": "O3458151823",
+      "longitude": 120.6442015,
+      "latitude": 27.7813972,
+      "osmNodeId": 3458151823,
+      "x": 459.1,
+      "y": 338.08,
+      "kind": "junction",
+      "label": "道路节点 3458151823",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/3458151823"
+    },
+    {
+      "id": "O3458151830",
+      "longitude": 120.6441827,
+      "latitude": 27.7806989,
+      "osmNodeId": 3458151830,
+      "x": 458.45,
+      "y": 359.03,
+      "kind": "junction",
+      "label": "道路节点 3458151830",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/3458151830"
+    },
+    {
+      "id": "O3458151831",
+      "longitude": 120.6439867,
+      "latitude": 27.7813207,
+      "osmNodeId": 3458151831,
+      "x": 451.64,
+      "y": 340.38,
+      "kind": "junction",
+      "label": "道路节点 3458151831",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/3458151831"
+    },
+    {
+      "id": "O3461903671",
+      "longitude": 120.6412224,
+      "latitude": 27.777728,
+      "osmNodeId": 3461903671,
+      "x": 355.62,
+      "y": 448.16,
+      "kind": "junction",
+      "label": "道路节点 3461903671",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/3461903671"
+    },
+    {
+      "id": "O3461903687",
+      "longitude": 120.6464802,
+      "latitude": 27.7789964,
+      "osmNodeId": 3461903687,
+      "x": 538.26,
+      "y": 410.11,
+      "kind": "junction",
+      "label": "道路节点 3461903687",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/3461903687"
+    },
+    {
+      "id": "O3461903693",
+      "longitude": 120.6359982,
+      "latitude": 27.7799266,
+      "osmNodeId": 3461903693,
+      "x": 174.15,
+      "y": 382.2,
+      "kind": "junction",
+      "label": "道路节点 3461903693",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/3461903693"
+    },
+    {
+      "id": "O3461903695",
+      "longitude": 120.6388231,
+      "latitude": 27.7788877,
+      "osmNodeId": 3461903695,
+      "x": 272.28,
+      "y": 413.37,
+      "kind": "junction",
+      "label": "道路节点 3461903695",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/3461903695"
+    },
+    {
+      "id": "O5306991165",
+      "longitude": 120.6428953,
+      "latitude": 27.7796414,
+      "osmNodeId": 5306991165,
+      "x": 413.73,
+      "y": 390.76,
+      "kind": "junction",
+      "label": "道路节点 5306991165",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991165"
+    },
+    {
+      "id": "O5306991169",
+      "longitude": 120.6424241,
+      "latitude": 27.7790792,
+      "osmNodeId": 5306991169,
+      "x": 397.36,
+      "y": 407.62,
+      "kind": "junction",
+      "label": "道路节点 5306991169",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991169"
+    },
+    {
+      "id": "O5306991170",
+      "longitude": 120.6425857,
+      "latitude": 27.7797275,
+      "osmNodeId": 5306991170,
+      "x": 402.98,
+      "y": 388.18,
+      "kind": "junction",
+      "label": "道路节点 5306991170",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991170"
+    },
+    {
+      "id": "H5",
+      "longitude": 120.6456327,
+      "latitude": 27.77919,
+      "osmNodeId": 5306991173,
+      "x": 508.82,
+      "y": 404.3,
+      "kind": "home",
+      "label": "演练集合点 5",
+      "businessUse": "synthetic",
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991173"
+    },
+    {
+      "id": "O5306991174",
+      "longitude": 120.6429153,
+      "latitude": 27.7802924,
+      "osmNodeId": 5306991174,
+      "x": 414.43,
+      "y": 371.23,
+      "kind": "junction",
+      "label": "道路节点 5306991174",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991174"
+    },
+    {
+      "id": "O5306991178",
+      "longitude": 120.6435661,
+      "latitude": 27.7802211,
+      "osmNodeId": 5306991178,
+      "x": 437.03,
+      "y": 373.37,
+      "kind": "junction",
+      "label": "道路节点 5306991178",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991178"
+    },
+    {
+      "id": "O5306991179",
+      "longitude": 120.6431893,
+      "latitude": 27.7793727,
+      "osmNodeId": 5306991179,
+      "x": 423.94,
+      "y": 398.82,
+      "kind": "junction",
+      "label": "道路节点 5306991179",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991179"
+    },
+    {
+      "id": "O5306991181",
+      "longitude": 120.6437498,
+      "latitude": 27.7802579,
+      "osmNodeId": 5306991181,
+      "x": 443.41,
+      "y": 372.26,
+      "kind": "junction",
+      "label": "道路节点 5306991181",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991181"
+    },
+    {
+      "id": "O5306991182",
+      "longitude": 120.6447905,
+      "latitude": 27.7813127,
+      "osmNodeId": 5306991182,
+      "x": 479.56,
+      "y": 340.62,
+      "kind": "junction",
+      "label": "道路节点 5306991182",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991182"
+    },
+    {
+      "id": "O5306991183",
+      "longitude": 120.6447047,
+      "latitude": 27.781213,
+      "osmNodeId": 5306991183,
+      "x": 476.58,
+      "y": 343.61,
+      "kind": "junction",
+      "label": "道路节点 5306991183",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991183"
+    },
+    {
+      "id": "O5306991189",
+      "longitude": 120.6450952,
+      "latitude": 27.781264,
+      "osmNodeId": 5306991189,
+      "x": 490.15,
+      "y": 342.08,
+      "kind": "junction",
+      "label": "道路节点 5306991189",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991189"
+    },
+    {
+      "id": "O5306991190",
+      "longitude": 120.644998,
+      "latitude": 27.7811796,
+      "osmNodeId": 5306991190,
+      "x": 486.77,
+      "y": 344.61,
+      "kind": "junction",
+      "label": "道路节点 5306991190",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991190"
+    },
+    {
+      "id": "O5306991191",
+      "longitude": 120.6439904,
+      "latitude": 27.7801704,
+      "osmNodeId": 5306991191,
+      "x": 451.77,
+      "y": 374.89,
+      "kind": "junction",
+      "label": "道路节点 5306991191",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991191"
+    },
+    {
+      "id": "O5306991193",
+      "longitude": 120.6414799,
+      "latitude": 27.7776123,
+      "osmNodeId": 5306991193,
+      "x": 364.56,
+      "y": 451.63,
+      "kind": "junction",
+      "label": "道路节点 5306991193",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991193"
+    },
+    {
+      "id": "O5306991207",
+      "longitude": 120.6440945,
+      "latitude": 27.7812027,
+      "osmNodeId": 5306991207,
+      "x": 455.39,
+      "y": 343.92,
+      "kind": "junction",
+      "label": "道路节点 5306991207",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991207"
+    },
+    {
+      "id": "O5306991212",
+      "longitude": 120.6436318,
+      "latitude": 27.7803042,
+      "osmNodeId": 5306991212,
+      "x": 439.32,
+      "y": 370.87,
+      "kind": "junction",
+      "label": "道路节点 5306991212",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991212"
+    },
+    {
+      "id": "O5306991214",
+      "longitude": 120.6429747,
+      "latitude": 27.7796183,
+      "osmNodeId": 5306991214,
+      "x": 416.49,
+      "y": 391.45,
+      "kind": "junction",
+      "label": "道路节点 5306991214",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991214"
+    },
+    {
+      "id": "O5306991215",
+      "longitude": 120.6417945,
+      "latitude": 27.7784626,
+      "osmNodeId": 5306991215,
+      "x": 375.49,
+      "y": 426.12,
+      "kind": "junction",
+      "label": "道路节点 5306991215",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991215"
+    },
+    {
+      "id": "O5306991217",
+      "longitude": 120.6430323,
+      "latitude": 27.7795471,
+      "osmNodeId": 5306991217,
+      "x": 418.49,
+      "y": 393.59,
+      "kind": "junction",
+      "label": "道路节点 5306991217",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991217"
+    },
+    {
+      "id": "O5306991218",
+      "longitude": 120.6481755,
+      "latitude": 27.7793478,
+      "osmNodeId": 5306991218,
+      "x": 597.15,
+      "y": 399.57,
+      "kind": "junction",
+      "label": "道路节点 5306991218",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991218"
+    },
+    {
+      "id": "O5306991219",
+      "longitude": 120.6448361,
+      "latitude": 27.7799173,
+      "osmNodeId": 5306991219,
+      "x": 481.15,
+      "y": 382.48,
+      "kind": "junction",
+      "label": "道路节点 5306991219",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991219"
+    },
+    {
+      "id": "O5306991223",
+      "longitude": 120.6378279,
+      "latitude": 27.7812028,
+      "osmNodeId": 5306991223,
+      "x": 237.71,
+      "y": 343.92,
+      "kind": "junction",
+      "label": "道路节点 5306991223",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991223"
+    },
+    {
+      "id": "O5306991224",
+      "longitude": 120.637726,
+      "latitude": 27.7812273,
+      "osmNodeId": 5306991224,
+      "x": 234.17,
+      "y": 343.18,
+      "kind": "junction",
+      "label": "道路节点 5306991224",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991224"
+    },
+    {
+      "id": "O5306991225",
+      "longitude": 120.6351909,
+      "latitude": 27.7817351,
+      "osmNodeId": 5306991225,
+      "x": 146.1,
+      "y": 327.95,
+      "kind": "junction",
+      "label": "道路节点 5306991225",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991225"
+    },
+    {
+      "id": "O5306991227",
+      "longitude": 120.6350751,
+      "latitude": 27.7886232,
+      "osmNodeId": 5306991227,
+      "x": 142.08,
+      "y": 121.3,
+      "kind": "junction",
+      "label": "道路节点 5306991227",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991227"
+    },
+    {
+      "id": "O5306991279",
+      "longitude": 120.6333559,
+      "latitude": 27.7849793,
+      "osmNodeId": 5306991279,
+      "x": 82.36,
+      "y": 230.62,
+      "kind": "junction",
+      "label": "道路节点 5306991279",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991279"
+    },
+    {
+      "id": "O5306991280",
+      "longitude": 120.6342516,
+      "latitude": 27.7869558,
+      "osmNodeId": 5306991280,
+      "x": 113.48,
+      "y": 171.33,
+      "kind": "junction",
+      "label": "道路节点 5306991280",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991280"
+    },
+    {
+      "id": "H1",
+      "longitude": 120.6350278,
+      "latitude": 27.788427,
+      "osmNodeId": 5306991281,
+      "x": 140.44,
+      "y": 127.19,
+      "kind": "home",
+      "label": "演练集合点 1",
+      "businessUse": "synthetic",
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991281"
+    },
+    {
+      "id": "O5306991287",
+      "longitude": 120.6371785,
+      "latitude": 27.7836468,
+      "osmNodeId": 5306991287,
+      "x": 215.15,
+      "y": 270.6,
+      "kind": "junction",
+      "label": "道路节点 5306991287",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991287"
+    },
+    {
+      "id": "O5306991290",
+      "longitude": 120.6362953,
+      "latitude": 27.7862985,
+      "osmNodeId": 5306991290,
+      "x": 184.47,
+      "y": 191.04,
+      "kind": "junction",
+      "label": "道路节点 5306991290",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991290"
+    },
+    {
+      "id": "O5306991292",
+      "longitude": 120.6369826,
+      "latitude": 27.7874009,
+      "osmNodeId": 5306991292,
+      "x": 208.34,
+      "y": 157.97,
+      "kind": "junction",
+      "label": "道路节点 5306991292",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991292"
+    },
+    {
+      "id": "O5306991293",
+      "longitude": 120.6368127,
+      "latitude": 27.7872833,
+      "osmNodeId": 5306991293,
+      "x": 202.44,
+      "y": 161.5,
+      "kind": "junction",
+      "label": "道路节点 5306991293",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991293"
+    },
+    {
+      "id": "O5306991296",
+      "longitude": 120.6357954,
+      "latitude": 27.7842245,
+      "osmNodeId": 5306991296,
+      "x": 167.1,
+      "y": 253.27,
+      "kind": "junction",
+      "label": "道路节点 5306991296",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991296"
+    },
+    {
+      "id": "O5306991298",
+      "longitude": 120.6393113,
+      "latitude": 27.7838592,
+      "osmNodeId": 5306991298,
+      "x": 289.23,
+      "y": 264.22,
+      "kind": "junction",
+      "label": "道路节点 5306991298",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991298"
+    },
+    {
+      "id": "O5306991299",
+      "longitude": 120.6387095,
+      "latitude": 27.7829825,
+      "osmNodeId": 5306991299,
+      "x": 268.33,
+      "y": 290.53,
+      "kind": "junction",
+      "label": "道路节点 5306991299",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991299"
+    },
+    {
+      "id": "O5306991300",
+      "longitude": 120.638654,
+      "latitude": 27.7828456,
+      "osmNodeId": 5306991300,
+      "x": 266.4,
+      "y": 294.63,
+      "kind": "junction",
+      "label": "道路节点 5306991300",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991300"
+    },
+    {
+      "id": "H6",
+      "longitude": 120.6365059,
+      "latitude": 27.7797536,
+      "osmNodeId": 5306991307,
+      "x": 191.78,
+      "y": 387.39,
+      "kind": "home",
+      "label": "演练集合点 6",
+      "businessUse": "synthetic",
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991307"
+    },
+    {
+      "id": "O5306991318",
+      "longitude": 120.633591,
+      "latitude": 27.7788225,
+      "osmNodeId": 5306991318,
+      "x": 90.53,
+      "y": 415.33,
+      "kind": "junction",
+      "label": "道路节点 5306991318",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991318"
+    },
+    {
+      "id": "O5306991333",
+      "longitude": 120.6337181,
+      "latitude": 27.7770188,
+      "osmNodeId": 5306991333,
+      "x": 94.94,
+      "y": 469.44,
+      "kind": "junction",
+      "label": "道路节点 5306991333",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991333"
+    },
+    {
+      "id": "O5306991345",
+      "longitude": 120.6345669,
+      "latitude": 27.7785843,
+      "osmNodeId": 5306991345,
+      "x": 124.43,
+      "y": 422.47,
+      "kind": "junction",
+      "label": "道路节点 5306991345",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991345"
+    },
+    {
+      "id": "O5306991451",
+      "longitude": 120.6387903,
+      "latitude": 27.7827898,
+      "osmNodeId": 5306991451,
+      "x": 271.14,
+      "y": 296.31,
+      "kind": "junction",
+      "label": "道路节点 5306991451",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991451"
+    },
+    {
+      "id": "O5306991452",
+      "longitude": 120.6388492,
+      "latitude": 27.7829145,
+      "osmNodeId": 5306991452,
+      "x": 273.18,
+      "y": 292.57,
+      "kind": "junction",
+      "label": "道路节点 5306991452",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991452"
+    },
+    {
+      "id": "O5306991453",
+      "longitude": 120.6394322,
+      "latitude": 27.7837895,
+      "osmNodeId": 5306991453,
+      "x": 293.43,
+      "y": 266.31,
+      "kind": "junction",
+      "label": "道路节点 5306991453",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991453"
+    },
+    {
+      "id": "O5306991454",
+      "longitude": 120.6396433,
+      "latitude": 27.7838384,
+      "osmNodeId": 5306991454,
+      "x": 300.77,
+      "y": 264.85,
+      "kind": "junction",
+      "label": "道路节点 5306991454",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991454"
+    },
+    {
+      "id": "H3",
+      "longitude": 120.6470796,
+      "latitude": 27.7845579,
+      "osmNodeId": 5306991457,
+      "x": 559.08,
+      "y": 243.26,
+      "kind": "home",
+      "label": "演练集合点 3",
+      "businessUse": "synthetic",
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991457"
+    },
+    {
+      "id": "O5306991460",
+      "longitude": 120.639264,
+      "latitude": 27.7840604,
+      "osmNodeId": 5306991460,
+      "x": 287.59,
+      "y": 258.19,
+      "kind": "junction",
+      "label": "道路节点 5306991460",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991460"
+    },
+    {
+      "id": "O5306991464",
+      "longitude": 120.6475284,
+      "latitude": 27.784372,
+      "osmNodeId": 5306991464,
+      "x": 574.67,
+      "y": 248.84,
+      "kind": "junction",
+      "label": "道路节点 5306991464",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991464"
+    },
+    {
+      "id": "D",
+      "longitude": 120.6362826,
+      "latitude": 27.7839373,
+      "osmNodeId": 5306991466,
+      "x": 184.03,
+      "y": 261.88,
+      "kind": "depot",
+      "label": "演练车辆集结点",
+      "businessUse": "synthetic",
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991466"
+    },
+    {
+      "id": "O5306991467",
+      "longitude": 120.6357723,
+      "latitude": 27.7841332,
+      "osmNodeId": 5306991467,
+      "x": 166.3,
+      "y": 256.0,
+      "kind": "junction",
+      "label": "道路节点 5306991467",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991467"
+    },
+    {
+      "id": "O5306991469",
+      "longitude": 120.6333053,
+      "latitude": 27.784858,
+      "osmNodeId": 5306991469,
+      "x": 80.61,
+      "y": 234.26,
+      "kind": "junction",
+      "label": "道路节点 5306991469",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991469"
+    },
+    {
+      "id": "O5306991483",
+      "longitude": 120.6394703,
+      "latitude": 27.7841888,
+      "osmNodeId": 5306991483,
+      "x": 294.76,
+      "y": 254.34,
+      "kind": "junction",
+      "label": "道路节点 5306991483",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991483"
+    },
+    {
+      "id": "H2",
+      "longitude": 120.6384659,
+      "latitude": 27.786315,
+      "osmNodeId": 5306991484,
+      "x": 259.87,
+      "y": 190.55,
+      "kind": "home",
+      "label": "演练集合点 2",
+      "businessUse": "synthetic",
+      "sourceUrl": "https://www.openstreetmap.org/node/5306991484"
+    },
+    {
+      "id": "H4",
+      "longitude": 120.6475029,
+      "latitude": 27.784154,
+      "osmNodeId": 6233434069,
+      "x": 573.78,
+      "y": 255.38,
+      "kind": "home",
+      "label": "演练集合点 4",
+      "businessUse": "synthetic",
+      "sourceUrl": "https://www.openstreetmap.org/node/6233434069"
+    },
+    {
+      "id": "S2",
+      "longitude": 120.6473824,
+      "latitude": 27.7845418,
+      "osmNodeId": 6233434070,
+      "x": 569.6,
+      "y": 243.75,
+      "kind": "shelter",
+      "label": "演练接收点 B",
+      "businessUse": "synthetic",
+      "sourceUrl": "https://www.openstreetmap.org/node/6233434070"
+    },
+    {
+      "id": "O8057904982",
+      "longitude": 120.6354817,
+      "latitude": 27.7798581,
+      "osmNodeId": 8057904982,
+      "x": 156.21,
+      "y": 384.26,
+      "kind": "junction",
+      "label": "道路节点 8057904982",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/8057904982"
+    },
+    {
+      "id": "O8057918190",
+      "longitude": 120.6333241,
+      "latitude": 27.7798918,
+      "osmNodeId": 8057918190,
+      "x": 81.26,
+      "y": 383.25,
+      "kind": "junction",
+      "label": "道路节点 8057918190",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/8057918190"
+    },
+    {
+      "id": "O8057918191",
+      "longitude": 120.6338981,
+      "latitude": 27.7797847,
+      "osmNodeId": 8057918191,
+      "x": 101.2,
+      "y": 386.46,
+      "kind": "junction",
+      "label": "道路节点 8057918191",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/8057918191"
+    },
+    {
+      "id": "O9187568600",
+      "longitude": 120.648871,
+      "latitude": 27.7807573,
+      "osmNodeId": 9187568600,
+      "x": 621.31,
+      "y": 357.28,
+      "kind": "junction",
+      "label": "道路节点 9187568600",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/9187568600"
+    },
+    {
+      "id": "O9187568602",
+      "longitude": 120.6509972,
+      "latitude": 27.7831162,
+      "osmNodeId": 9187568602,
+      "x": 695.17,
+      "y": 286.51,
+      "kind": "junction",
+      "label": "道路节点 9187568602",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/9187568602"
+    },
+    {
+      "id": "O9187568616",
+      "longitude": 120.6377274,
+      "latitude": 27.7809104,
+      "osmNodeId": 9187568616,
+      "x": 234.21,
+      "y": 352.69,
+      "kind": "junction",
+      "label": "道路节点 9187568616",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/9187568616"
+    },
+    {
+      "id": "O9187568617",
+      "longitude": 120.6376112,
+      "latitude": 27.780924,
+      "osmNodeId": 9187568617,
+      "x": 230.18,
+      "y": 352.28,
+      "kind": "junction",
+      "label": "道路节点 9187568617",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/9187568617"
+    },
+    {
+      "id": "O9187568620",
+      "longitude": 120.6414163,
+      "latitude": 27.780036,
+      "osmNodeId": 9187568620,
+      "x": 362.36,
+      "y": 378.92,
+      "kind": "junction",
+      "label": "道路节点 9187568620",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/9187568620"
+    },
+    {
+      "id": "S1",
+      "longitude": 120.6401557,
+      "latitude": 27.7794356,
+      "osmNodeId": 9187568622,
+      "x": 318.57,
+      "y": 396.93,
+      "kind": "shelter",
+      "label": "演练接收点 A",
+      "businessUse": "synthetic",
+      "sourceUrl": "https://www.openstreetmap.org/node/9187568622"
+    },
+    {
+      "id": "O9187568625",
+      "longitude": 120.6424045,
+      "latitude": 27.7791831,
+      "osmNodeId": 9187568625,
+      "x": 396.68,
+      "y": 404.51,
+      "kind": "junction",
+      "label": "道路节点 9187568625",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/9187568625"
+    },
+    {
+      "id": "O9187568631",
+      "longitude": 120.6408289,
+      "latitude": 27.7793881,
+      "osmNodeId": 9187568631,
+      "x": 341.95,
+      "y": 398.36,
+      "kind": "junction",
+      "label": "道路节点 9187568631",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/9187568631"
+    },
+    {
+      "id": "O9187568633",
+      "longitude": 120.6408799,
+      "latitude": 27.7801641,
+      "osmNodeId": 9187568633,
+      "x": 343.72,
+      "y": 375.08,
+      "kind": "junction",
+      "label": "道路节点 9187568633",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/9187568633"
+    },
+    {
+      "id": "O9187568634",
+      "longitude": 120.6410093,
+      "latitude": 27.7807211,
+      "osmNodeId": 9187568634,
+      "x": 348.22,
+      "y": 358.37,
+      "kind": "junction",
+      "label": "道路节点 9187568634",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/9187568634"
+    },
+    {
+      "id": "O9187568868",
+      "longitude": 120.6467244,
+      "latitude": 27.7772595,
+      "osmNodeId": 9187568868,
+      "x": 546.74,
+      "y": 462.22,
+      "kind": "junction",
+      "label": "道路节点 9187568868",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/9187568868"
+    },
+    {
+      "id": "O9187568871",
+      "longitude": 120.6486099,
+      "latitude": 27.7785603,
+      "osmNodeId": 9187568871,
+      "x": 612.24,
+      "y": 423.19,
+      "kind": "junction",
+      "label": "道路节点 9187568871",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/9187568871"
+    },
+    {
+      "id": "O9187568872",
+      "longitude": 120.6485044,
+      "latitude": 27.7785745,
+      "osmNodeId": 9187568872,
+      "x": 608.57,
+      "y": 422.76,
+      "kind": "junction",
+      "label": "道路节点 9187568872",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/9187568872"
+    },
+    {
+      "id": "O9187568873",
+      "longitude": 120.6477061,
+      "latitude": 27.7787284,
+      "osmNodeId": 9187568873,
+      "x": 580.84,
+      "y": 418.15,
+      "kind": "junction",
+      "label": "道路节点 9187568873",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/9187568873"
+    },
+    {
+      "id": "O9187568878",
+      "longitude": 120.6471589,
+      "latitude": 27.7778599,
+      "osmNodeId": 9187568878,
+      "x": 561.84,
+      "y": 444.2,
+      "kind": "junction",
+      "label": "道路节点 9187568878",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/9187568878"
+    },
+    {
+      "id": "O9187568880",
+      "longitude": 120.645968,
+      "latitude": 27.7783482,
+      "osmNodeId": 9187568880,
+      "x": 520.47,
+      "y": 429.55,
+      "kind": "junction",
+      "label": "道路节点 9187568880",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/9187568880"
+    },
+    {
+      "id": "O11936844070",
+      "longitude": 120.645547,
+      "latitude": 27.7811993,
+      "osmNodeId": 11936844070,
+      "x": 505.84,
+      "y": 344.02,
+      "kind": "junction",
+      "label": "道路节点 11936844070",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/11936844070"
+    },
+    {
+      "id": "O11936844071",
+      "longitude": 120.6457571,
+      "latitude": 27.7810737,
+      "osmNodeId": 11936844071,
+      "x": 513.14,
+      "y": 347.79,
+      "kind": "junction",
+      "label": "道路节点 11936844071",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/11936844071"
+    },
+    {
+      "id": "O11936844072",
+      "longitude": 120.6455235,
+      "latitude": 27.7811063,
+      "osmNodeId": 11936844072,
+      "x": 505.03,
+      "y": 346.81,
+      "kind": "junction",
+      "label": "道路节点 11936844072",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/11936844072"
+    },
+    {
+      "id": "O11939960269",
+      "longitude": 120.6453182,
+      "latitude": 27.7798168,
+      "osmNodeId": 11939960269,
+      "x": 497.9,
+      "y": 385.5,
+      "kind": "junction",
+      "label": "道路节点 11939960269",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/11939960269"
+    },
+    {
+      "id": "O11999276309",
+      "longitude": 120.645218,
+      "latitude": 27.7792537,
+      "osmNodeId": 11999276309,
+      "x": 494.41,
+      "y": 402.39,
+      "kind": "junction",
+      "label": "道路节点 11999276309",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/11999276309"
+    },
+    {
+      "id": "O11999276310",
+      "longitude": 120.6408889,
+      "latitude": 27.7801933,
+      "osmNodeId": 11999276310,
+      "x": 344.04,
+      "y": 374.2,
+      "kind": "junction",
+      "label": "道路节点 11999276310",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/11999276310"
+    },
+    {
+      "id": "O11999276311",
+      "longitude": 120.6409623,
+      "latitude": 27.7805384,
+      "osmNodeId": 11999276311,
+      "x": 346.59,
+      "y": 363.85,
+      "kind": "junction",
+      "label": "道路节点 11999276311",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/11999276311"
+    },
+    {
+      "id": "O11999276312",
+      "longitude": 120.6485192,
+      "latitude": 27.7787022,
+      "osmNodeId": 11999276312,
+      "x": 609.09,
+      "y": 418.93,
+      "kind": "junction",
+      "label": "道路节点 11999276312",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/11999276312"
+    },
+    {
+      "id": "O11999276313",
+      "longitude": 120.6486227,
+      "latitude": 27.7786816,
+      "osmNodeId": 11999276313,
+      "x": 612.68,
+      "y": 419.55,
+      "kind": "junction",
+      "label": "道路节点 11999276313",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/11999276313"
+    },
+    {
+      "id": "O11999276314",
+      "longitude": 120.6485853,
+      "latitude": 27.7791329,
+      "osmNodeId": 11999276314,
+      "x": 611.38,
+      "y": 406.01,
+      "kind": "junction",
+      "label": "道路节点 11999276314",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/11999276314"
+    },
+    {
+      "id": "O11999276315",
+      "longitude": 120.6486996,
+      "latitude": 27.7791194,
+      "osmNodeId": 11999276315,
+      "x": 615.35,
+      "y": 406.42,
+      "kind": "junction",
+      "label": "道路节点 11999276315",
+      "businessUse": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/11999276315"
+    }
+  ],
+  "edges": [
+    {
+      "id": "osm-1287029335-0",
+      "from": "O11936844072",
+      "to": "O11936844071",
+      "label": "万松东路",
+      "highway": "primary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 23.27,
+      "geometry": [
+        [
+          120.6455235,
+          27.7811063
+        ],
+        [
+          120.6457571,
+          27.7810737
+        ]
+      ],
+      "osmWayIds": [
+        1287029335
+      ],
+      "osmNodeIds": [
+        11936844072,
+        11936844071
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/1287029335",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-1287029336-0",
+      "from": "O5306991300",
+      "to": "O5306991451",
+      "label": "万松东路",
+      "highway": "primary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 14.77,
+      "geometry": [
+        [
+          120.638654,
+          27.7828456
+        ],
+        [
+          120.6387903,
+          27.7827898
+        ]
+      ],
+      "osmWayIds": [
+        1287029336
+      ],
+      "osmNodeIds": [
+        5306991300,
+        5306991451
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/1287029336",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-1287029336-1",
+      "from": "O5306991451",
+      "to": "O3458145817",
+      "label": "万松东路",
+      "highway": "primary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 2,
+      "lengthMeters": 274.96,
+      "geometry": [
+        [
+          120.6387903,
+          27.7827898
+        ],
+        [
+          120.6409733,
+          27.7818447
+        ],
+        [
+          120.641301,
+          27.7817032
+        ]
+      ],
+      "osmWayIds": [
+        1287029336
+      ],
+      "osmNodeIds": [
+        5306991451,
+        3458145803,
+        3458145817
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/1287029336",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-1287029336-3",
+      "from": "O3458145817",
+      "to": "O3458151831",
+      "label": "万松东路",
+      "highway": "primary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 2,
+      "lengthMeters": 267.62,
+      "geometry": [
+        [
+          120.641301,
+          27.7817032
+        ],
+        [
+          120.6418402,
+          27.7816202
+        ],
+        [
+          120.6439867,
+          27.7813207
+        ]
+      ],
+      "osmWayIds": [
+        1287029336
+      ],
+      "osmNodeIds": [
+        3458145817,
+        3458145814,
+        3458151831
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/1287029336",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-1287029336-5",
+      "from": "O3458151831",
+      "to": "O5306991183",
+      "label": "万松东路",
+      "highway": "primary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 71.64,
+      "geometry": [
+        [
+          120.6439867,
+          27.7813207
+        ],
+        [
+          120.6447047,
+          27.781213
+        ]
+      ],
+      "osmWayIds": [
+        1287029336
+      ],
+      "osmNodeIds": [
+        3458151831,
+        5306991183
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/1287029336",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-1287029336-6",
+      "from": "O5306991183",
+      "to": "O5306991190",
+      "label": "万松东路",
+      "highway": "primary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 29.09,
+      "geometry": [
+        [
+          120.6447047,
+          27.781213
+        ],
+        [
+          120.644998,
+          27.7811796
+        ]
+      ],
+      "osmWayIds": [
+        1287029336
+      ],
+      "osmNodeIds": [
+        5306991183,
+        5306991190
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/1287029336",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-1287029336-7",
+      "from": "O5306991190",
+      "to": "O11936844072",
+      "label": "万松东路",
+      "highway": "primary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 52.34,
+      "geometry": [
+        [
+          120.644998,
+          27.7811796
+        ],
+        [
+          120.6455235,
+          27.7811063
+        ]
+      ],
+      "osmWayIds": [
+        1287029336
+      ],
+      "osmNodeIds": [
+        5306991190,
+        11936844072
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/1287029336",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-1287029337-0",
+      "from": "O3458145812",
+      "to": "O11936844070",
+      "label": "万松东路",
+      "highway": "primary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 24.0,
+      "geometry": [
+        [
+          120.6457878,
+          27.7811648
+        ],
+        [
+          120.645547,
+          27.7811993
+        ]
+      ],
+      "osmWayIds": [
+        1287029337
+      ],
+      "osmNodeIds": [
+        3458145812,
+        11936844070
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/1287029337",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-1287029338-0",
+      "from": "O11936844070",
+      "to": "O5306991189",
+      "label": "万松东路",
+      "highway": "primary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 45.03,
+      "geometry": [
+        [
+          120.645547,
+          27.7811993
+        ],
+        [
+          120.6450952,
+          27.781264
+        ]
+      ],
+      "osmWayIds": [
+        1287029338
+      ],
+      "osmNodeIds": [
+        11936844070,
+        5306991189
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/1287029338",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-1287029338-1",
+      "from": "O5306991189",
+      "to": "O5306991182",
+      "label": "万松东路",
+      "highway": "primary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 30.46,
+      "geometry": [
+        [
+          120.6450952,
+          27.781264
+        ],
+        [
+          120.6447905,
+          27.7813127
+        ]
+      ],
+      "osmWayIds": [
+        1287029338
+      ],
+      "osmNodeIds": [
+        5306991189,
+        5306991182
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/1287029338",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-1287029338-2",
+      "from": "O5306991182",
+      "to": "O3458151823",
+      "label": "万松东路",
+      "highway": "primary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 58.7,
+      "geometry": [
+        [
+          120.6447905,
+          27.7813127
+        ],
+        [
+          120.6442015,
+          27.7813972
+        ]
+      ],
+      "osmWayIds": [
+        1287029338
+      ],
+      "osmNodeIds": [
+        5306991182,
+        3458151823
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/1287029338",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-1287029338-3",
+      "from": "O3458151823",
+      "to": "O3458145819",
+      "label": "万松东路",
+      "highway": "primary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 2,
+      "lengthMeters": 284.76,
+      "geometry": [
+        [
+          120.6442015,
+          27.7813972
+        ],
+        [
+          120.6440015,
+          27.781427
+        ],
+        [
+          120.641845,
+          27.7817213
+        ],
+        [
+          120.6413435,
+          27.7818019
+        ]
+      ],
+      "osmWayIds": [
+        1287029338
+      ],
+      "osmNodeIds": [
+        3458151823,
+        3458145806,
+        3458145808,
+        3458145819
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/1287029338",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-1287029338-6",
+      "from": "O3458145819",
+      "to": "O5306991452",
+      "label": "万松东路",
+      "highway": "primary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 2,
+      "lengthMeters": 274.81,
+      "geometry": [
+        [
+          120.6413435,
+          27.7818019
+        ],
+        [
+          120.6410189,
+          27.7819539
+        ],
+        [
+          120.6388492,
+          27.7829145
+        ]
+      ],
+      "osmWayIds": [
+        1287029338
+      ],
+      "osmNodeIds": [
+        3458145819,
+        3458145811,
+        5306991452
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/1287029338",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-1287029338-8",
+      "from": "O5306991452",
+      "to": "O5306991299",
+      "label": "万松东路",
+      "highway": "primary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 15.69,
+      "geometry": [
+        [
+          120.6388492,
+          27.7829145
+        ],
+        [
+          120.6387095,
+          27.7829825
+        ]
+      ],
+      "osmWayIds": [
+        1287029338
+      ],
+      "osmNodeIds": [
+        5306991452,
+        5306991299
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/1287029338",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-1287425382-0",
+      "from": "O5306991218",
+      "to": "O11939960269",
+      "label": "未命名道路",
+      "highway": "tertiary",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 2,
+      "lengthMeters": 285.9,
+      "geometry": [
+        [
+          120.6481755,
+          27.7793478
+        ],
+        [
+          120.6453182,
+          27.7798168
+        ]
+      ],
+      "osmWayIds": [
+        1287425382
+      ],
+      "osmNodeIds": [
+        5306991218,
+        11939960269
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/1287425382",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-1287425383-0",
+      "from": "O5306991219",
+      "to": "O11939960269",
+      "label": "未命名道路",
+      "highway": "tertiary",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 48.73,
+      "geometry": [
+        [
+          120.6448361,
+          27.7799173
+        ],
+        [
+          120.6453182,
+          27.7798168
+        ]
+      ],
+      "osmWayIds": [
+        1287425383
+      ],
+      "osmNodeIds": [
+        5306991219,
+        11939960269
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/1287425383",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-1294774630-0",
+      "from": "O11936844071",
+      "to": "O3458145804",
+      "label": "万松东路",
+      "highway": "primary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 2,
+      "lengthMeters": 301.75,
+      "geometry": [
+        [
+          120.6457571,
+          27.7810737
+        ],
+        [
+          120.6471022,
+          27.780886
+        ],
+        [
+          120.6487914,
+          27.7806779
+        ]
+      ],
+      "osmWayIds": [
+        1294774630
+      ],
+      "osmNodeIds": [
+        11936844071,
+        3458145802,
+        3458145804
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/1294774630",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-1294774630-2",
+      "from": "O3458145804",
+      "to": "O3458145822",
+      "label": "万松东路",
+      "highway": "primary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 10.9,
+      "geometry": [
+        [
+          120.6487914,
+          27.7806779
+        ],
+        [
+          120.6489009,
+          27.7806627
+        ]
+      ],
+      "osmWayIds": [
+        1294774630
+      ],
+      "osmNodeIds": [
+        3458145804,
+        3458145822
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/1294774630",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-1294774631-2",
+      "from": "O3458135061",
+      "to": "O9187568600",
+      "label": "万松东路",
+      "highway": "primary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 4.38,
+      "geometry": [
+        [
+          120.6489153,
+          27.7807531
+        ],
+        [
+          120.648871,
+          27.7807573
+        ]
+      ],
+      "osmWayIds": [
+        1294774631
+      ],
+      "osmNodeIds": [
+        3458135061,
+        9187568600
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/1294774631",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-1294774631-3",
+      "from": "O9187568600",
+      "to": "O3458135047",
+      "label": "万松东路",
+      "highway": "primary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 6.32,
+      "geometry": [
+        [
+          120.648871,
+          27.7807573
+        ],
+        [
+          120.6488075,
+          27.7807659
+        ]
+      ],
+      "osmWayIds": [
+        1294774631
+      ],
+      "osmNodeIds": [
+        9187568600,
+        3458135047
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/1294774631",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-1294774631-4",
+      "from": "O3458135047",
+      "to": "O3458145812",
+      "label": "万松东路",
+      "highway": "primary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 2,
+      "lengthMeters": 300.39,
+      "geometry": [
+        [
+          120.6488075,
+          27.7807659
+        ],
+        [
+          120.6471129,
+          27.7809714
+        ],
+        [
+          120.6457878,
+          27.7811648
+        ]
+      ],
+      "osmWayIds": [
+        1294774631
+      ],
+      "osmNodeIds": [
+        3458135047,
+        3458145809,
+        3458145812
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/1294774631",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-1294774910-0",
+      "from": "H5",
+      "to": "O11999276309",
+      "label": "未命名道路",
+      "highway": "unclassified",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 41.41,
+      "geometry": [
+        [
+          120.6456327,
+          27.77919
+        ],
+        [
+          120.645218,
+          27.7792537
+        ]
+      ],
+      "osmWayIds": [
+        1294774910
+      ],
+      "osmNodeIds": [
+        5306991173,
+        11999276309
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/1294774910",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-1294774911-0",
+      "from": "O5306991165",
+      "to": "O11999276309",
+      "label": "未命名道路",
+      "highway": "unclassified",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 232.61,
+      "geometry": [
+        [
+          120.6428953,
+          27.7796414
+        ],
+        [
+          120.6438115,
+          27.7794641
+        ],
+        [
+          120.6441253,
+          27.7794214
+        ],
+        [
+          120.645218,
+          27.7792537
+        ]
+      ],
+      "osmWayIds": [
+        1294774911
+      ],
+      "osmNodeIds": [
+        5306991165,
+        5306991171,
+        5306991172,
+        11999276309
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/1294774911",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-1294774911-3",
+      "from": "O5306991165",
+      "to": "O5306991170",
+      "label": "未命名道路",
+      "highway": "unclassified",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 31.93,
+      "geometry": [
+        [
+          120.6428953,
+          27.7796414
+        ],
+        [
+          120.6425857,
+          27.7797275
+        ]
+      ],
+      "osmWayIds": [
+        1294774911
+      ],
+      "osmNodeIds": [
+        5306991165,
+        5306991170
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/1294774911",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-1294774912-0",
+      "from": "O11999276310",
+      "to": "O11999276311",
+      "label": "未命名道路",
+      "highway": "unclassified",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 39.05,
+      "geometry": [
+        [
+          120.6408889,
+          27.7801933
+        ],
+        [
+          120.6409623,
+          27.7805384
+        ]
+      ],
+      "osmWayIds": [
+        1294774912
+      ],
+      "osmNodeIds": [
+        11999276310,
+        11999276311
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/1294774912",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-1294774913-0",
+      "from": "O9187568633",
+      "to": "O11999276310",
+      "label": "未命名道路",
+      "highway": "unclassified",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 3.37,
+      "geometry": [
+        [
+          120.6408799,
+          27.7801641
+        ],
+        [
+          120.6408889,
+          27.7801933
+        ]
+      ],
+      "osmWayIds": [
+        1294774913
+      ],
+      "osmNodeIds": [
+        9187568633,
+        11999276310
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/1294774913",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-1294774913-1",
+      "from": "O9187568631",
+      "to": "O9187568633",
+      "label": "未命名道路",
+      "highway": "unclassified",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 86.46,
+      "geometry": [
+        [
+          120.6408289,
+          27.7793881
+        ],
+        [
+          120.640845,
+          27.7797845
+        ],
+        [
+          120.6408799,
+          27.7801641
+        ]
+      ],
+      "osmWayIds": [
+        1294774913
+      ],
+      "osmNodeIds": [
+        9187568631,
+        9187568632,
+        9187568633
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/1294774913",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-1294774914-0",
+      "from": "O11999276314",
+      "to": "O11999276312",
+      "label": "未命名道路",
+      "highway": "secondary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 48.33,
+      "geometry": [
+        [
+          120.6485853,
+          27.7791329
+        ],
+        [
+          120.6485192,
+          27.7787022
+        ]
+      ],
+      "osmWayIds": [
+        1294774914
+      ],
+      "osmNodeIds": [
+        11999276314,
+        11999276312
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/1294774914",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-1294774915-0",
+      "from": "O11999276313",
+      "to": "O11999276315",
+      "label": "未命名道路",
+      "highway": "secondary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 49.27,
+      "geometry": [
+        [
+          120.6486227,
+          27.7786816
+        ],
+        [
+          120.6486996,
+          27.7791194
+        ]
+      ],
+      "osmWayIds": [
+        1294774915
+      ],
+      "osmNodeIds": [
+        11999276313,
+        11999276315
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/1294774915",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-1294774916-0",
+      "from": "O3458135047",
+      "to": "O3458145804",
+      "label": "未命名道路",
+      "highway": "secondary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 9.91,
+      "geometry": [
+        [
+          120.6488075,
+          27.7807659
+        ],
+        [
+          120.6487914,
+          27.7806779
+        ]
+      ],
+      "osmWayIds": [
+        1294774916
+      ],
+      "osmNodeIds": [
+        3458135047,
+        3458145804
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/1294774916",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-1294774916-1",
+      "from": "O3458145804",
+      "to": "O11999276314",
+      "label": "未命名道路",
+      "highway": "secondary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 172.99,
+      "geometry": [
+        [
+          120.6487914,
+          27.7806779
+        ],
+        [
+          120.6485853,
+          27.7791329
+        ]
+      ],
+      "osmWayIds": [
+        1294774916
+      ],
+      "osmNodeIds": [
+        3458145804,
+        11999276314
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/1294774916",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-1294774917-0",
+      "from": "O11999276315",
+      "to": "O3458145822",
+      "label": "未命名道路",
+      "highway": "secondary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 172.75,
+      "geometry": [
+        [
+          120.6486996,
+          27.7791194
+        ],
+        [
+          120.6489009,
+          27.7806627
+        ]
+      ],
+      "osmWayIds": [
+        1294774917
+      ],
+      "osmNodeIds": [
+        11999276315,
+        3458145822
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/1294774917",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-1294774917-1",
+      "from": "O3458145822",
+      "to": "O3458135061",
+      "label": "未命名道路",
+      "highway": "secondary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 10.15,
+      "geometry": [
+        [
+          120.6489009,
+          27.7806627
+        ],
+        [
+          120.6489153,
+          27.7807531
+        ]
+      ],
+      "osmWayIds": [
+        1294774917
+      ],
+      "osmNodeIds": [
+        3458145822,
+        3458135061
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/1294774917",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-1318379204-0",
+      "from": "O9187568634",
+      "to": "O11999276311",
+      "label": "未命名道路",
+      "highway": "unclassified",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 20.83,
+      "geometry": [
+        [
+          120.6410093,
+          27.7807211
+        ],
+        [
+          120.6409623,
+          27.7805384
+        ]
+      ],
+      "osmWayIds": [
+        1318379204
+      ],
+      "osmNodeIds": [
+        9187568634,
+        11999276311
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/1318379204",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-277621411-0",
+      "from": "O5306991483",
+      "to": "H2",
+      "label": "瑞湖路",
+      "highway": "secondary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 2,
+      "lengthMeters": 256.24,
+      "geometry": [
+        [
+          120.6394703,
+          27.7841888
+        ],
+        [
+          120.6384659,
+          27.786315
+        ]
+      ],
+      "osmWayIds": [
+        277621411
+      ],
+      "osmNodeIds": [
+        5306991483,
+        5306991484
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/277621411",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-277621411-1",
+      "from": "H2",
+      "to": "O5306991292",
+      "label": "瑞湖路",
+      "highway": "secondary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 190.53,
+      "geometry": [
+        [
+          120.6384659,
+          27.786315
+        ],
+        [
+          120.638144,
+          27.7866567
+        ],
+        [
+          120.6369826,
+          27.7874009
+        ]
+      ],
+      "osmWayIds": [
+        277621411
+      ],
+      "osmNodeIds": [
+        5306991484,
+        5306991485,
+        5306991292
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/277621411",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-277621411-3",
+      "from": "O5306991292",
+      "to": "O5306991227",
+      "label": "瑞湖路",
+      "highway": "secondary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 231.7,
+      "geometry": [
+        [
+          120.6369826,
+          27.7874009
+        ],
+        [
+          120.6350751,
+          27.7886232
+        ]
+      ],
+      "osmWayIds": [
+        277621411
+      ],
+      "osmNodeIds": [
+        5306991292,
+        5306991227
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/277621411",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-338689106-0",
+      "from": "O11999276312",
+      "to": "O9187568872",
+      "label": "未命名道路",
+      "highway": "secondary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 14.27,
+      "geometry": [
+        [
+          120.6485192,
+          27.7787022
+        ],
+        [
+          120.6485044,
+          27.7785745
+        ]
+      ],
+      "osmWayIds": [
+        338689106
+      ],
+      "osmNodeIds": [
+        11999276312,
+        9187568872
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/338689106",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-338689106-1",
+      "from": "O9187568872",
+      "to": "O3458135305",
+      "label": "未命名道路",
+      "highway": "secondary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 128.19,
+      "geometry": [
+        [
+          120.6485044,
+          27.7785745
+        ],
+        [
+          120.6482716,
+          27.7774402
+        ]
+      ],
+      "osmWayIds": [
+        338689106
+      ],
+      "osmNodeIds": [
+        9187568872,
+        3458135305
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/338689106",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-338689110-20",
+      "from": "O3458135293",
+      "to": "O9187568871",
+      "label": "未命名道路",
+      "highway": "secondary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 130.75,
+      "geometry": [
+        [
+          120.6483789,
+          27.7774023
+        ],
+        [
+          120.6486099,
+          27.7785603
+        ]
+      ],
+      "osmWayIds": [
+        338689110
+      ],
+      "osmNodeIds": [
+        3458135293,
+        9187568871
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/338689110",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-338689110-21",
+      "from": "O9187568871",
+      "to": "O11999276313",
+      "label": "未命名道路",
+      "highway": "secondary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 13.55,
+      "geometry": [
+        [
+          120.6486099,
+          27.7785603
+        ],
+        [
+          120.6486227,
+          27.7786816
+        ]
+      ],
+      "osmWayIds": [
+        338689110
+      ],
+      "osmNodeIds": [
+        9187568871,
+        11999276313
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/338689110",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-338690183-0",
+      "from": "O3458151831",
+      "to": "O5306991207",
+      "label": "未命名道路",
+      "highway": "primary_link",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 16.87,
+      "geometry": [
+        [
+          120.6439867,
+          27.7813207
+        ],
+        [
+          120.6440945,
+          27.7812027
+        ]
+      ],
+      "osmWayIds": [
+        338690183
+      ],
+      "osmNodeIds": [
+        3458151831,
+        5306991207
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/338690183",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-338690183-1",
+      "from": "O5306991207",
+      "to": "O3458151830",
+      "label": "未命名道路",
+      "highway": "primary_link",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 59.29,
+      "geometry": [
+        [
+          120.6440945,
+          27.7812027
+        ],
+        [
+          120.644141,
+          27.7811517
+        ],
+        [
+          120.6442161,
+          27.7809809
+        ],
+        [
+          120.6442161,
+          27.7808765
+        ],
+        [
+          120.6441827,
+          27.7806989
+        ]
+      ],
+      "osmWayIds": [
+        338690183
+      ],
+      "osmNodeIds": [
+        5306991207,
+        3458151796,
+        3458151825,
+        3458151798,
+        3458151830
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/338690183",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-338690185-0",
+      "from": "O3458151392",
+      "to": "O3458151823",
+      "label": "未命名道路",
+      "highway": "primary_link",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 110.89,
+      "geometry": [
+        [
+          120.6452329,
+          27.7817442
+        ],
+        [
+          120.64487,
+          27.7815319
+        ],
+        [
+          120.6447204,
+          27.781465
+        ],
+        [
+          120.6445165,
+          27.7814365
+        ],
+        [
+          120.6442015,
+          27.7813972
+        ]
+      ],
+      "osmWayIds": [
+        338690185
+      ],
+      "osmNodeIds": [
+        3458151392,
+        3458151810,
+        3458151805,
+        3458151820,
+        3458151823
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/338690185",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-339005819-0",
+      "from": "O3461903687",
+      "to": "O9187568880",
+      "label": "未命名道路",
+      "highway": "tertiary",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 87.94,
+      "geometry": [
+        [
+          120.6464802,
+          27.7789964
+        ],
+        [
+          120.645968,
+          27.7783482
+        ]
+      ],
+      "osmWayIds": [
+        339005819
+      ],
+      "osmNodeIds": [
+        3461903687,
+        9187568880
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/339005819",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-549400199-0",
+      "from": "O5306991169",
+      "to": "O9187568625",
+      "label": "未命名道路",
+      "highway": "unclassified",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 11.71,
+      "geometry": [
+        [
+          120.6424241,
+          27.7790792
+        ],
+        [
+          120.6424045,
+          27.7791831
+        ]
+      ],
+      "osmWayIds": [
+        549400199
+      ],
+      "osmNodeIds": [
+        5306991169,
+        9187568625
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/549400199",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-549400199-1",
+      "from": "O5306991165",
+      "to": "O9187568625",
+      "label": "未命名道路",
+      "highway": "unclassified",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 70.8,
+      "geometry": [
+        [
+          120.6428953,
+          27.7796414
+        ],
+        [
+          120.6427708,
+          27.779502
+        ],
+        [
+          120.6426394,
+          27.7794237
+        ],
+        [
+          120.6424356,
+          27.7792291
+        ],
+        [
+          120.6424045,
+          27.7791831
+        ]
+      ],
+      "osmWayIds": [
+        549400199
+      ],
+      "osmNodeIds": [
+        5306991165,
+        5306991166,
+        5306991167,
+        5306991168,
+        9187568625
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/549400199",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-549400200-0",
+      "from": "O9187568871",
+      "to": "O9187568872",
+      "label": "未命名道路",
+      "highway": "unclassified",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 10.5,
+      "geometry": [
+        [
+          120.6486099,
+          27.7785603
+        ],
+        [
+          120.6485044,
+          27.7785745
+        ]
+      ],
+      "osmWayIds": [
+        549400200
+      ],
+      "osmNodeIds": [
+        9187568871,
+        9187568872
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/549400200",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-549400200-1",
+      "from": "O9187568872",
+      "to": "O9187568873",
+      "label": "未命名道路",
+      "highway": "unclassified",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 80.38,
+      "geometry": [
+        [
+          120.6485044,
+          27.7785745
+        ],
+        [
+          120.6477061,
+          27.7787284
+        ]
+      ],
+      "osmWayIds": [
+        549400200
+      ],
+      "osmNodeIds": [
+        9187568872,
+        9187568873
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/549400200",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-549400200-2",
+      "from": "O3461903687",
+      "to": "O9187568873",
+      "label": "未命名道路",
+      "highway": "unclassified",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 124.23,
+      "geometry": [
+        [
+          120.6464802,
+          27.7789964
+        ],
+        [
+          120.6477061,
+          27.7787284
+        ]
+      ],
+      "osmWayIds": [
+        549400200
+      ],
+      "osmNodeIds": [
+        3461903687,
+        9187568873
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/549400200",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-549400200-3",
+      "from": "O3461903687",
+      "to": "H5",
+      "label": "未命名道路",
+      "highway": "unclassified",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 86.11,
+      "geometry": [
+        [
+          120.6464802,
+          27.7789964
+        ],
+        [
+          120.6456327,
+          27.77919
+        ]
+      ],
+      "osmWayIds": [
+        549400200
+      ],
+      "osmNodeIds": [
+        3461903687,
+        5306991173
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/549400200",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-549400201-0",
+      "from": "O5306991174",
+      "to": "O5306991212",
+      "label": "未命名道路",
+      "highway": "unclassified",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 70.64,
+      "geometry": [
+        [
+          120.6429153,
+          27.7802924
+        ],
+        [
+          120.6431785,
+          27.7803113
+        ],
+        [
+          120.6433314,
+          27.7802994
+        ],
+        [
+          120.6436318,
+          27.7803042
+        ]
+      ],
+      "osmWayIds": [
+        549400201
+      ],
+      "osmNodeIds": [
+        5306991174,
+        5306991175,
+        5306991176,
+        5306991212
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/549400201",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-549400203-0",
+      "from": "O5306991178",
+      "to": "O5306991214",
+      "label": "未命名道路",
+      "highway": "unclassified",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 88.8,
+      "geometry": [
+        [
+          120.6435661,
+          27.7802211
+        ],
+        [
+          120.6431678,
+          27.7797987
+        ],
+        [
+          120.6429747,
+          27.7796183
+        ]
+      ],
+      "osmWayIds": [
+        549400203
+      ],
+      "osmNodeIds": [
+        5306991178,
+        5306991213,
+        5306991214
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/549400203",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-549400205-0",
+      "from": "O5306991169",
+      "to": "O5306991215",
+      "label": "未命名道路",
+      "highway": "unclassified",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 92.4,
+      "geometry": [
+        [
+          120.6424241,
+          27.7790792
+        ],
+        [
+          120.6417945,
+          27.7784626
+        ]
+      ],
+      "osmWayIds": [
+        549400205
+      ],
+      "osmNodeIds": [
+        5306991169,
+        5306991215
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/549400205",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-549400205-1",
+      "from": "O5306991169",
+      "to": "O5306991214",
+      "label": "未命名道路",
+      "highway": "unclassified",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 80.79,
+      "geometry": [
+        [
+          120.6424241,
+          27.7790792
+        ],
+        [
+          120.6429747,
+          27.7796183
+        ]
+      ],
+      "osmWayIds": [
+        549400205
+      ],
+      "osmNodeIds": [
+        5306991169,
+        5306991214
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/549400205",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-549400206-0",
+      "from": "O5306991179",
+      "to": "O5306991191",
+      "label": "未命名道路",
+      "highway": "primary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 118.66,
+      "geometry": [
+        [
+          120.6431893,
+          27.7793727
+        ],
+        [
+          120.6439904,
+          27.7801704
+        ]
+      ],
+      "osmWayIds": [
+        549400206
+      ],
+      "osmNodeIds": [
+        5306991179,
+        5306991191
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/549400206",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-549400209-0",
+      "from": "O5306991181",
+      "to": "O5306991217",
+      "label": "未命名道路",
+      "highway": "primary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 105.97,
+      "geometry": [
+        [
+          120.6437498,
+          27.7802579
+        ],
+        [
+          120.6430323,
+          27.7795471
+        ]
+      ],
+      "osmWayIds": [
+        549400209
+      ],
+      "osmNodeIds": [
+        5306991181,
+        5306991217
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/549400209",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-549400214-11",
+      "from": "O5306991193",
+      "to": "O5306991179",
+      "label": "瑞祥大道",
+      "highway": "primary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 2,
+      "lengthMeters": 258.07,
+      "geometry": [
+        [
+          120.6414799,
+          27.7776123
+        ],
+        [
+          120.642162,
+          27.7783274
+        ],
+        [
+          120.6431893,
+          27.7793727
+        ]
+      ],
+      "osmWayIds": [
+        549400214
+      ],
+      "osmNodeIds": [
+        5306991193,
+        5306991192,
+        5306991179
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/549400214",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-549400218-0",
+      "from": "O5306991178",
+      "to": "O5306991212",
+      "label": "未命名道路",
+      "highway": "unclassified",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 11.28,
+      "geometry": [
+        [
+          120.6435661,
+          27.7802211
+        ],
+        [
+          120.6436318,
+          27.7803042
+        ]
+      ],
+      "osmWayIds": [
+        549400218
+      ],
+      "osmNodeIds": [
+        5306991178,
+        5306991212
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/549400218",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-549400218-1",
+      "from": "O5306991207",
+      "to": "O5306991212",
+      "label": "未命名道路",
+      "highway": "unclassified",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 115.4,
+      "geometry": [
+        [
+          120.6440945,
+          27.7812027
+        ],
+        [
+          120.6440395,
+          27.7810778
+        ],
+        [
+          120.6440207,
+          27.7808761
+        ],
+        [
+          120.6438893,
+          27.7807313
+        ],
+        [
+          120.6436157,
+          27.7804418
+        ],
+        [
+          120.6436318,
+          27.7803042
+        ]
+      ],
+      "osmWayIds": [
+        549400218
+      ],
+      "osmNodeIds": [
+        5306991207,
+        5306991208,
+        5306991209,
+        5306991210,
+        5306991211,
+        5306991212
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/549400218",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-549400221-0",
+      "from": "O5306991223",
+      "to": "O5306991224",
+      "label": "未命名道路",
+      "highway": "tertiary",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 10.39,
+      "geometry": [
+        [
+          120.6378279,
+          27.7812028
+        ],
+        [
+          120.637726,
+          27.7812273
+        ]
+      ],
+      "osmWayIds": [
+        549400221
+      ],
+      "osmNodeIds": [
+        5306991223,
+        5306991224
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/549400221",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-549400221-1",
+      "from": "O5306991223",
+      "to": "O9187568634",
+      "label": "未命名道路",
+      "highway": "tertiary",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 2,
+      "lengthMeters": 319.61,
+      "geometry": [
+        [
+          120.6378279,
+          27.7812028
+        ],
+        [
+          120.6388521,
+          27.7809757
+        ],
+        [
+          120.638946,
+          27.7810137
+        ],
+        [
+          120.6410093,
+          27.7807211
+        ]
+      ],
+      "osmWayIds": [
+        549400221
+      ],
+      "osmNodeIds": [
+        5306991223,
+        5306991222,
+        9187568610,
+        9187568634
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/549400221",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-549400221-4",
+      "from": "O5306991174",
+      "to": "O9187568634",
+      "label": "未命名道路",
+      "highway": "tertiary",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 193.59,
+      "geometry": [
+        [
+          120.6429153,
+          27.7802924
+        ],
+        [
+          120.6420413,
+          27.7805201
+        ],
+        [
+          120.6410093,
+          27.7807211
+        ]
+      ],
+      "osmWayIds": [
+        549400221
+      ],
+      "osmNodeIds": [
+        5306991174,
+        5306991221,
+        9187568634
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/549400221",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-549400221-6",
+      "from": "O5306991174",
+      "to": "O5306991219",
+      "label": "未命名道路",
+      "highway": "tertiary",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 195.25,
+      "geometry": [
+        [
+          120.6429153,
+          27.7802924
+        ],
+        [
+          120.6430578,
+          27.7802306
+        ],
+        [
+          120.6441065,
+          27.7799506
+        ],
+        [
+          120.6448361,
+          27.7799173
+        ]
+      ],
+      "osmWayIds": [
+        549400221
+      ],
+      "osmNodeIds": [
+        5306991174,
+        5306991177,
+        5306991220,
+        5306991219
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/549400221",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-549400230-0",
+      "from": "O5306991280",
+      "to": "H1",
+      "label": "未命名道路",
+      "highway": "tertiary",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 180.53,
+      "geometry": [
+        [
+          120.6342516,
+          27.7869558
+        ],
+        [
+          120.6350278,
+          27.788427
+        ]
+      ],
+      "osmWayIds": [
+        549400230
+      ],
+      "osmNodeIds": [
+        5306991280,
+        5306991281
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/549400230",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-549400230-1",
+      "from": "O5306991279",
+      "to": "O5306991280",
+      "label": "未命名道路",
+      "highway": "tertiary",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 236.78,
+      "geometry": [
+        [
+          120.6333559,
+          27.7849793
+        ],
+        [
+          120.6342516,
+          27.7869558
+        ]
+      ],
+      "osmWayIds": [
+        549400230
+      ],
+      "osmNodeIds": [
+        5306991279,
+        5306991280
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/549400230",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-549400230-2",
+      "from": "O5306991279",
+      "to": "O5306991469",
+      "label": "未命名道路",
+      "highway": "tertiary",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 14.38,
+      "geometry": [
+        [
+          120.6333559,
+          27.7849793
+        ],
+        [
+          120.6333053,
+          27.784858
+        ]
+      ],
+      "osmWayIds": [
+        549400230
+      ],
+      "osmNodeIds": [
+        5306991279,
+        5306991469
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/549400230",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-549400231-6",
+      "from": "O5306991280",
+      "to": "O5306991290",
+      "label": "未命名道路",
+      "highway": "tertiary",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 213.94,
+      "geometry": [
+        [
+          120.6342516,
+          27.7869558
+        ],
+        [
+          120.6347859,
+          27.7867706
+        ],
+        [
+          120.6362953,
+          27.7862985
+        ]
+      ],
+      "osmWayIds": [
+        549400231
+      ],
+      "osmNodeIds": [
+        5306991280,
+        5306991291,
+        5306991290
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/549400231",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-549400231-8",
+      "from": "O5306991287",
+      "to": "O5306991290",
+      "label": "未命名道路",
+      "highway": "tertiary",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 2,
+      "lengthMeters": 352.41,
+      "geometry": [
+        [
+          120.6371785,
+          27.7836468
+        ],
+        [
+          120.6374895,
+          27.7842173
+        ],
+        [
+          120.6370067,
+          27.7860112
+        ],
+        [
+          120.6362953,
+          27.7862985
+        ]
+      ],
+      "osmWayIds": [
+        549400231
+      ],
+      "osmNodeIds": [
+        5306991287,
+        5306991288,
+        5306991289,
+        5306991290
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/549400231",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-549400232-0",
+      "from": "O5306991225",
+      "to": "O5306991467",
+      "label": "未命名道路",
+      "highway": "tertiary",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 2,
+      "lengthMeters": 272.72,
+      "geometry": [
+        [
+          120.6351909,
+          27.7817351
+        ],
+        [
+          120.6357723,
+          27.7841332
+        ]
+      ],
+      "osmWayIds": [
+        549400232
+      ],
+      "osmNodeIds": [
+        5306991225,
+        5306991467
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/549400232",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-549400232-1",
+      "from": "O5306991296",
+      "to": "O5306991467",
+      "label": "未命名道路",
+      "highway": "tertiary",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 10.4,
+      "geometry": [
+        [
+          120.6357954,
+          27.7842245
+        ],
+        [
+          120.6357723,
+          27.7841332
+        ]
+      ],
+      "osmWayIds": [
+        549400232
+      ],
+      "osmNodeIds": [
+        5306991296,
+        5306991467
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/549400232",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-549400232-2",
+      "from": "O5306991290",
+      "to": "O5306991296",
+      "label": "未命名道路",
+      "highway": "tertiary",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 235.98,
+      "geometry": [
+        [
+          120.6362953,
+          27.7862985
+        ],
+        [
+          120.6359339,
+          27.7849861
+        ],
+        [
+          120.6357954,
+          27.7842245
+        ]
+      ],
+      "osmWayIds": [
+        549400232
+      ],
+      "osmNodeIds": [
+        5306991290,
+        5306991295,
+        5306991296
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/549400232",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-549400232-4",
+      "from": "O5306991290",
+      "to": "O5306991293",
+      "label": "未命名道路",
+      "highway": "tertiary",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 123.29,
+      "geometry": [
+        [
+          120.6362953,
+          27.7862985
+        ],
+        [
+          120.6364488,
+          27.786856
+        ],
+        [
+          120.6368127,
+          27.7872833
+        ]
+      ],
+      "osmWayIds": [
+        549400232
+      ],
+      "osmNodeIds": [
+        5306991290,
+        5306991294,
+        5306991293
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/549400232",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-549400232-6",
+      "from": "O5306991292",
+      "to": "O5306991293",
+      "label": "未命名道路",
+      "highway": "tertiary",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 21.22,
+      "geometry": [
+        [
+          120.6369826,
+          27.7874009
+        ],
+        [
+          120.6368127,
+          27.7872833
+        ]
+      ],
+      "osmWayIds": [
+        549400232
+      ],
+      "osmNodeIds": [
+        5306991292,
+        5306991293
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/549400232",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-549400233-0",
+      "from": "O5306991298",
+      "to": "O5306991299",
+      "label": "商城大道",
+      "highway": "secondary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 114.05,
+      "geometry": [
+        [
+          120.6393113,
+          27.7838592
+        ],
+        [
+          120.6387095,
+          27.7829825
+        ]
+      ],
+      "osmWayIds": [
+        549400233
+      ],
+      "osmNodeIds": [
+        5306991298,
+        5306991299
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/549400233",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-549400233-1",
+      "from": "O5306991299",
+      "to": "O5306991300",
+      "label": "商城大道",
+      "highway": "secondary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 16.17,
+      "geometry": [
+        [
+          120.6387095,
+          27.7829825
+        ],
+        [
+          120.638654,
+          27.7828456
+        ]
+      ],
+      "osmWayIds": [
+        549400233
+      ],
+      "osmNodeIds": [
+        5306991299,
+        5306991300
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/549400233",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-549400233-2",
+      "from": "O5306991300",
+      "to": "O5306991224",
+      "label": "商城大道",
+      "highway": "secondary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 201.9,
+      "geometry": [
+        [
+          120.638654,
+          27.7828456
+        ],
+        [
+          120.6380481,
+          27.7818565
+        ],
+        [
+          120.637726,
+          27.7812273
+        ]
+      ],
+      "osmWayIds": [
+        549400233
+      ],
+      "osmNodeIds": [
+        5306991300,
+        5306991304,
+        5306991224
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/549400233",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-549400233-4",
+      "from": "O5306991224",
+      "to": "O9187568617",
+      "label": "商城大道",
+      "highway": "secondary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 35.57,
+      "geometry": [
+        [
+          120.637726,
+          27.7812273
+        ],
+        [
+          120.6376112,
+          27.780924
+        ]
+      ],
+      "osmWayIds": [
+        549400233
+      ],
+      "osmNodeIds": [
+        5306991224,
+        9187568617
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/549400233",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-549400233-5",
+      "from": "O9187568617",
+      "to": "O3461903693",
+      "label": "商城大道",
+      "highway": "secondary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 211.32,
+      "geometry": [
+        [
+          120.6376112,
+          27.780924
+        ],
+        [
+          120.6374761,
+          27.7805676
+        ],
+        [
+          120.637317,
+          27.7803409
+        ],
+        [
+          120.6368599,
+          27.7800843
+        ],
+        [
+          120.6366279,
+          27.780033
+        ],
+        [
+          120.6359982,
+          27.7799266
+        ]
+      ],
+      "osmWayIds": [
+        549400233
+      ],
+      "osmNodeIds": [
+        9187568617,
+        9187568619,
+        5306991303,
+        5306991302,
+        5306991301,
+        3461903693
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/549400233",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-549400236-0",
+      "from": "O8057904982",
+      "to": "O8057918191",
+      "label": "未命名道路",
+      "highway": "unclassified",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 2,
+      "lengthMeters": 279.66,
+      "geometry": [
+        [
+          120.6354817,
+          27.7798581
+        ],
+        [
+          120.6353148,
+          27.7801734
+        ],
+        [
+          120.6352058,
+          27.7803575
+        ],
+        [
+          120.635128,
+          27.7804615
+        ],
+        [
+          120.6346933,
+          27.780583
+        ],
+        [
+          120.6346834,
+          27.780499
+        ],
+        [
+          120.634166,
+          27.7806239
+        ],
+        [
+          120.6338981,
+          27.7797847
+        ]
+      ],
+      "osmWayIds": [
+        549400236
+      ],
+      "osmNodeIds": [
+        8057904982,
+        8057904981,
+        8057904980,
+        8057904979,
+        8057904978,
+        8057904977,
+        5306991319,
+        8057918191
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/549400236",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-549400236-7",
+      "from": "O5306991318",
+      "to": "O8057918191",
+      "label": "未命名道路",
+      "highway": "unclassified",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 111.18,
+      "geometry": [
+        [
+          120.633591,
+          27.7788225
+        ],
+        [
+          120.6338981,
+          27.7797847
+        ]
+      ],
+      "osmWayIds": [
+        549400236
+      ],
+      "osmNodeIds": [
+        5306991318,
+        8057918191
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/549400236",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-549400238-3",
+      "from": "O5306991318",
+      "to": "O5306991345",
+      "label": "未命名道路",
+      "highway": "unclassified",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 99.62,
+      "geometry": [
+        [
+          120.633591,
+          27.7788225
+        ],
+        [
+          120.6342816,
+          27.7786454
+        ],
+        [
+          120.6345669,
+          27.7785843
+        ]
+      ],
+      "osmWayIds": [
+        549400238
+      ],
+      "osmNodeIds": [
+        5306991318,
+        5306991346,
+        5306991345
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/549400238",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-549400249-0",
+      "from": "O5306991217",
+      "to": "O3461903671",
+      "label": "瑞祥大道",
+      "highway": "primary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 2,
+      "lengthMeters": 269.48,
+      "geometry": [
+        [
+          120.6430323,
+          27.7795471
+        ],
+        [
+          120.6414407,
+          27.7779504
+        ],
+        [
+          120.6412224,
+          27.777728
+        ]
+      ],
+      "osmWayIds": [
+        549400249
+      ],
+      "osmNodeIds": [
+        5306991217,
+        2173827651,
+        3461903671
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/549400249",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-549400250-0",
+      "from": "O5306991460",
+      "to": "O5306991298",
+      "label": "未命名道路",
+      "highway": "secondary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 24.14,
+      "geometry": [
+        [
+          120.639264,
+          27.7840604
+        ],
+        [
+          120.6392575,
+          27.783923
+        ],
+        [
+          120.6393113,
+          27.7838592
+        ]
+      ],
+      "osmWayIds": [
+        549400250
+      ],
+      "osmNodeIds": [
+        5306991460,
+        5306991450,
+        5306991298
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/549400250",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-549400250-1",
+      "from": "O5306991298",
+      "to": "O5306991453",
+      "label": "未命名道路",
+      "highway": "secondary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 14.2,
+      "geometry": [
+        [
+          120.6393113,
+          27.7838592
+        ],
+        [
+          120.6394322,
+          27.7837895
+        ]
+      ],
+      "osmWayIds": [
+        549400250
+      ],
+      "osmNodeIds": [
+        5306991298,
+        5306991453
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/549400250",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-549400250-2",
+      "from": "O5306991453",
+      "to": "O5306991454",
+      "label": "未命名道路",
+      "highway": "secondary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 22.34,
+      "geometry": [
+        [
+          120.6394322,
+          27.7837895
+        ],
+        [
+          120.639502,
+          27.7837793
+        ],
+        [
+          120.6396433,
+          27.7838384
+        ]
+      ],
+      "osmWayIds": [
+        549400250
+      ],
+      "osmNodeIds": [
+        5306991453,
+        5306991449,
+        5306991454
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/549400250",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-549400250-4",
+      "from": "O5306991454",
+      "to": "O5306991483",
+      "label": "未命名道路",
+      "highway": "secondary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 53.23,
+      "geometry": [
+        [
+          120.6396433,
+          27.7838384
+        ],
+        [
+          120.639711,
+          27.7839943
+        ],
+        [
+          120.6396357,
+          27.7841352
+        ],
+        [
+          120.6394703,
+          27.7841888
+        ]
+      ],
+      "osmWayIds": [
+        549400250
+      ],
+      "osmNodeIds": [
+        5306991454,
+        5306991455,
+        5306991448,
+        5306991483
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/549400250",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-549400250-7",
+      "from": "O5306991483",
+      "to": "O5306991460",
+      "label": "未命名道路",
+      "highway": "secondary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 25.87,
+      "geometry": [
+        [
+          120.6394703,
+          27.7841888
+        ],
+        [
+          120.6393457,
+          27.7841515
+        ],
+        [
+          120.639264,
+          27.7840604
+        ]
+      ],
+      "osmWayIds": [
+        549400250
+      ],
+      "osmNodeIds": [
+        5306991483,
+        5306991447,
+        5306991460
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/549400250",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-549400251-0",
+      "from": "H6",
+      "to": "O9187568616",
+      "label": "商城大道",
+      "highway": "secondary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 185.75,
+      "geometry": [
+        [
+          120.6365059,
+          27.7797536
+        ],
+        [
+          120.6366849,
+          27.7799553
+        ],
+        [
+          120.6368995,
+          27.7800028
+        ],
+        [
+          120.6374601,
+          27.7803469
+        ],
+        [
+          120.637621,
+          27.7806008
+        ],
+        [
+          120.6377274,
+          27.7809104
+        ]
+      ],
+      "osmWayIds": [
+        549400251
+      ],
+      "osmNodeIds": [
+        5306991307,
+        5306991308,
+        5306991309,
+        5306991310,
+        9187568618,
+        9187568616
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/549400251",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-549400251-5",
+      "from": "O9187568616",
+      "to": "O5306991223",
+      "label": "商城大道",
+      "highway": "secondary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 33.98,
+      "geometry": [
+        [
+          120.6377274,
+          27.7809104
+        ],
+        [
+          120.6378279,
+          27.7812028
+        ]
+      ],
+      "osmWayIds": [
+        549400251
+      ],
+      "osmNodeIds": [
+        9187568616,
+        5306991223
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/549400251",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-549400251-6",
+      "from": "O5306991223",
+      "to": "O5306991451",
+      "label": "商城大道",
+      "highway": "secondary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 200.79,
+      "geometry": [
+        [
+          120.6378279,
+          27.7812028
+        ],
+        [
+          120.6381117,
+          27.7818033
+        ],
+        [
+          120.6387903,
+          27.7827898
+        ]
+      ],
+      "osmWayIds": [
+        549400251
+      ],
+      "osmNodeIds": [
+        5306991223,
+        5306991311,
+        5306991451
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/549400251",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-549400251-8",
+      "from": "O5306991451",
+      "to": "O5306991452",
+      "label": "商城大道",
+      "highway": "secondary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 15.03,
+      "geometry": [
+        [
+          120.6387903,
+          27.7827898
+        ],
+        [
+          120.6388492,
+          27.7829145
+        ]
+      ],
+      "osmWayIds": [
+        549400251
+      ],
+      "osmNodeIds": [
+        5306991451,
+        5306991452
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/549400251",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-549400251-9",
+      "from": "O5306991452",
+      "to": "O5306991453",
+      "label": "商城大道",
+      "highway": "secondary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 112.94,
+      "geometry": [
+        [
+          120.6388492,
+          27.7829145
+        ],
+        [
+          120.6394322,
+          27.7837895
+        ]
+      ],
+      "osmWayIds": [
+        549400251
+      ],
+      "osmNodeIds": [
+        5306991452,
+        5306991453
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/549400251",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-549400253-13",
+      "from": "H1",
+      "to": "O5306991293",
+      "label": "瑞湖路",
+      "highway": "secondary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 216.8,
+      "geometry": [
+        [
+          120.6350278,
+          27.788427
+        ],
+        [
+          120.6368127,
+          27.7872833
+        ]
+      ],
+      "osmWayIds": [
+        549400253
+      ],
+      "osmNodeIds": [
+        5306991281,
+        5306991293
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/549400253",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-549400253-14",
+      "from": "O5306991293",
+      "to": "O5306991460",
+      "label": "瑞湖路",
+      "highway": "secondary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 2,
+      "lengthMeters": 446.76,
+      "geometry": [
+        [
+          120.6368127,
+          27.7872833
+        ],
+        [
+          120.6380013,
+          27.7865216
+        ],
+        [
+          120.6382873,
+          27.786218
+        ],
+        [
+          120.639264,
+          27.7840604
+        ]
+      ],
+      "osmWayIds": [
+        549400253
+      ],
+      "osmNodeIds": [
+        5306991293,
+        5306991462,
+        5306991461,
+        5306991460
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/549400253",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-549400254-0",
+      "from": "O5306991454",
+      "to": "H3",
+      "label": "未命名道路",
+      "highway": "secondary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 3,
+      "lengthMeters": 739.76,
+      "geometry": [
+        [
+          120.6396433,
+          27.7838384
+        ],
+        [
+          120.6400305,
+          27.7838336
+        ],
+        [
+          120.6407866,
+          27.7837565
+        ],
+        [
+          120.6415401,
+          27.7837329
+        ],
+        [
+          120.6470796,
+          27.7845579
+        ]
+      ],
+      "osmWayIds": [
+        549400254
+      ],
+      "osmNodeIds": [
+        5306991454,
+        5306991459,
+        9127821630,
+        5306991458,
+        5306991457
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/549400254",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-549400254-4",
+      "from": "H3",
+      "to": "S2",
+      "label": "未命名道路",
+      "highway": "secondary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 30.69,
+      "geometry": [
+        [
+          120.6470796,
+          27.7845579
+        ],
+        [
+          120.6472475,
+          27.7845812
+        ],
+        [
+          120.6473824,
+          27.7845418
+        ]
+      ],
+      "osmWayIds": [
+        549400254
+      ],
+      "osmNodeIds": [
+        5306991457,
+        5306991456,
+        6233434070
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/549400254",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-549400254-6",
+      "from": "S2",
+      "to": "O5306991464",
+      "label": "未命名道路",
+      "highway": "secondary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 23.72,
+      "geometry": [
+        [
+          120.6473824,
+          27.7845418
+        ],
+        [
+          120.6475284,
+          27.784372
+        ]
+      ],
+      "osmWayIds": [
+        549400254
+      ],
+      "osmNodeIds": [
+        6233434070,
+        5306991464
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/549400254",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-665889274-0",
+      "from": "O5306991191",
+      "to": "O5306991190",
+      "label": "未命名道路",
+      "highway": "primary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 149.74,
+      "geometry": [
+        [
+          120.6439904,
+          27.7801704
+        ],
+        [
+          120.644422,
+          27.7806075
+        ],
+        [
+          120.6448536,
+          27.7810445
+        ],
+        [
+          120.644998,
+          27.7811796
+        ]
+      ],
+      "osmWayIds": [
+        665889274
+      ],
+      "osmNodeIds": [
+        5306991191,
+        6233434066,
+        5306991180,
+        5306991190
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/665889274",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-665889274-3",
+      "from": "O5306991190",
+      "to": "O5306991189",
+      "label": "未命名道路",
+      "highway": "primary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 13.4,
+      "geometry": [
+        [
+          120.644998,
+          27.7811796
+        ],
+        [
+          120.6450952,
+          27.781264
+        ]
+      ],
+      "osmWayIds": [
+        665889274
+      ],
+      "osmNodeIds": [
+        5306991190,
+        5306991189
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/665889274",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-665889276-0",
+      "from": "O5306991464",
+      "to": "H4",
+      "label": "未命名道路",
+      "highway": "primary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 24.37,
+      "geometry": [
+        [
+          120.6475284,
+          27.784372
+        ],
+        [
+          120.6475029,
+          27.784154
+        ]
+      ],
+      "osmWayIds": [
+        665889276
+      ],
+      "osmNodeIds": [
+        5306991464,
+        6233434069
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/665889276",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-665889276-1",
+      "from": "H4",
+      "to": "O3458151392",
+      "label": "未命名道路",
+      "highway": "primary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 2,
+      "lengthMeters": 349.7,
+      "geometry": [
+        [
+          120.6475029,
+          27.784154
+        ],
+        [
+          120.6474027,
+          27.7839608
+        ],
+        [
+          120.6463566,
+          27.7828835
+        ],
+        [
+          120.6452329,
+          27.7817442
+        ]
+      ],
+      "osmWayIds": [
+        665889276
+      ],
+      "osmNodeIds": [
+        6233434069,
+        2173827596,
+        2173827613,
+        3458151392
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/665889276",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-665889276-4",
+      "from": "O3458151392",
+      "to": "O5306991182",
+      "label": "未命名道路",
+      "highway": "primary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 64.78,
+      "geometry": [
+        [
+          120.6452329,
+          27.7817442
+        ],
+        [
+          120.6449896,
+          27.7815077
+        ],
+        [
+          120.6447905,
+          27.7813127
+        ]
+      ],
+      "osmWayIds": [
+        665889276
+      ],
+      "osmNodeIds": [
+        3458151392,
+        2173827645,
+        5306991182
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/665889276",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-665889276-6",
+      "from": "O5306991182",
+      "to": "O5306991183",
+      "label": "未命名道路",
+      "highway": "primary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 13.93,
+      "geometry": [
+        [
+          120.6447905,
+          27.7813127
+        ],
+        [
+          120.6447047,
+          27.781213
+        ]
+      ],
+      "osmWayIds": [
+        665889276
+      ],
+      "osmNodeIds": [
+        5306991182,
+        5306991183
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/665889276",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-665889276-7",
+      "from": "O5306991183",
+      "to": "O3458151830",
+      "label": "未命名道路",
+      "highway": "primary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 76.84,
+      "geometry": [
+        [
+          120.6447047,
+          27.781213
+        ],
+        [
+          120.6441827,
+          27.7806989
+        ]
+      ],
+      "osmWayIds": [
+        665889276
+      ],
+      "osmNodeIds": [
+        5306991183,
+        3458151830
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/665889276",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-665889276-8",
+      "from": "O3458151830",
+      "to": "O5306991181",
+      "label": "未命名道路",
+      "highway": "primary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 64.95,
+      "geometry": [
+        [
+          120.6441827,
+          27.7806989
+        ],
+        [
+          120.6437498,
+          27.7802579
+        ]
+      ],
+      "osmWayIds": [
+        665889276
+      ],
+      "osmNodeIds": [
+        3458151830,
+        5306991181
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/665889276",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-863688850-2",
+      "from": "O5306991227",
+      "to": "H1",
+      "label": "未命名道路",
+      "highway": "unclassified",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 22.31,
+      "geometry": [
+        [
+          120.6350751,
+          27.7886232
+        ],
+        [
+          120.6350278,
+          27.788427
+        ]
+      ],
+      "osmWayIds": [
+        863688850
+      ],
+      "osmNodeIds": [
+        5306991227,
+        5306991281
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/863688850",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-864520302-1",
+      "from": "O8057918190",
+      "to": "O8057918191",
+      "label": "未命名道路",
+      "highway": "unclassified",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 57.71,
+      "geometry": [
+        [
+          120.6333241,
+          27.7798918
+        ],
+        [
+          120.6338981,
+          27.7797847
+        ]
+      ],
+      "osmWayIds": [
+        864520302
+      ],
+      "osmNodeIds": [
+        8057918190,
+        8057918191
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/864520302",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-904722544-3",
+      "from": "O5306991469",
+      "to": "O5306991467",
+      "label": "万松路",
+      "highway": "primary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 2,
+      "lengthMeters": 256.34,
+      "geometry": [
+        [
+          120.6333053,
+          27.784858
+        ],
+        [
+          120.634861,
+          27.784483
+        ],
+        [
+          120.6357723,
+          27.7841332
+        ]
+      ],
+      "osmWayIds": [
+        904722544
+      ],
+      "osmNodeIds": [
+        5306991469,
+        5306991468,
+        5306991467
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/904722544",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-904722544-5",
+      "from": "O5306991467",
+      "to": "D",
+      "label": "万松路",
+      "highway": "primary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 54.72,
+      "geometry": [
+        [
+          120.6357723,
+          27.7841332
+        ],
+        [
+          120.6362826,
+          27.7839373
+        ]
+      ],
+      "osmWayIds": [
+        904722544
+      ],
+      "osmNodeIds": [
+        5306991467,
+        5306991466
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/904722544",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-904722544-6",
+      "from": "D",
+      "to": "O5306991300",
+      "label": "万松路",
+      "highway": "primary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 2,
+      "lengthMeters": 262.99,
+      "geometry": [
+        [
+          120.6362826,
+          27.7839373
+        ],
+        [
+          120.6378861,
+          27.7831925
+        ],
+        [
+          120.638654,
+          27.7828456
+        ]
+      ],
+      "osmWayIds": [
+        904722544
+      ],
+      "osmNodeIds": [
+        5306991466,
+        3458145816,
+        5306991300
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/904722544",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-904722545-0",
+      "from": "O5306991299",
+      "to": "O5306991287",
+      "label": "万松路",
+      "highway": "primary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 167.75,
+      "geometry": [
+        [
+          120.6387095,
+          27.7829825
+        ],
+        [
+          120.6379505,
+          27.7833159
+        ],
+        [
+          120.6371785,
+          27.7836468
+        ]
+      ],
+      "osmWayIds": [
+        904722545
+      ],
+      "osmNodeIds": [
+        5306991299,
+        3458145807,
+        5306991287
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/904722545",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-904722545-2",
+      "from": "O5306991287",
+      "to": "O5306991296",
+      "label": "万松路",
+      "highway": "primary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 150.47,
+      "geometry": [
+        [
+          120.6371785,
+          27.7836468
+        ],
+        [
+          120.6365561,
+          27.7839135
+        ],
+        [
+          120.6357954,
+          27.7842245
+        ]
+      ],
+      "osmWayIds": [
+        904722545
+      ],
+      "osmNodeIds": [
+        5306991287,
+        5306991477,
+        5306991296
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/904722545",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-904722545-4",
+      "from": "O5306991296",
+      "to": "O5306991279",
+      "label": "万松路",
+      "highway": "primary",
+      "directed": true,
+      "directionTag": "yes",
+      "open": true,
+      "minutes": 2,
+      "lengthMeters": 255.07,
+      "geometry": [
+        [
+          120.6357954,
+          27.7842245
+        ],
+        [
+          120.6348261,
+          27.7846207
+        ],
+        [
+          120.6333559,
+          27.7849793
+        ]
+      ],
+      "osmWayIds": [
+        904722545
+      ],
+      "osmNodeIds": [
+        5306991296,
+        5306991475,
+        5306991279
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/904722545",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-987512153-3",
+      "from": "O5306991224",
+      "to": "O5306991225",
+      "label": "解放东路",
+      "highway": "tertiary",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 2,
+      "lengthMeters": 255.71,
+      "geometry": [
+        [
+          120.637726,
+          27.7812273
+        ],
+        [
+          120.6351909,
+          27.7817351
+        ]
+      ],
+      "osmWayIds": [
+        987512153
+      ],
+      "osmNodeIds": [
+        5306991224,
+        5306991225
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/987512153",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-994940895-0",
+      "from": "O9187568600",
+      "to": "O9187568602",
+      "label": "未命名道路",
+      "highway": "tertiary",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 2,
+      "lengthMeters": 353.65,
+      "geometry": [
+        [
+          120.648871,
+          27.7807573
+        ],
+        [
+          120.6490123,
+          27.7812296
+        ],
+        [
+          120.6491947,
+          27.7816995
+        ],
+        [
+          120.6493825,
+          27.7819558
+        ],
+        [
+          120.6497472,
+          27.7823853
+        ],
+        [
+          120.6500772,
+          27.7826701
+        ],
+        [
+          120.6504366,
+          27.7829335
+        ],
+        [
+          120.6506994,
+          27.7830498
+        ],
+        [
+          120.6509972,
+          27.7831162
+        ]
+      ],
+      "osmWayIds": [
+        994940895
+      ],
+      "osmNodeIds": [
+        9187568600,
+        9187568609,
+        9187568608,
+        9187568607,
+        9187568606,
+        9187568605,
+        9187568604,
+        9187568603,
+        9187568602
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/994940895",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-994940896-0",
+      "from": "O9187568616",
+      "to": "O9187568617",
+      "label": "未命名道路",
+      "highway": "unclassified",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 11.53,
+      "geometry": [
+        [
+          120.6377274,
+          27.7809104
+        ],
+        [
+          120.6376112,
+          27.780924
+        ]
+      ],
+      "osmWayIds": [
+        994940896
+      ],
+      "osmNodeIds": [
+        9187568616,
+        9187568617
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/994940896",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-994940896-1",
+      "from": "O9187568616",
+      "to": "O9187568633",
+      "label": "未命名道路",
+      "highway": "unclassified",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 2,
+      "lengthMeters": 321.99,
+      "geometry": [
+        [
+          120.6377274,
+          27.7809104
+        ],
+        [
+          120.6382889,
+          27.7807906
+        ],
+        [
+          120.6385249,
+          27.7807028
+        ],
+        [
+          120.6387851,
+          27.7806055
+        ],
+        [
+          120.6392893,
+          27.7804584
+        ],
+        [
+          120.6399867,
+          27.7803042
+        ],
+        [
+          120.6408799,
+          27.7801641
+        ]
+      ],
+      "osmWayIds": [
+        994940896
+      ],
+      "osmNodeIds": [
+        9187568616,
+        9187568615,
+        9187568614,
+        9187568613,
+        9187568612,
+        9187568611,
+        9187568633
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/994940896",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-994940896-7",
+      "from": "O9187568620",
+      "to": "O9187568633",
+      "label": "未命名道路",
+      "highway": "unclassified",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 54.66,
+      "geometry": [
+        [
+          120.6414163,
+          27.780036
+        ],
+        [
+          120.6408799,
+          27.7801641
+        ]
+      ],
+      "osmWayIds": [
+        994940896
+      ],
+      "osmNodeIds": [
+        9187568620,
+        9187568633
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/994940896",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-994940896-8",
+      "from": "O5306991170",
+      "to": "O9187568620",
+      "label": "未命名道路",
+      "highway": "unclassified",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 120.05,
+      "geometry": [
+        [
+          120.6425857,
+          27.7797275
+        ],
+        [
+          120.6414163,
+          27.780036
+        ]
+      ],
+      "osmWayIds": [
+        994940896
+      ],
+      "osmNodeIds": [
+        5306991170,
+        9187568620
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/994940896",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-994940897-0",
+      "from": "O3461903695",
+      "to": "S1",
+      "label": "未命名道路",
+      "highway": "unclassified",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 191.64,
+      "geometry": [
+        [
+          120.6388231,
+          27.7788877
+        ],
+        [
+          120.6391498,
+          27.7796349
+        ],
+        [
+          120.6396326,
+          27.7794688
+        ],
+        [
+          120.6401557,
+          27.7794356
+        ]
+      ],
+      "osmWayIds": [
+        994940897
+      ],
+      "osmNodeIds": [
+        3461903695,
+        9187568624,
+        9187568623,
+        9187568622
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/994940897",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-994940897-3",
+      "from": "S1",
+      "to": "O9187568631",
+      "label": "未命名道路",
+      "highway": "unclassified",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 66.44,
+      "geometry": [
+        [
+          120.6401557,
+          27.7794356
+        ],
+        [
+          120.6408289,
+          27.7793881
+        ]
+      ],
+      "osmWayIds": [
+        994940897
+      ],
+      "osmNodeIds": [
+        9187568622,
+        9187568631
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/994940897",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-994940897-4",
+      "from": "O9187568620",
+      "to": "O9187568631",
+      "label": "未命名道路",
+      "highway": "unclassified",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 127.0,
+      "geometry": [
+        [
+          120.6414163,
+          27.780036
+        ],
+        [
+          120.6413814,
+          27.7793834
+        ],
+        [
+          120.6408289,
+          27.7793881
+        ]
+      ],
+      "osmWayIds": [
+        994940897
+      ],
+      "osmNodeIds": [
+        9187568620,
+        9187568621,
+        9187568631
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/994940897",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-994940898-0",
+      "from": "O9187568625",
+      "to": "O9187568631",
+      "label": "未命名道路",
+      "highway": "unclassified",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 217.93,
+      "geometry": [
+        [
+          120.6424045,
+          27.7791831
+        ],
+        [
+          120.6423202,
+          27.7791841
+        ],
+        [
+          120.6419447,
+          27.7790749
+        ],
+        [
+          120.6418186,
+          27.7789966
+        ],
+        [
+          120.6415129,
+          27.7788827
+        ],
+        [
+          120.6409577,
+          27.7787925
+        ],
+        [
+          120.6408289,
+          27.7793881
+        ]
+      ],
+      "osmWayIds": [
+        994940898
+      ],
+      "osmNodeIds": [
+        9187568625,
+        9187568626,
+        9187568627,
+        9187568628,
+        9187568629,
+        9187568630,
+        9187568631
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/994940898",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-994940899-0",
+      "from": "O3458145817",
+      "to": "O3458145819",
+      "label": "未命名道路",
+      "highway": "tertiary",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 11.74,
+      "geometry": [
+        [
+          120.641301,
+          27.7817032
+        ],
+        [
+          120.6413435,
+          27.7818019
+        ]
+      ],
+      "osmWayIds": [
+        994940899
+      ],
+      "osmNodeIds": [
+        3458145817,
+        3458145819
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/994940899",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-994940899-1",
+      "from": "O3458145817",
+      "to": "O9187568634",
+      "label": "未命名道路",
+      "highway": "tertiary",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 112.91,
+      "geometry": [
+        [
+          120.641301,
+          27.7817032
+        ],
+        [
+          120.6411722,
+          27.7812605
+        ],
+        [
+          120.6410093,
+          27.7807211
+        ]
+      ],
+      "osmWayIds": [
+        994940899
+      ],
+      "osmNodeIds": [
+        3458145817,
+        9187568635,
+        9187568634
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/994940899",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-994940928-0",
+      "from": "O9187568873",
+      "to": "O9187568878",
+      "label": "未命名道路",
+      "highway": "unclassified",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 110.58,
+      "geometry": [
+        [
+          120.6477061,
+          27.7787284
+        ],
+        [
+          120.6474298,
+          27.7782752
+        ],
+        [
+          120.6471589,
+          27.7778599
+        ]
+      ],
+      "osmWayIds": [
+        994940928
+      ],
+      "osmNodeIds": [
+        9187568873,
+        9187568869,
+        9187568878
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/994940928",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-994940928-2",
+      "from": "O9187568868",
+      "to": "O9187568878",
+      "label": "未命名道路",
+      "highway": "unclassified",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 79.27,
+      "geometry": [
+        [
+          120.6467244,
+          27.7772595
+        ],
+        [
+          120.6471589,
+          27.7778599
+        ]
+      ],
+      "osmWayIds": [
+        994940928
+      ],
+      "osmNodeIds": [
+        9187568868,
+        9187568878
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/994940928",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-994940929-0",
+      "from": "O9187568878",
+      "to": "O9187568880",
+      "label": "未命名道路",
+      "highway": "tertiary",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 129.15,
+      "geometry": [
+        [
+          120.6471589,
+          27.7778599
+        ],
+        [
+          120.6462818,
+          27.7782111
+        ],
+        [
+          120.645968,
+          27.7783482
+        ]
+      ],
+      "osmWayIds": [
+        994940929
+      ],
+      "osmNodeIds": [
+        9187568878,
+        9187568879,
+        9187568880
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/994940929",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-994940929-2",
+      "from": "O3458135305",
+      "to": "O9187568878",
+      "label": "未命名道路",
+      "highway": "tertiary",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 119.0,
+      "geometry": [
+        [
+          120.6482716,
+          27.7774402
+        ],
+        [
+          120.6471589,
+          27.7778599
+        ]
+      ],
+      "osmWayIds": [
+        994940929
+      ],
+      "osmNodeIds": [
+        3458135305,
+        9187568878
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/994940929",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-994940929-3",
+      "from": "O3458135293",
+      "to": "O3458135305",
+      "label": "未命名道路",
+      "highway": "tertiary",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 11.37,
+      "geometry": [
+        [
+          120.6483789,
+          27.7774023
+        ],
+        [
+          120.6482716,
+          27.7774402
+        ]
+      ],
+      "osmWayIds": [
+        994940929
+      ],
+      "osmNodeIds": [
+        3458135293,
+        3458135305
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/994940929",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-995611345-1",
+      "from": "O5306991333",
+      "to": "O5306991345",
+      "label": "未命名道路",
+      "highway": "secondary",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 193.26,
+      "geometry": [
+        [
+          120.6337181,
+          27.7770188
+        ],
+        [
+          120.6338893,
+          27.7772711
+        ],
+        [
+          120.6341206,
+          27.7776959
+        ],
+        [
+          120.6345422,
+          27.7785293
+        ],
+        [
+          120.6345669,
+          27.7785843
+        ]
+      ],
+      "osmWayIds": [
+        995611345
+      ],
+      "osmNodeIds": [
+        5306991333,
+        5306991348,
+        3461903698,
+        3461903672,
+        5306991345
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/995611345",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-995611345-10",
+      "from": "O3461903693",
+      "to": "O8057904982",
+      "label": "未命名道路",
+      "highway": "secondary",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 52.7,
+      "geometry": [
+        [
+          120.6359982,
+          27.7799266
+        ],
+        [
+          120.6357943,
+          27.7799456
+        ],
+        [
+          120.6355905,
+          27.7799076
+        ],
+        [
+          120.6354817,
+          27.7798581
+        ]
+      ],
+      "osmWayIds": [
+        995611345
+      ],
+      "osmNodeIds": [
+        3461903693,
+        3461903691,
+        3461903660,
+        8057904982
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/995611345",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-995611345-13",
+      "from": "O3461903693",
+      "to": "H6",
+      "label": "未命名道路",
+      "highway": "secondary",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 53.58,
+      "geometry": [
+        [
+          120.6359982,
+          27.7799266
+        ],
+        [
+          120.6361698,
+          27.7798791
+        ],
+        [
+          120.6365059,
+          27.7797536
+        ]
+      ],
+      "osmWayIds": [
+        995611345
+      ],
+      "osmNodeIds": [
+        3461903693,
+        3461903685,
+        5306991307
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/995611345",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-995611345-15",
+      "from": "O3461903695",
+      "to": "H6",
+      "label": "未命名道路",
+      "highway": "secondary",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 247.46,
+      "geometry": [
+        [
+          120.6388231,
+          27.7788877
+        ],
+        [
+          120.6365059,
+          27.7797536
+        ]
+      ],
+      "osmWayIds": [
+        995611345
+      ],
+      "osmNodeIds": [
+        3461903695,
+        5306991307
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/995611345",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-995611345-16",
+      "from": "O3461903671",
+      "to": "O3461903695",
+      "label": "未命名道路",
+      "highway": "secondary",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 2,
+      "lengthMeters": 268.97,
+      "geometry": [
+        [
+          120.6412224,
+          27.777728
+        ],
+        [
+          120.6388231,
+          27.7788877
+        ]
+      ],
+      "osmWayIds": [
+        995611345
+      ],
+      "osmNodeIds": [
+        3461903671,
+        3461903695
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/995611345",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-995611345-17",
+      "from": "O3461903671",
+      "to": "O5306991193",
+      "label": "未命名道路",
+      "highway": "secondary",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 28.42,
+      "geometry": [
+        [
+          120.6412224,
+          27.777728
+        ],
+        [
+          120.6412801,
+          27.7777003
+        ],
+        [
+          120.6414799,
+          27.7776123
+        ]
+      ],
+      "osmWayIds": [
+        995611345
+      ],
+      "osmNodeIds": [
+        3461903671,
+        3458082009,
+        5306991193
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/995611345",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    },
+    {
+      "id": "osm-995611345-5",
+      "from": "O5306991345",
+      "to": "O8057904982",
+      "label": "未命名道路",
+      "highway": "secondary",
+      "directed": false,
+      "directionTag": "no",
+      "open": true,
+      "minutes": 1,
+      "lengthMeters": 172.85,
+      "geometry": [
+        [
+          120.6345669,
+          27.7785843
+        ],
+        [
+          120.6348073,
+          27.7791198
+        ],
+        [
+          120.6350036,
+          27.7794786
+        ],
+        [
+          120.6351538,
+          27.7796684
+        ],
+        [
+          120.6353362,
+          27.7797918
+        ],
+        [
+          120.6354817,
+          27.7798581
+        ]
+      ],
+      "osmWayIds": [
+        995611345
+      ],
+      "osmNodeIds": [
+        5306991345,
+        3461903665,
+        3461903666,
+        3461903697,
+        3461903682,
+        8057904982
+      ],
+      "source": "OpenStreetMap",
+      "sourceUrl": "https://www.openstreetmap.org/way/995611345",
+      "timeAssumption": "演练速度 15 km/h；每压缩路段向上取整到分钟，非实测通行时间",
+      "statusAssumption": "初始开放为演练设定；不是当前可通行证明"
+    }
+  ]
+}

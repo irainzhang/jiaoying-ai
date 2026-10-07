@@ -1,0 +1,41 @@
+.weather-panel{overflow:hidden;border:1px solid #d7e6ec;border-radius:22px;background:#fff;color:#173c51;box-shadow:0 10px 28px #17465d08}
+.weather-heading{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:20px 24px 0}
+.weather-eyebrow{font-size:12px;letter-spacing:.12em;color:#398b95;font-weight:750}
+.weather-heading h2{margin:6px 0 0;font-size:21px;line-height:1.4;color:#143d54}
+.weather-demo-badge{flex-shrink:0;padding:6px 10px;border-radius:99px;background:#e2f4ef;color:#167b76;font-size:12px;font-weight:750}
+.weather-body{padding:18px 24px 22px}
+.weather-rain-card{display:flex;align-items:center;gap:18px;position:relative;padding:18px 20px;border-radius:17px;background:linear-gradient(115deg,#eff7fb,#e8f7f3)}
+.weather-icon{width:74px;height:64px;flex:none;color:#18a5ab}
+.weather-window{font-size:13px;color:#52788a}
+.weather-rain-number{display:flex;align-items:baseline;gap:8px;line-height:1.2;margin-top:5px}
+.weather-rain-number strong{font-size:46px;letter-spacing:-.04em;font-variant-numeric:tabular-nums;color:#123d57}
+.weather-rain-number>span{font-size:16px;color:#57788b}
+.weather-level{margin-left:auto;max-width:175px;font-size:13px;font-weight:750;line-height:1.6;padding:7px 12px;border-radius:12px;background:#ffffffba;color:#187d79}
+.weather-watch .weather-level{color:#a56b0f;background:#fff6db}
+.weather-review .weather-level{color:#ab5128;background:#fff0e6}
+.weather-unknown .weather-level{color:#607689;background:#eff3f6}
+.weather-scale{position:relative;display:grid;grid-template-columns:50fr 30fr 20fr;gap:4px;height:6px;margin:24px 3px 0}
+.weather-scale>span{border-radius:6px;background:#69bfb9}
+.weather-scale>span:nth-child(2){background:#e6ba61}.weather-scale>span:nth-child(3){background:#df946e}
+.weather-scale>i{position:absolute;width:12px;height:12px;top:-3px;border:3px solid #fff;border-radius:50%;background:#204f64;box-shadow:0 0 0 1px #204f6460;transform:translateX(-50%)}
+.weather-scale-labels{display:flex;justify-content:space-between;gap:8px;color:#6b8390;font-size:11px;margin:7px 0 0}
+.weather-trigger{margin:16px 0;color:#365d70;font-size:13px;line-height:1.7}
+.weather-actions{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+.weather-actions button{font:inherit;font-size:13px;font-weight:700;border:1px solid #d9e7ec;background:#f7fafb;color:#2d6578;border-radius:10px;padding:10px 15px;min-height:44px;cursor:pointer;transition:transform .15s,box-shadow .15s,background .15s}
+.weather-actions button:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 5px 12px #0b747523}
+.weather-actions button:active:not(:disabled){transform:scale(.96)}
+.weather-actions button:focus-visible{outline:3px solid #35aeb9;outline-offset:3px}
+.weather-actions .is-selected{background:#e0f3ef;color:#057a75;border-color:#55b9af}
+.weather-actions .weather-start{margin-left:auto;background:#0ba59f;border-color:#0ba59f;color:white}
+.weather-actions button:disabled{opacity:.5;cursor:not-allowed}
+.weather-meta{display:flex;flex-wrap:wrap;gap:5px 18px;margin-top:18px;color:#75909e;font-size:11px;line-height:1.7}
+.weather-boundary{margin:12px 0 0;padding:10px 12px;border-left:3px solid #6fbfb9;border-radius:0 8px 8px 0;background:#f0f8f6;color:#587781;font-size:11px;line-height:1.7}
+@media(max-width:600px){.weather-heading{padding:17px 16px 0;align-items:flex-start}.weather-heading h2{font-size:18px}.weather-body{padding:15px 16px 18px}.weather-rain-card{padding:15px 12px;gap:10px;flex-wrap:wrap}.weather-icon{width:52px;height:49px}.weather-rain-number strong{font-size:39px}.weather-level{font-size:12px;max-width:155px}.weather-actions{gap:7px}.weather-actions button{flex:1;padding:10px 9px;white-space:nowrap}.weather-actions .weather-start{flex-basis:100%;margin-left:0}.weather-meta{display:block}.weather-meta span{display:block}}
+@media(prefers-reduced-motion:reduce){.weather-actions button{transition:none}.weather-actions button:hover:not(:disabled),.weather-actions button:active:not(:disabled){transform:none}}
+/* Keep intake and map visible: rainfall is a status strip, not a second hero. */
+.weather-heading{padding:12px 18px 8px}.weather-heading h2{font-size:16px;margin:0}.weather-eyebrow{display:none}.weather-demo-badge{padding:3px 9px;font-size:11px}
+.weather-body{display:grid;grid-template-columns:minmax(260px,1fr) minmax(320px,1fr);gap:7px 18px;padding:0 18px 12px}
+.weather-rain-card{grid-column:1;grid-row:1/3;padding:9px 12px;gap:12px;border-radius:12px}.weather-icon{width:42px;height:42px}.weather-window{font-size:11px}.weather-rain-number{margin-top:2px}.weather-rain-number strong{font-size:30px}.weather-rain-number>span{font-size:13px}.weather-level{font-size:11px;padding:4px 7px;max-width:145px}
+.weather-scale,.weather-scale-labels{display:none}.weather-trigger{grid-column:2;grid-row:1;margin:0;font-size:12px;align-self:end}.weather-actions{grid-column:2;grid-row:2;gap:6px}.weather-actions button{min-height:38px;padding:7px 10px;font-size:12px}.weather-actions .weather-start{margin-left:auto}
+.weather-meta{grid-column:1/-1;margin:0;gap:4px 18px}.weather-boundary{grid-column:1/-1;margin:0;padding:5px 9px;font-size:10px;line-height:1.6}
+@media(max-width:800px){.weather-body{grid-template-columns:1fr;gap:7px;padding:0 14px 12px}.weather-rain-card{grid-column:1;grid-row:auto;flex-wrap:nowrap}.weather-trigger,.weather-actions{grid-column:1;grid-row:auto}.weather-actions button{flex:1;min-height:42px;padding:7px 5px}.weather-actions .weather-start{flex:1.5;flex-basis:auto;margin-left:0}.weather-meta{display:flex}.weather-level{max-width:140px}.weather-heading{padding:12px 14px 8px}}

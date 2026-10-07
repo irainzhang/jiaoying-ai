@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>城市韧性守护 Agent · 暴雨洪涝脆弱人群预警与应急资源调度</title>
+<meta name="description" content="面向暴雨洪涝风险的脆弱人群预警与应急资源智能调度智能体（演练版）：积水易发风险评估、社会脆弱性识别、资源缺口核查、调度优化、情景推演与执行闭环。">
+<link rel="stylesheet" href="assets/agent.css">
+</head>
+<body>
+
+<!-- ============================== 顶栏 ============================== -->
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="brand-mark">守</div>
+      <div class="brand-text">
+        <strong>城市韧性守护 Agent</strong>
+        <span>暴雨洪涝 · 脆弱人群预警与应急资源智能调度（演练）</span>
+      </div>
+    </div>
+
+    <div class="badges">
+      <span class="badge" id="provider-badge">运行路径加载中…</span>
+      <span class="badge" id="data-badge">演练数据</span>
+      <span class="badge badge-warn hidden" id="stale-badge">输入已变化，需重新计算</span>
+    </div>
+
+    <div class="topbar-actions">
+      <button class="tbtn" id="btn-pipeline" title="按顺序串起全部工具：雨情 → 风险 → 脆弱性 → 优先级 → 缺口 → 调度">完整研判</button>
+      <button class="tbtn" id="btn-rain" title="模拟动态变化的口播雨量，并触发动态触发判定">口播雨量 +20 mm</button>
+      <button class="tbtn" id="btn-report" title="生成含数据来源与边界声明的应急决策报告">生成报告</button>
+      <button class="tbtn" id="btn-compliance" title="合规与边界自查：地图规范、数据公开性、表述边界">合规自查</button>
+      <button class="tbtn" id="btn-skills" title="查看技能包与工具清单">技能 / 工具</button>
+      <button class="tbtn" id="btn-help" title="使用说明与演示动线">帮助</button>
+      <button class="tbtn" id="btn-export" title="导出演练状态 JSON（备份与复现）">导出状态</button>
+      <label class="tbtn" for="file-import" style="cursor:pointer" title="从备份恢复演练状态">导入备份</label>
+      <input type="file" id="file-import" accept=".json" class="hidden">
+      <button class="tbtn" id="btn-reset" title="重置情景、雨量、方案、任务与轨迹">重置</button>
+    </div>
+  </div>
+</header>
+
+<!-- ============================== 免责声明（常驻，不可关闭） ============================== -->
+<div class="disclaimer">
+  <div class="inner">
+    <span class="tag">边界声明</span>
+    <span>
+      本系统基于公开数据开展<b>积水易发风险评估</b>，结果与调度方案仅供演练与辅助决策参考，不构成对真实积水深度、受灾范围或人员安全的预测；
+      <b>所有调度方案均需人工确认后执行</b>。演示中的人员、容量、车速与路网均为演练设定，仅使用模拟信息。
+    </span>
+  </div>
+</div>
+
+<!-- ============================== 双栏主体 ============================== -->
+<main class="layout">
+
+  <!-- ---------------- 左栏：实时监控 ---------------- -->
+  <section class="column">
+    <div class="col-head">
+      <span class="num">①</span>
+      <h2>实时监控（智能体感知与执行过程）</h2>
+      <span class="sub">左侧实时监控 · 持续追踪人员位置与状态</span>
+    </div>
+
+    <!-- 地图 -->
+    <div class="card">
+      <div class="card-head">
+        <h3>演练区域风险地图（本地 SVG，不加载在线底图）</h3>
+        <span class="meta">长按网格可提交险情修改</span>
+      </div>
+      <div class="map-wrap" id="map"></div>
+      <div class="map-legend">
+        <span class="legend-item"><i class="legend-dot" style="background:#2f855a"></i>低风险</span>
+        <span class="legend-item"><i class="legend-dot" style="background:#c99a12"></i>中风险</span>
+        <span class="legend-item"><i class="legend-dot" style="background:#dd6b20"></i>高风险</span>
+        <span class="legend-item"><i class="legend-dot" style="background:#c53030"></i>极高风险</span>
+        <span class="legend-item"><i class="legend-dot" style="background:#0f6f5c;border-radius:2px"></i>安置点</span>
+        <span class="legend-item"><i class="legend-dot" style="background:#c53030;border-radius:2px"></i>阻断路段</span>
+        <span class="legend-item"><i class="legend-dot" style="background:#dd6b20;clip-path:polygon(50% 0,100% 100%,0 100%)"></i>险情</span>
+        <span class="legend-item"><i class="legend-dot" style="background:#1d4ed8"></i>车辆线路</span>
+        <span class="legend-item">圆点大小 = 人口；圆内数字 = 风险度</span>
+      </div>
+    </div>
+
+    <!-- 关键指标与风险分层 -->
+    <div class="card">
+      <div class="card-head">
+        <h3>关键指标</h3>
+        <span class="meta" id="trace-meta"></span>
+      </div>
+      <div class="card-body tight" id="stats"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h3>风险 · 脆弱性 · 优先级分层</h3>
+        <span class="meta">按应急响应优先级排序</span>
+      </div>
+      <div id="zones"></div>
+    </div>
+
+    <!-- 轨迹 -->
+    <div class="card">
+      <div class="card-head">
+        <h3>智能体感知与执行轨迹</h3>
+        <span class="meta">可回放 · 每一步都有留痕</span>
+      </div>
+      <div class="scroll" id="trace" style="max-height:340px"></div>
+    </div>
+
+    <!-- 任务 -->
+    <div class="card">
+      <div class="card-head">
+        <h3>转移任务与执行闭环进度</h3>
+        <span class="meta">已通知 → 已接收 → 已联系 → 已上车 → 已到达</span>
+      </div>
+      <div id="tasks"></div>
+    </div>
+  </section>
+
+  <!-- ---------------- 右栏：规划发布 ---------------- -->
+  <section class="column">
+    <div class="col-head">
+      <span class="num">②</span>
+      <h2>规划发布（对话 · 动作按钮 · 方案 · 报告）</h2>
+      <span class="sub">右侧规划发布 · 助手回复必带动作按钮</span>
+    </div>
+
+    <!-- 对话 -->
+    <div class="card">
+      <div class="card-head">
+        <h3>与智能体对话</h3>
+        <span class="meta">Ctrl / ⌘ + Enter 发送</span>
+      </div>
+      <div class="chat">
+        <div class="chat-log" id="chat-log"></div>
+        <div class="composer">
+          <div class="composer-row">
+            <textarea id="input" rows="1" placeholder="例如：未来 6 小时累计降雨 120 毫米，帮我做一次完整的研判和调度建议（Ctrl/⌘+Enter 发送）"></textarea>
+            <button class="send" id="send">发送</button>
+          </div>
+          <div class="quick" id="quick"></div>
+          <div class="small muted mt6">
+            操作人（选填，默认演练值守）：
+            <input id="actor" value="" placeholder="操作人（可选）" style="width:130px;font:inherit;font-size:11.5px;padding:2px 6px;border:1px solid #e2e8e4;border-radius:5px">
+            　发布等操作必须经人工确认，智能体不会自行批准。
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 方案 -->
+    <div class="card">
+      <div class="card-head">
+        <h3>调度方案与优化前后对比</h3>
+        <span class="meta">同一输入快照 · 约束校验</span>
+      </div>
+      <div id="plan"></div>
+    </div>
+
+    <!-- 报告 -->
+    <div class="card">
+      <div class="card-head">
+        <h3>应急决策报告</h3>
+        <span class="meta">含数据来源、边界声明与轨迹节选</span>
+      </div>
+      <div id="report"></div>
+      <pre class="doc hidden" id="report-text" style="max-height:420px;margin:0 13px 13px"></pre>
+    </div>
+
+    <!-- 输出文档 -->
+    <div class="card">
+      <div class="card-head">
+        <h3>通知文本 / 依据 / 清单输出</h3>
+        <span class="meta">取消独立接收端：可直接粘贴到现有政务通讯工具</span>
+      </div>
+      <div class="card-body" id="doc"></div>
+    </div>
+  </section>
+</main>
+
+<div class="toast-host"></div>
+
+<!-- ============================== 运行时（顺序即依赖顺序） ============================== -->
+<!-- 数据与口径 -->
+<script src="assets/data/region-config.js"></script>
+<script src="assets/data/ruian-scenario.js"></script>
+<!-- 技能包与知识库（由 scripts/build-bundles.mjs 生成，内联以便 file:// 直接打开） -->
+<script src="assets/skills-bundle.js"></script>
+<script src="assets/kb-bundle.js"></script>
+<script src="api-config.js"></script>
+<!-- 核心：总线 / 状态 / 触发 / 确认 / 分析 / 优化 / 动作 -->
+<script src="src/core/bus.js"></script>
+<script src="src/core/store.js"></script>
+<script src="src/core/triggers.js"></script>
+<script src="src/core/confirm.js"></script>
+<script src="src/core/analytics.js"></script>
+<script src="src/core/optimizer.js"></script>
+<script src="src/core/actions.js"></script>
+<!-- 技能注册表 -->
+<script src="src/skills/registry.js"></script>
+<!-- 工具（20 个） -->
+<script src="src/tools/registry.js"></script>
+<script src="src/tools/risk.js"></script>
+<script src="src/tools/knowledge.js"></script>
+<script src="src/tools/optimize.js"></script>
+<script src="src/tools/workflow.js"></script>
+<script src="src/tools/deliver.js"></script>
+<!-- 大模型适配层（默认离线规则引擎，API 接口预留为空） -->
+<script src="src/llm/adapter.js"></script>
+<script src="src/llm/offline.js"></script>
+<script src="src/llm/openai-compatible.js"></script>
+<!-- 智能体主循环 -->
+<script src="src/core/agent-loop.js"></script>
+<!-- 界面 -->
+<script src="src/ui/render.js"></script>
+<script src="src/ui/map.js"></script>
+<script src="src/ui/monitor.js"></script>
+<script src="src/ui/planner.js"></script>
+<script src="src/ui/app.js"></script>
+</body>
+</html>

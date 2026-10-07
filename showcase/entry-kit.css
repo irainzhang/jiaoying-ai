@@ -1,0 +1,22 @@
+/* Shared entry controls: reusable inside panels and dialogs. */
+.entry-kit{margin:18px 0;padding:18px;border:1px solid #a6d6dd;border-radius:15px;background:#f4fafc;color:#21495f}
+.entry-kit-heading,.entry-preview-heading,.entry-row-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.entry-kit-heading h3,.entry-preview-heading h4{margin:0 0 6px}.entry-kit-heading p{margin:0;color:#527080}.entry-kit-heading>label{min-width:180px}
+.entry-modes{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}.entry-modes>button{flex:1;min-height:44px}.entry-modes button[aria-pressed=true]{box-shadow:0 4px 13px #0c929329}
+.entry-kit-material{padding:14px;background:#fff;border:1px solid #cde1e8;border-radius:10px}.entry-kit [hidden]{display:none!important}
+.entry-kit-material .file-button{display:block;margin-bottom:12px;max-width:100%}.entry-kit-material p{font-size:13px;line-height:1.7}.entry-kit-material textarea{box-sizing:border-box;width:100%;margin:7px 0}
+.entry-kit [data-entry-status]{margin:12px 0 4px;color:#087b78;font-size:14px;line-height:1.6}.entry-kit [data-entry-error]:empty{display:none}
+.entry-preview{margin-top:16px}.entry-preview-heading{margin-bottom:10px}.entry-preview-heading>strong{font-size:12px;border-radius:20px;background:#fff2d9;color:#855616;padding:6px 10px}
+.entry-preview-row{padding:16px;background:#fff;border:1px solid #c7e0e7;border-radius:12px;margin:10px 0}.entry-row-heading{margin-bottom:12px}
+.entry-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.entry-fields label,.entry-select{display:flex;flex-direction:column;gap:6px;font-size:13px;min-width:0}
+.entry-fields input,.entry-fields select{width:100%;max-width:100%;min-width:0;box-sizing:border-box;min-height:42px}.entry-fields input[type=checkbox]{min-height:20px;width:20px;flex:none}
+.entry-list{border:1px solid #d4e5eb;border-radius:8px;padding:10px;min-width:0}.entry-list legend{font-size:13px;padding:0 5px}.entry-list label{display:flex;flex-direction:row;align-items:center;gap:8px;padding:5px 0}.entry-list>span{font-size:13px;color:#657c86}
+.entry-preview-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.entry-preview>p{font-size:13px;color:#527080}.entry-file>.actions{align-items:flex-end}
+.entry-kit input:focus,.entry-kit select:focus,.entry-kit textarea:focus{outline:3px solid #0ea5a535;outline-offset:2px}.entry-kit button{min-height:42px}.entry-kit .error-text{background:#fff0eb;padding:10px;border-radius:8px}
+@media(max-width:650px){.entry-kit{padding:12px}.entry-kit-heading>label{width:100%}.entry-fields{grid-template-columns:1fr}.entry-modes>button{min-width:130px}.entry-preview-row{padding:12px}.entry-preview-actions>button{width:100%}}
+/* Shared review changes and current capability indicators. */
+.entry-change-list,.workflow-capability-strip{background:#edf7fa;border:1px solid #c3dfe7;border-radius:12px;padding:12px 16px;margin:12px 0;color:#214c60}
+.entry-change-list p{margin:5px 0}.entry-change-list strong{color:#007d77}.workflow-capability-strip{display:flex;flex-wrap:wrap;gap:8px 16px}.workflow-capability-strip small{width:100%}.intake-hub-actions{display:flex;flex-wrap:wrap;gap:12px;margin:18px 0}.intake-audit-entry{border-bottom:1px solid #d9e7ed;padding:14px 0}.intake-audit-entry pre{overflow:auto;max-height:340px;white-space:pre-wrap;overflow-wrap:anywhere}.field-access-banner{padding:12px 18px;background:#def4ef;color:#185347;border-radius:10px;margin:12px 0}.app-header [hidden]{display:none!important}
+
+.field-role #guardian-launcher{display:none!important}
+.entry-field-label{display:inline-flex;align-items:baseline;gap:4px;flex-wrap:wrap}.entry-required{color:#b42318;font-weight:800;font-size:1.1em}.entry-optional{font-size:11px;font-weight:400;color:#637984;margin-left:2px}.entry-field-hint{display:block;color:#526f7c;font-size:12px;font-weight:400;line-height:1.6}.entry-schema-help{margin:12px 0;padding:10px 12px;background:#fff;border:1px solid #d0e3e8;border-radius:9px;font-size:13px;line-height:1.7}.entry-schema-help p{margin:3px 0}.entry-schema-help strong{color:#21495f}.entry-schema-help .entry-schema-note{color:#526f7c;font-size:12px}
