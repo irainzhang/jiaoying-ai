@@ -4,6 +4,7 @@ import {fileURLToPath} from 'node:url';
 import {integrationStatus, agentContract} from '../integrations.mjs';
 import {createRequire} from 'node:module';
 import {createHash} from 'node:crypto';
+import {buildShowcase} from './build-showcase.mjs';
 const require=createRequire(import.meta.url),capabilities=require('../dist/capabilities.js');
 
 // Publish a separate browser build. Never copy running server snapshots or credentials.
@@ -68,6 +69,9 @@ export async function buildPages({outputDirectory=output,manifestPath=resolve(ro
   await write('guardian-cache-manifest.json',JSON.stringify({build:guardianBuild,version:capabilities.version,files:cached},null,2));
   await write('guardian-offline-sw.js',(await read('dist/guardian-offline-sw.js')).replace('__GUARDIAN_BUILD__',guardianBuild));
   files.push('guardian-cache-manifest.json','guardian-offline-sw.js');
+  // Publish the curated presentation as an isolated child site. Its cache and
+  // task storage are independent; business assets still come from this build.
+  files.push(...await buildShowcase({outputDirectory:buildOutput,files:[...new Set(files)],capabilities}));
   await writeFile(manifestPath,JSON.stringify({directory:relative(root,buildOutput).split(sep).join('/'),files:[...new Set(files)].sort()},null,2));
   return {directory:buildOutput,files:[...new Set(files)].length};
 }

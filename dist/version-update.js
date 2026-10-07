@@ -90,6 +90,11 @@
       if (!document.hidden && Date.now() - checkedAt > 60000) check();
     });
     window.addEventListener('online', check);
+    // A page left open also learns about a later publication. Never reload or
+    // touch task storage without the user's click on the existing update UI.
+    if (typeof window.setInterval === 'function') window.setInterval(function () {
+      if (!document.hidden && Date.now() - checkedAt >= 60000) check();
+    }, 60000);
     check();
   } catch (_) { /* This optional UI must not affect the workspace. */ }
 })();

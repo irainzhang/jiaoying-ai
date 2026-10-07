@@ -14,17 +14,18 @@ function harness({recovery=false,offline=false,version='3.9.1',otherWorker=false
   document.body=element('body');document.body.appendChild(element('original-workspace'));
   document.getElementById=id=>{function find(node){if(node.id===id)return node;for(const child of node.children){const result=find(child);if(result)return result;}}return find(document.body);};
   if(recovery)for(const id of ['status','open','retry']){const el=element('button');el.id=id;document.body.appendChild(el);}
-  const calls={fetch:[],register:[],update:0,reload:0,messages:[]};
+  const calls={fetch:[],register:[],update:0,reload:0,messages:[],timers:[]};let now=0;
   const worker=events({scriptURL:'https://example.test/jiaoying-ai/guardian-offline-sw.js?v=1',postMessage:message=>calls.messages.push(message)});
   const registration=events({active:worker,update:async()=>{calls.update++;}});
   const sw=events({controller:worker,getRegistration:async()=>otherWorker?{active:{scriptURL:'https://example.test/other-sw.js'}}:registration,register:async(url,options)=>{calls.register.push({url,options});return registration;}});
   const location={href:'https://example.test/jiaoying-ai/'+(recovery?'update.html':'?v=3.9#command'),protocol:'https:',reload(){calls.reload++;}};
-  const window=events({JiaoyingCapabilities:{version:'3.9.0'}});
+  const window=events({JiaoyingCapabilities:{version:'3.9.0'},setInterval(fn,ms){calls.timers.push({fn,ms});}});
   const context={window,document,navigator:{serviceWorker:sw},location,URL,fetch:async(url,options)=>{calls.fetch.push({url,options});if(offline)throw new Error('offline');return {ok:true,json:async()=>({version,build,files:['index.html']})};}};
+  context.Date=class extends Date { static now(){return now;} };
   Object.defineProperty(context,'localStorage',{get(){throw new Error('Update flow must not access task storage');}});
   Object.defineProperty(context,'sessionStorage',{get(){throw new Error('Update flow must not access draft storage');}});
   vm.runInNewContext(recovery?recoveryScript:script,context);
-  return {document,window,location,sw,worker,registration,calls,get:id=>document.getElementById(id),async settle(){for(let i=0;i<30;i++)await Promise.resolve();},message(data,source=worker){sw.emit('message',{data:{type:'GUARDIAN_CACHE_STATUS',...data},source});}};
+  return {document,window,location,sw,worker,registration,calls,advance(ms){now+=ms;for(const timer of calls.timers)timer.fn();},get:id=>document.getElementById(id),async settle(){for(let i=0;i<30;i++)await Promise.resolve();},message(data,source=worker){sw.emit('message',{data:{type:'GUARDIAN_CACHE_STATUS',...data},source});}};
 }
 
 test('new-version notice waits for matching complete cache controlled by the new worker; reload is explicit',async()=>{
@@ -42,6 +43,13 @@ test('offline, unchanged, and older versions never interrupt the workspace',asyn
   for(const option of [{offline:true},{version:'3.9.0'},{version:'3.8.0'}]){
     const h=harness(option);await h.settle();assert.equal(h.get('version-update-notice'),undefined);assert.equal(h.calls.reload,0);assert.equal(h.calls.register.length,0);
   }
+});
+
+test('a visible page periodically checks publication while hidden pages and unsaved work are undisturbed',async()=>{
+  const h=harness({version:'3.9.0'});await h.settle();assert.equal(h.calls.fetch.length,1);
+  assert.equal(h.calls.timers[0].ms,60000);h.advance(30000);await h.settle();assert.equal(h.calls.fetch.length,1);
+  h.document.hidden=true;h.advance(60000);await h.settle();assert.equal(h.calls.fetch.length,1);
+  h.document.hidden=false;h.advance(60000);await h.settle();assert.equal(h.calls.fetch.length,2);assert.equal(h.calls.reload,0);
 });
 test('changing controller revokes readiness until it confirms the expected build',async()=>{
   const h=harness();await h.settle();const button=h.get('version-update-notice').children[1];

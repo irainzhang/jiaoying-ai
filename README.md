@@ -1,6 +1,6 @@
-# 叫应 AI · 瑞安转移协同演练 V4.3.1
+# 叫应 AI · 瑞安转移协同演练 V4.3.2
 
-2026-10-07 更新。V4.3.1 主线是 **录入需求 → 发布并执行 → 结束并留档**。指挥台只保留「需求录入」「任务执行」「任务记录」三个主区；现场端只保留「执行任务」「补报情况」两个主区。资料、资源与设置集中在二级入口，避免录入、地图和复盘互相挤占。
+2026-10-07 更新。V4.3.2 主线是 **录入需求 → 发布并执行 → 结束并留档**。指挥台只保留「需求录入」「任务执行」「任务记录」三个主区；现场端只保留「执行任务」「补报情况」两个主区。资料、资源与设置集中在二级入口，避免录入、地图和复盘互相挤占。
 
 新建默认选择「空白任务」，人员从 0 开始；15 人示例需要主动选择，旧浏览器中的已有任务不会因更新被清空。上传 Excel / CSV、语音或文字整理后，在同一张核对表直接修改人数、村庄、接人点、协助与分组信息，原值和修改记录保留。页面明确显示「已有＋此次新增＝保存后」；现场待核实人数单列，未知信息不默认填零。发布只需核对后点击，不要求手输姓名或指定确认文字。
 
@@ -24,7 +24,7 @@ V4.2.0 将资源录入改为手动新增、Excel 导入和语音输入。工作�
 
 旧版缓存可通过 [安全更新页面](https://irainzhang.github.io/jiaoying-ai/update.html) 更新，演练记录与未提交草稿不会被清空。未上传文件不等于本场没有任务，地图转换前会列明保存的方案和执行状态。
 
-公开入口（线上版本以页面显示为准）：[演练与功能清单](https://irainzhang.github.io/jiaoying-ai/start.html?v=4.3.1) · [指挥台](https://irainzhang.github.io/jiaoying-ai/?v=4.3.1#command) · [现场执行端](https://irainzhang.github.io/jiaoying-ai/?v=4.3.1#field)。GitHub 版只共享同浏览器标签页，业务内容不上传 GitHub。电脑与手机的同网联动使用单独启动的局域网房间，不能通过打开上述公网地址自动共享。
+公开入口（线上版本以页面显示为准）：[演练与功能清单](https://irainzhang.github.io/jiaoying-ai/start.html?v=4.3.2) · [指挥台](https://irainzhang.github.io/jiaoying-ai/?v=4.3.2#command) · [现场执行端](https://irainzhang.github.io/jiaoying-ai/?v=4.3.2#field)。GitHub 版只共享同浏览器标签页，业务内容不上传 GitHub。电脑与手机的同网联动使用单独启动的局域网房间，不能通过打开上述公网地址自动共享。
 
 语音识别由浏览器提供，可能联网；语义整理可使用 DeepSeek 本机代理，失败回落本地规则。每次预览标明来源，路线仍由算法计算。公开预案是流程参考，非本系统官方授权或某条道路的安全批准。能力目录见 [dist/capabilities.js](dist/capabilities.js)。本文件由 `node scripts/update-version-docs.mjs` 生成，版本、能力表和运行限制与能力目录同步；较早会议核对与验收文件保留为历史记录。
 
@@ -75,6 +75,8 @@ V4.2.0 将资源录入改为手动新增、Excel 导入和语音输入。工作�
 已提交状态自动保存在 tmp/local-state-v35.json，写盘成功后才返回成功。损坏存档不会被自动覆盖。JIAOYING_PORT 可换端口；JIAOYING_PERSISTENCE_FILE 可指定独立存档；JIAOYING_STATE_FILE 仅用于显式初始化/迁移，常规启动不应反复指定旧快照。
 
 GitHub Pages 需要执行 node scripts/build-pages.mjs，并按 tmp/pages-manifest.json 白名单发布 tmp/pages-release。不要直接上传 dist，不要发布 tmp、会议逐字稿、.env、密钥或运行中演练。构建复用本地业务模块，公开版通过 IndexedDB 事务持久化，BroadcastChannel 通知与轮询联动。
+
+参赛对外固定入口：[作品展示](https://irainzhang.github.io/jiaoying-ai/showcase/start.html)。构建自动从本次业务文件生成独立 showcase 子站：首页源文件在 showcase/，只呈现作品、流程、演练材料和能力边界；不呈现会议、修改过程或内部交付清单。展示版任务、草稿、通知通道及离线缓存与原目录隔离，不搬入原站记录。每次正式发布递增版本号并重建、核验完整白名单；对方沿用固定链接，看到新版提示后保存未提交内容，再点击刷新。持续打开的页面每分钟检查一次版本，更新不强制刷新、不删除任务。
 
 验证：node --test tests/*.test.cjs tests/*.test.mjs 。评估：node scripts/evaluate-scenarios.cjs，结果见 dist/assets/evaluation.json。道路配置可用 Python 3 运行 scripts/build-road-network.py 重建（只用已保存的 OSM 原始数据，不联网）。
 

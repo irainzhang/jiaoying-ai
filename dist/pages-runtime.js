@@ -60,7 +60,7 @@
     let indexedDB;try{indexedDB=env.indexedDB;}catch(_){}
     const storage=options.storage||createIndexedDBStorage(indexedDB,key);
     const integrations=options.integrations||{};
-    const capabilities={realtimeEvents:true,villageReporting:true,commandIntake:true,mapDemandLocation:true,roadMapConversion:true,numericRainfall:true,taskLifecycle:true,resourceRegistry:true,version:'4.3.1-pages',operations:true,stateRestore:true,persistentStorage:true,browserOnly:true,crossDeviceSync:false};
+    const capabilities={realtimeEvents:true,villageReporting:true,commandIntake:true,mapDemandLocation:true,roadMapConversion:true,numericRainfall:true,taskLifecycle:true,resourceRegistry:true,version:'4.3.2-pages',operations:true,stateRestore:true,persistentStorage:true,browserOnly:true,crossDeviceSync:false};
     const connection={mode:'browser',roomId:null,shared:false,scopeLabel:'同浏览器标签页同步',speechNote:''};
     const transport={preferred:'browser-storage',eventsUrl:'/api/v3/events',eventName:'state',pollIntervalMs:1200};
     const listeners=new Set(),streams=new Set();let lastError='',channel=null;

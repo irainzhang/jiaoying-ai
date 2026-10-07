@@ -66,6 +66,8 @@ ${rows}
 
 GitHub Pages 需要执行 node scripts/build-pages.mjs，并按 tmp/pages-manifest.json 白名单发布 tmp/pages-release。不要直接上传 dist，不要发布 tmp、会议逐字稿、.env、密钥或运行中演练。构建复用本地业务模块，公开版通过 IndexedDB 事务持久化，BroadcastChannel 通知与轮询联动。
 
+参赛对外固定入口：[作品展示](https://irainzhang.github.io/jiaoying-ai/showcase/start.html)。构建自动从本次业务文件生成独立 showcase 子站：首页源文件在 showcase/，只呈现作品、流程、演练材料和能力边界；不呈现会议、修改过程或内部交付清单。展示版任务、草稿、通知通道及离线缓存与原目录隔离，不搬入原站记录。每次正式发布递增版本号并重建、核验完整白名单；对方沿用固定链接，看到新版提示后保存未提交内容，再点击刷新。持续打开的页面每分钟检查一次版本，更新不强制刷新、不删除任务。
+
 验证：node --test tests/*.test.cjs tests/*.test.mjs 。评估：node scripts/evaluate-scenarios.cjs，结果见 dist/assets/evaluation.json。道路配置可用 Python 3 运行 scripts/build-road-network.py 重建（只用已保存的 OSM 原始数据，不联网）。
 
 ## 数据、评估和范围
