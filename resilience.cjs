@@ -136,14 +136,21 @@ function validateState(d){
   }
   if(d.fieldEvents!==undefined)assert(d.fieldEvents.every(row=>validId(row.id)&&['report','progress','village'].includes(row.kind)&&typeof row.time==='string'&&Number.isFinite(Date.parse(row.time))),'恢复现场事件无效');
   if(d.followups!==undefined)assert(object(d.followups)&&Object.keys(d.followups).length<=500&&Object.entries(d.followups).every(([key,r])=>validId(key)&&object(r)&&['open','working','resolved'].includes(r.status)&&typeof r.owner==='string'&&r.owner.length<=40&&typeof r.note==='string'&&r.note.length<=500&&(r.dueAt===null||typeof r.dueAt==='string'&&Number.isFinite(Date.parse(r.dueAt)))),'恢复责任跟进记录无效');
-  for(const key of ['plan','baseline','alternative','activePlan'])checkPlan(d[key],s,'恢复'+key);
+  const resourceSnapshots=d.resourcePlanSnapshots||{};
+  assert(object(resourceSnapshots)&&Object.keys(resourceSnapshots).length<=21,'恢复资源历史快照数量无效');
+  for(const [version,entry] of Object.entries(resourceSnapshots)){
+    assert(/^\d+$/.test(version)&&Number(version)<=d.inputVersion&&object(entry)&&Object.keys(entry).every(key=>['resourceRegistryVersion','vehicles','staff'].includes(key))&&entry.resourceRegistryVersion===1&&Array.isArray(entry.vehicles)&&entry.vehicles.length<=30&&entry.vehicles.every(v=>s.vehicles.some(current=>current.id===v.id)),'恢复资源历史快照结构无效');
+    G.validateScenario({...s,...entry});
+  }
+  const resourcesAt=plan=>plan&&resourceSnapshots[plan.inputVersion]?{...s,...resourceSnapshots[plan.inputVersion]}:s;
+  for(const key of ['plan','baseline','alternative','activePlan'])checkPlan(d[key],key==='activePlan'?resourcesAt(d[key]):s,'恢复'+key);
   if(d.plan){
     assert(d.baseline!==null&&object(d.planSnapshot),'恢复草案缺少配套基线或快照');
     const i=d.planSnapshot;
     assert(object(i.scenario)&&['nodes','edges','households','vehicles','shelters'].every(key=>Array.isArray(i.scenario[key]))&&object(i.stage)&&object(i.fleet)&&object(i.occupancy)&&Array.isArray(i.unplannedRequests),'恢复草案快照结构无效');
     G.validateScenario(i.scenario);
   }else assert(d.baseline===null&&d.alternative===null&&(d.planSnapshot===null||d.planSnapshot===undefined),'恢复草案与配套结果不一致');
-  for(const p of d.history)checkPlan(p,s,'历史方案');
+  for(const p of d.history)checkPlan(p,resourcesAt(p),'历史方案');
   require('./lifecycle.cjs').validate(d,archived=>{
     validateState(archived);
     // Validate village references and limits in archived snapshots as strictly

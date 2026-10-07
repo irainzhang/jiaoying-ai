@@ -6,6 +6,7 @@ const R=require('./resilience.cjs');
 const L=require('./intake-location.cjs');
 const T=require('./lifecycle.cjs');
 const G=require('./dist/resource-registry.js');
+const A=require('./intake-audit.cjs');
 const clone=E.clone;
 const ALGORITHM='ruian-candidate-search-3.0';
 const BASELINE='risk-nearest-feasible-3.0';
@@ -175,7 +176,7 @@ function restore(initialData,{external=false}={}){
     assert(JSON.stringify(d.planSnapshot.scenario)===JSON.stringify(d.scenario)&&JSON.stringify(d.planSnapshot.stage)===JSON.stringify(d.stage)&&JSON.stringify(d.planSnapshot.fleet)===JSON.stringify(d.fleet)&&JSON.stringify(d.planSnapshot.occupancy)===JSON.stringify(d.occupancy),'恢复草案与输入快照不符');
     for(const p of [d.plan,d.baseline,d.alternative].filter(Boolean))assert(!validate(snapshot(d),p).length,'恢复草案约束校验失败');
   }
-  return d;
+  A.validate(d);return d;
 }
 function diagnostics(d){return R.diagnostics(d,{E,snapshot,validate,blockedRoute});}
 function create(initialData=null){
@@ -294,7 +295,8 @@ function create(initialData=null){
           log('文件恢复完成：保留人员执行台账，所有剩余安排须重新人工确认。','restore');}
       }
       else if(name==='configure-resources'){
-        assert(d.phase==='preparation'&&!d.activePlan&&!d.history.length&&!Object.values(d.fleet).some(f=>f.onboard.length||f.delivered.length||f.minute||f.finished),'仅可在未发布、未执行的准备阶段配置资源；执行中请登记资源变化');
+        const policy=G.resourceChangePolicy(d);
+        assert(!policy.active||G.isEnabled(d.scenario),'已发布的旧版资源请先结束本场；本场不能把未核实的旧运力转换为人员编组');
         assert(p.resourceRegistryVersion===undefined||p.resourceRegistryVersion===1,'资源登记库版本无效');
         const registry=p.resourceRegistryVersion===1;
         assert(!G.isEnabled(d.scenario)||registry,'已启用的资源登记库不可由旧配置覆盖，请同时提交车辆和工作人员');
@@ -308,9 +310,18 @@ function create(initialData=null){
         if(registration)vehicles=registration.vehicles;
         const shelters=p.shelters.map(sh=>{assert(sh&&typeof sh==='object','安置点配置无效');const id=cleanId(sh.id,'安置点');assert(nodes.has(id)&&(!sh.nodeId||sh.nodeId===id),'安置点编号须选用当前地图节点');assert(typeof sh.available==='boolean','请明确安置点可用性');return {id,name:text(sh.name,80,'安置点名称'),capacity:integer(sh.capacity,0,10000,'接收容量'),available:sh.available,synthetic:true};});
         assert(new Set(vehicles.map(v=>v.id)).size===vehicles.length&&new Set(shelters.map(sh=>sh.id)).size===shelters.length,'资源编号不能重复');
-        d.scenario.vehicles=vehicles;d.scenario.shelters=shelters;d.fleet=Object.fromEntries(vehicles.map(v=>[v.id,{node:v.start,minute:0,onboard:[],delivered:[],finished:false}]));d.occupancy=Object.fromEntries(shelters.map(sh=>[sh.id,0]));d.taskAcks={};
-        if(registration){d.scenario.resourceRegistryVersion=1;d.scenario.staff=registration.staff;G.validateScenario(d.scenario);}
-        invalidate('人工核对本场资源：'+vehicles.length+' 辆车、'+shelters.length+' 个安置点');generate('资源配置更新');
+        const next={vehicles,shelters,staff:registration?.staff||[]};G.validateResourceChange(d,next);
+        if(policy.active){d.resourcePlanSnapshots=d.resourcePlanSnapshots||{};const plans=[d.activePlan,...d.history].filter(Boolean),retained=new Set(plans.map(plan=>String(plan.inputVersion)));for(const key of Object.keys(d.resourcePlanSnapshots))if(!retained.has(key))delete d.resourcePlanSnapshots[key];for(const plan of plans)if(!d.resourcePlanSnapshots[plan.inputVersion])d.resourcePlanSnapshots[plan.inputVersion]={resourceRegistryVersion:d.scenario.resourceRegistryVersion,vehicles:clone(d.scenario.vehicles),staff:clone(d.scenario.staff||[])};}
+        const changes=G.resourceDiff(d.scenario,next),oldFleet=d.fleet,oldOccupancy=d.occupancy,oldScenario=clone(d.scenario),elapsed=policy.active?Math.max(0,...Object.values(oldFleet).map(f=>f.minute||0)):0;
+        d.scenario.vehicles=vehicles.map(v=>({...oldScenario.vehicles.find(old=>old.id===v.id),...v}));d.scenario.shelters=shelters.map(sh=>({...oldScenario.shelters.find(old=>old.id===sh.id),...sh}));
+        d.fleet=Object.fromEntries(vehicles.map(v=>{const old=oldFleet[v.id];return [v.id,policy.active&&old?{...old,...(!policy.startLockedVehicleIds.includes(v.id)?{node:v.start}:{})}:{node:v.start,minute:elapsed,onboard:[],delivered:[],finished:false}];}));
+        d.occupancy=Object.fromEntries(shelters.map(sh=>[sh.id,policy.active?(oldOccupancy[sh.id]||0):0]));if(!policy.active)d.taskAcks={};
+        if(registration){d.scenario.resourceRegistryVersion=1;d.scenario.staff=registration.staff.map(member=>({...oldScenario.staff?.find(old=>old.id===member.id),...member}));G.validateScenario(d.scenario);}
+        d.resourceChanges=d.resourceChanges||[];d.resourceChanges.push({at:now(),inputVersion:d.inputVersion+1,changes});if(d.resourceChanges.length>200)d.resourceChanges.shift();
+        invalidate((policy.active?'人工核对增援与资源调整，保留在途进度：':'人工核对本场资源：')+vehicles.length+' 辆车、'+shelters.length+' 个安置点');
+        if(policy.active)for(const v of d.scenario.vehicles){const old=oldScenario.vehicles.find(x=>x.id===v.id);const crewChanged=(registration?.staff||[]).some(member=>[v.driverId,...(v.escortIds||[])].includes(member.id)&&JSON.stringify(oldScenario.staff?.find(x=>x.id===member.id))!==JSON.stringify(member));if(!old||JSON.stringify(old)!==JSON.stringify(v)||crewChanged)v.resourceChangeVersion=d.inputVersion;}
+        if(policy.active)for(const key of ['shelters','staff'])for(const item of d.scenario[key]||[]){const old=(oldScenario[key]||[]).find(x=>x.id===item.id);if(!old||JSON.stringify(old)!==JSON.stringify(item))item.resourceChangeVersion=d.inputVersion;}
+        generate('资源配置更新');
       }
       else if(name==='resource-event'){
         assert(['vehicle','shelter','staff'].includes(p.kind),'资源事件类型无效');assert(typeof p.available==='boolean','请明确资源是否可用');
@@ -478,7 +489,7 @@ function create(initialData=null){
         const old=impact(before),current=impact(d),rows=Object.keys(current).filter(key=>current[key]!==old[key]).map(key=>({key,before:old[key],after:current[key],delta:current[key]-old[key]}));
         if(rows.length)d.lastDelta={time:now(),reason:d.log[0]?.message,rows};
       }
-      d.revision++;return clone(d);
+      A.append(d,{name,payload:p,before,at:now()});d.revision++;return clone(d);
     }catch(error){d=before;throw error;}
   }
   return {get data(){return clone(d);},action,fresh};

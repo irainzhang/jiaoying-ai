@@ -8,6 +8,7 @@
   // All location/person choices come from the current registry, never a guessed match.
   const LIMITS = Object.freeze({ staff: 150, vehicle: 30, shelter: 30 });
   const LABELS = { staff: '工作人员', vehicle: '车辆', shelter: '安置接收点' };
+  const INTENTS = [{value:'create',label:'新增'},{value:'update',label:'修改现有资源'},{value:'disable',label:'停用 / 未到岗'},{value:'enable',label:'恢复 / 已到岗'}];
   const ROLES = [{ value: 'driver', label: '司机' }, { value: 'escort', label: '随车协助' }, { value: 'reserve', label: '机动待命' }];
   const TYPES = [{ value: 'van', label: '厢式车' }, { value: 'minibus', label: '中小客车' }, { value: 'bus', label: '大客车' }, { value: 'accessible', label: '无障碍车辆' }, { value: 'other', label: '其他车辆' }];
   const ALIASES = {
@@ -21,6 +22,13 @@
   const checkKind = kind => { if (!Object.hasOwn(LIMITS, kind)) fail('请选择工作人员、车辆或安置接收点'); };
   const str = value => value === null || value === undefined ? '' : String(value).trim();
   const compact = value => str(value).replace(/[\s\uFEFF]/g, '').toLowerCase();
+  // Decorations are presentation only; resolve aliases after removing them so
+  // decorated duplicates still trigger the same one-column-per-field check.
+  function cleanHeader(value) {
+    let current = compact(value), previous;
+    do { previous = current; current = current.replace(/^[*＊★]+|[*＊★]+$/g, '').replace(/(?:[（(【\[]?(?:必填|选填|可选)[）)】\]]?)$/g, ''); } while (current !== previous);
+    return current;
+  }
   const blank = value => value === undefined || value === null || str(value) === '';
   const list = value => Array.isArray(value) ? value.map(str).filter(Boolean) : str(value).split(/[、,，;；|\s和与及]+/).filter(Boolean);
   function candidates(context) {
@@ -43,12 +51,53 @@
       fields = [text('name', '安置点名称', true, 80), number('capacity', '可接收人数', 0, 10000), select('nodeId', '地图位置', candidates(context)), enabled];
       example = '新增安置点临时接收点，可接收人数八十人，位置请说当前地图地点，状态可用';
     }
-    return { id: kind, label: LABELS[kind], example, fields, template: { headers: fields.map(f => f.label), rows: [] } };
+    fields.unshift(select('intent','操作',INTENTS,false));
+    const hints = {
+      intent: '留空按新增；修改、停用或恢复时须选定现有资源。',
+      id: kind === 'vehicle' ? '新增可留空，保存时自动编号；修改时填写现有车辆编号。' : '使用唯一编号，限字母、数字及 _ . : -，无需填写姓名。',
+      name: kind === 'vehicle' ? '填写便于现场识别的车辆名称。' : '填写便于识别的接收点名称；演练点请标明“演练”。',
+      model: '填写具体车型或当前布局，不清楚时先核对。',
+      role: '按司机、随车协助或机动待命选择。',
+      vehicleType: '选择当前车辆类别，不能以类别替代实际核载。',
+      totalCapacity: '当前布局总核载，包含司机和随车人员；系统会扣除工作人员占座。',
+      wheelchairSlots: '没有轮椅位填 0；不清楚时请先核对，不会自动猜测。',
+      start: '从当前地图选择真实出发位置，Excel 可填节点编号或唯一地点名称。',
+      driverId: '可留空保存；安排接送前必须补齐已登记的司机编号。',
+      escortIds: '按需选择已登记人员；多人用“、”分隔，留空表示暂未编组。',
+      available: kind === 'staff' ? '明确选择是否到岗，不会默认已到岗。' : '明确选择是否可用，不会默认可用。',
+      notes: '可补充车辆特殊用途或使用限制。',
+      capacity: '填写本场接收容量（含本场已接收人数）；系统另扣已到站占用，不要重复扣减。无接收容量填 0。',
+      nodeId: '从当前地图选择接收位置，Excel 可填节点编号或唯一地点名称。'
+    };
+    for (const field of fields) {
+      field.hint = hints[field.key] || '';
+      if (field.key === 'intent') field.optionalSummary = '默认新增';
+      if (kind === 'vehicle' && field.key === 'id') field.optionalSummary = '新增时自动编号';
+      if (field.key === 'driverId') field.optionalSummary = '接送安排前须补齐';
+    }
+    return { id: kind, label: LABELS[kind], example, fields,
+      helpNote: '星号为新增时必填。修改现有资源时须明确目标，未填的其他字段沿用原记录。',
+      template: { headers: fields.map(f => f.label + (f.required ? ' *' : '（选填）')), rows: [] } };
   }
   function columnKey(kind, header) {
-    const clean = compact(header).replace(/[（(](?:必填|选填|可选)[）)]$/g, '');
+    const clean = cleanHeader(header);
+    if (['操作','变更类型','intent'].includes(clean)) return 'intent';
+    if (['targetid','目标编号'].includes(clean)) return 'targetId';
+    if (['explicitfields','validationissues'].includes(clean)) return clean==='explicitfields'?'explicitFields':'validationIssues';
     for (const [key, names] of Object.entries(ALIASES[kind])) if ([key, ...names].some(x => compact(x) === clean)) return key;
     return null;
+  }
+  function detectKind(rows) {
+    if (!Array.isArray(rows) || !rows.length) return null;
+    const headers = Array.isArray(rows[0]) ? rows[0] : Object.keys(rows[0] || {});
+    const signatures = {
+      staff: [...ALIASES.staff.id.filter(x => x !== '编号'), ...ALIASES.staff.role, 'role'],
+      vehicle: [...ALIASES.vehicle.id.filter(x => x !== '编号'), ...ALIASES.vehicle.model, ...ALIASES.vehicle.vehicleType, ...ALIASES.vehicle.totalCapacity, ...ALIASES.vehicle.wheelchairSlots, ...ALIASES.vehicle.driverId, ...ALIASES.vehicle.escortIds, 'model', 'vehicleType', 'totalCapacity', 'wheelchairSlots', 'driverId', 'escortIds'],
+      shelter: ['安置点名称', '接收点名称', '可接收人数', '接收人数', '接收容量', 'capacity', 'nodeId']
+    };
+    const matched = Object.entries(signatures).filter(([, names]) => headers.some(header => names.some(name => compact(name) === cleanHeader(header)))).map(([kind]) => kind);
+    if (matched.length > 1) fail('文件表头混合了' + matched.map(kind => LABELS[kind]).join('、') + '，请每个文件只保留一种资源。');
+    return matched[0] || null;
   }
   function integer(value) {
     if (typeof value === 'number') return Number.isSafeInteger(value) ? value : null;
@@ -97,8 +146,26 @@
     return '';
   }
   function rawRow(kind, input, context, index, warnings) {
+    const operation = intent(input.intent), reviewIssues=input.validationIssues||[],existing = context[kind==='staff'?'staff':kind==='vehicle'?'vehicles':'shelters'] || [];
+    let prior = null, targetId = str(input.targetId || (kind==='shelter'?input.nodeId:input.id));
+    if (operation !== 'create') {
+      if (kind === 'shelter' && targetId && !existing.some(x => (x.nodeId || x.id) === targetId)) {
+        const location = schema(kind, context).fields.find(field => field.key === 'nodeId');
+        const resolved = choice(location, targetId, context);
+        if (resolved) targetId = resolved;
+      }
+      if (!targetId && input.name) { const matches=existing.filter(x=>x.name===input.name||x.id===input.name);if(matches.length===1)targetId=kind==='shelter'?matches[0].nodeId||matches[0].id:matches[0].id; }
+      prior=existing.find(x=>(kind==='shelter'?x.nodeId||x.id:x.id)===targetId);
+      if(!prior) fail('第 '+(index+1)+' 行修改目标未唯一匹配已登记资源，请填写现有编号或安置点位置');
+      const changes={}; for(const [key,value] of Object.entries(input)) if(!['intent','targetId','explicitFields','validationIssues'].includes(key) && (Array.isArray(input.explicitFields)?input.explicitFields.includes(key):!blank(value))) changes[key]=value;
+      for(const issue of input.validationIssues||[]) changes[issue.field]='';
+      input={...prior,...(kind==='shelter'?{nodeId:prior.nodeId||prior.id}:{}),...changes};
+      if(operation==='disable')input.available=false;if(operation==='enable')input.available=true;
+      warnings.push('第 '+(index+1)+' 行：'+(INTENTS.find(x=>x.value===operation)?.label||'待核对操作')+' '+targetId+'；只修改本行列出的差异，其他已登记信息保留。');
+    }
     const row = {}, fields = schema(kind, context).fields;
     for (const field of fields) {
+      if(field.key==='intent')continue;
       const value = input[field.key], label = '第 ' + (index + 1) + ' 行「' + field.label + '」';
       if (field.type === 'number') {
         const n = integer(value); row[field.key] = n === null ? '' : n;
@@ -123,12 +190,17 @@
       } else row[field.key] = str(value);
       if (field.required && (row[field.key] === '' || row[field.key] === null)) warnings.push(label + '尚未填写；不会默认补齐，请在预览中核对。');
     }
+    for(const issue of reviewIssues){if(issue.field==='driverId')row.driverId='__review_required__';if(issue.field==='escortIds')row.escortIds=['__review_required__'];}
+    if(operation!=='create'){row.intent=operation;row.targetId=targetId;row._resourceBefore={...prior,...(kind==='shelter'?{nodeId:prior.nodeId||prior.id}:{})};}
     return row;
   }
+  function intent(value){const key=str(value);const map={'新增':'create','添加':'create','修改':'update','更新':'update','修改现有资源':'update','停用':'disable','未到岗':'disable','恢复':'enable','启用':'enable','已到岗':'enable'};return map[key]||key||'create';}
   function parseRows(kind, rows, context = {}) {
     checkKind(kind);
     if (!Array.isArray(rows) || !rows.length) fail('文件中没有可读取的资源行');
     if (rows.length > 5001) fail('资源表行数过多，请拆分后导入');
+    const detected = detectKind(rows);
+    if (detected && detected !== kind) fail('文件表头属于' + LABELS[detected] + '，当前选择的是' + LABELS[kind] + '；请切换录入内容后重试。');
     const warnings = [], records = [], arrayMode = Array.isArray(rows[0]);
     const allRows = arrayMode ? rows.slice(1) : rows;
     const headers = arrayMode ? rows[0] : Object.keys(rows[0] || {});
@@ -138,7 +210,7 @@
       const clean = compact(header), key = columnKey(kind, header);
       if (clean && seenHeaders.has(clean)) fail('重复表头「' + str(header) + '」，请保留一列后再导入');
       if (clean) seenHeaders.add(clean);
-      if (key && seenKeys.has(key)) fail('多个表头同时对应「' + schema(kind, context).fields.find(f => f.key === key).label + '」，无法决定采用哪列');
+      if (key && seenKeys.has(key)) fail('多个表头同时对应「' + (schema(kind, context).fields.find(f => f.key === key)?.label || key) + '」，无法决定采用哪列');
       if (key) seenKeys.add(key);
       else if (clean) warnings.push(kind === 'vehicle' && clean === '容量' ? '车辆旧表「容量」不等于总核载，未自动换算；请补填当前布局总核载人数。' : '未识别列「' + str(header) + '」，该列不会写入资源库。');
       return key;
@@ -171,7 +243,9 @@
       let matched = 0, lastKey = '';
       const put = (key, value) => { if (Object.hasOwn(record, key)) fail('同一条语音重复说明了「' + schema(kind, context).fields.find(f => f.key === key).label + '」，请核对后重新整理'); record[key] = value; lastKey = key; matched++; };
       for (let i = 0; i < fragments.length; i++) {
-        const fragment = fragments[i].replace(/^(?:请)?(?:帮我)?(?:新增|添加|登记|录入)\s*/, '').trim();
+        const prefix=fragments[i].match(/^(?:请)?(?:帮我)?(新增|添加|登记|录入|修改|更新|停用|恢复|启用)\s*/);
+        if(i===0&&prefix&&['修改','更新','停用','恢复','启用'].includes(prefix[1]))record.intent=intent(prefix[1]);
+        const fragment = fragments[i].replace(/^(?:请)?(?:帮我)?(?:新增|添加|登记|录入|修改|更新|停用|恢复|启用)\s*/, '').trim();
         const alias = labels.find(x => fragment.startsWith(x.label) && fragment.length > x.label.length);
         if (alias) { put(alias.key, fragment.slice(alias.label.length).replace(/^\s*[:：是为]?\s*/, '')); continue; }
         if (boolean(fragment) !== null) { put('available', fragment); continue; }
@@ -216,10 +290,12 @@
     checkKind(kind);
     const existing = context[kind === 'staff' ? 'staff' : kind === 'vehicle' ? 'vehicles' : 'shelters'] || [];
     if (!Array.isArray(rows) || !rows.length) fail('尚无可确认的' + LABELS[kind]);
-    if (rows.length + existing.length > LIMITS[kind]) fail(LABELS[kind] + '登记合计最多 ' + LIMITS[kind] + ' 条');
-    const fields = schema(kind, context).fields, ids = new Set(existing.map(x => kind === 'shelter' ? x.nodeId || x.id : x.id).filter(Boolean));
+    const updating=new Set(rows.filter(x=>intent(x?.intent)!=='create').map(x=>x.targetId||(kind==='shelter'?x.nodeId:x.id)));
+    if (rows.filter(x=>intent(x?.intent)==='create').length + existing.length > LIMITS[kind]) fail(LABELS[kind] + '登记合计最多 ' + LIMITS[kind] + ' 条');
+    const fields = schema(kind, context).fields, ids = new Set(existing.map(x => kind === 'shelter' ? x.nodeId || x.id : x.id).filter(x=>x&&!updating.has(x)));
     const assigned = new Map();
     if (kind === 'vehicle') for (const vehicle of existing) {
+      if(updating.has(vehicle.id))continue;
       for (const id of [vehicle.driverId, ...(Array.isArray(vehicle.escortIds) ? vehicle.escortIds : [])].filter(Boolean)) {
         if (!assigned.has(id)) assigned.set(id, vehicle.name || vehicle.id || '现有车辆');
       }
@@ -230,6 +306,7 @@
       const problem = (field, message) => { const error = new Error(prefix + '「' + field.label + '」' + message); error.rowIndex = index; error.field = field.key; throw error; };
       if (source._unresolvedSpeech?.length) problem({ label: '原话', key: '_unresolvedSpeech' }, '包含未解决的更正或不确定条件，请修改原话后重新整理：' + source._unresolvedSpeech.join('；'));
       for (const field of fields) {
+        if(field.key==='intent')continue;
         const value = source[field.key];
         if (field.required && blank(value)) problem(field, '尚未填写，请补充后确认');
         if (field.type === 'number') {
@@ -248,6 +325,14 @@
         }
       }
       const id = kind === 'shelter' ? row.nodeId : row.id;
+      const operation=intent(source.intent);
+      if(!INTENTS.some(x=>x.value===operation))problem({key:'intent',label:'操作'},'不明确，请选择新增、修改、停用或恢复');
+      if(operation!=='create'){
+        const target=source.targetId||id,prior=existing.find(x=>(kind==='shelter'?x.nodeId||x.id:x.id)===target);
+        if(!prior||id!==target)problem(fields.find(f=>f.key===(kind==='shelter'?'nodeId':'id')),'修改目标必须为同一现有编号，不能借修改新增或更名编号');
+        if(operation==='disable'&&row.available!==false||operation==='enable'&&row.available!==true)problem(fields.find(f=>f.key==='available'),'与停用 / 恢复操作不一致，请核对');
+        row.intent=operation;row.targetId=target;row._resourceBefore=source._resourceBefore||{...prior};
+      }else if(id&&existing.some(x=>(kind==='shelter'?x.nodeId||x.id:x.id)===id))problem(fields.find(f=>f.key===(kind==='shelter'?'nodeId':'id')),'与现有资源或本批其他行重复；修改请明确选择修改操作');
       if (id && ids.has(id)) problem(fields.find(f => f.key === (kind === 'shelter' ? 'nodeId' : 'id')), '与现有资源或本批其他行重复');
       if (id) ids.add(id);
       if (kind === 'vehicle') {
@@ -262,5 +347,6 @@
       return row;
     });
   }
-  return { schema, parseRows, parseSpeech, validateDraft, LIMITS };
+  function applyDraft(kind,rows,context={}){const clean=validateDraft(kind,rows,context),key=kind==='staff'?'staff':kind==='vehicle'?'vehicles':'shelters',result=(context[key]||[]).map(x=>({...x}));for(const row of clean){const {intent:op,targetId,_resourceBefore,...values}=row;if(kind==='shelter')values.id=values.nodeId;if(op&&op!=='create'){const index=result.findIndex(x=>(kind==='shelter'?x.nodeId||x.id:x.id)===targetId);result[index]={...result[index],...values};}else result.push(values);}return result;}
+  return { schema, detectKind, parseRows, parseSpeech, validateDraft, applyDraft, LIMITS };
 });

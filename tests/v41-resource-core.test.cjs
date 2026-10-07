@@ -56,9 +56,9 @@ test('duplicate or wrong-role worker assignments reject atomically, and a full r
   assert.throws(()=>x.action('edit',{kind:'vehicles',id:'V1',capacity:50,available:true,wheelchair:true}),/资源登记库/);assert.deepEqual(x.data,before);
 });
 
-test('published registry cannot be reassigned and new map task inherits staff without overwriting the archive',()=>{
+test('published registry cannot discard assigned staff and new map task inherits staff without overwriting the archive',()=>{
   const x=registered();add(x);publish(x);const before=x.data;
-  assert.throws(()=>x.action('configure-resources',{resourceRegistryVersion:1,staff:[],vehicles:before.scenario.vehicles,shelters:before.scenario.shelters}),/未发布/);assert.deepEqual(x.data,before);
+  assert.throws(()=>x.action('configure-resources',{resourceRegistryVersion:1,staff:[],vehicles:before.scenario.vehicles,shelters:before.scenario.shelters}),/尚未登记|不能移除/);assert.deepEqual(x.data,before);
   x.action('end-task',{mode:'stopped'});x.action('new-task',{seedMode:'blank',mapMode:'ruian-roads'});assert.equal(x.data.scenario.resourceRegistryVersion,1);assert.deepEqual(x.data.scenario.staff,before.scenario.staff);assert.deepEqual(x.data.scenario.vehicles,before.scenario.vehicles);assert.deepEqual(x.data.taskArchives[0].data.scenario.staff,before.scenario.staff);assert.doesNotThrow(()=>X.restore(x.data,{external:true}));
 });
 

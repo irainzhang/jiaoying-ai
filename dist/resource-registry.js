@@ -175,6 +175,51 @@
     staff.push({ id: 'R01', role: 'reserve', available: true });
     return normalize({ staff, vehicles: proposed });
   }
-  return { VERSION, ROLES, VEHICLE_TYPES, TYPE_LABELS, ROLE_LABELS, isEnabled, normalize, validateScenario,
+  function resourceChangePolicy(data) {
+    const active = !!data.activePlan || !!data.history?.length || data.phase === 'executing';
+    const lockedVehicleIds = [], startLockedVehicleIds = [], lockedStaffIds = new Set();
+    for (const vehicle of data.scenario.vehicles) {
+      const fleet = data.fleet?.[vehicle.id] || {};
+      const running = (fleet.onboard || []).length > 0 || (!fleet.finished && (!!fleet.startedPlanId || (data.phase === 'executing' && data.executionMode !== 'per-vehicle' && data.activePlan?.routes.some(r => r.vehicleId === vehicle.id && r.people))));
+      if (running) { lockedVehicleIds.push(vehicle.id); for (const id of [vehicle.driverId, ...(vehicle.escortIds || [])].filter(Boolean)) lockedStaffIds.add(id); }
+      if (running || fleet.minute || (fleet.delivered || []).length || fleet.finished) startLockedVehicleIds.push(vehicle.id);
+    }
+    return { active, lockedVehicleIds, startLockedVehicleIds, lockedStaffIds: [...lockedStaffIds] };
+  }
+  function resourceDiff(before, after) {
+    const rows = [];
+    for (const kind of ['staff', 'vehicles', 'shelters']) {
+      const old = new Map((before[kind] || []).map(x => [x.id, x]));
+      for (const item of after[kind] || []) {
+        const prior = old.get(item.id), changes = [];
+        for (const key of Object.keys(item)) if (!['color', 'synthetic', 'capacity', 'wheelchair', 'nodeId'].includes(key) || kind === 'shelters' && key === 'capacity') {
+          if (!prior || JSON.stringify(prior[key]) !== JSON.stringify(item[key])) changes.push({ field: key, before: prior?.[key] ?? null, after: item[key] });
+        }
+        if (changes.length) rows.push({ kind, id: item.id, operation: prior ? 'update' : 'add', changes });
+      }
+      for (const item of before[kind] || []) if (!(after[kind] || []).some(x => x.id === item.id)) rows.push({ kind, id: item.id, operation: 'remove', changes: [] });
+    }
+    return rows;
+  }
+  // The same policy runs in the Node core and the browser bundle. UI controls
+  // merely explain these constraints; they are never the enforcement boundary.
+  function validateResourceChange(data, next) {
+    const policy = resourceChangePolicy(data); if (!policy.active) return policy;
+    const prior = data.scenario;
+    for (const kind of ['vehicles', 'shelters', 'staff']) for (const item of prior[kind] || []) assert((next[kind] || []).some(x => x.id === item.id), '发布后不能移除资源 ' + item.id + '；请登记停用，历史与在途记录必须保留');
+    for (const vehicle of next.vehicles) {
+      const old = prior.vehicles.find(x => x.id === vehicle.id); if (!old) { assert(vehicle.available, '增援车辆必须核实可用后加入'); continue; }
+      if (policy.lockedVehicleIds.includes(vehicle.id)) for (const key of ['name', 'model', 'vehicleType', 'totalCapacity', 'wheelchairSlots', 'driverId', 'escortIds']) assert(JSON.stringify(old[key]) === JSON.stringify(vehicle[key]), vehicle.id + ' 已出发或仍有车上人员，不能修改车型、运力或编组；可登记停用并协调');
+      if (policy.startLockedVehicleIds.includes(vehicle.id)) assert(old.start === vehicle.start, vehicle.id + ' 已有行驶记录，不能改写出发位置');
+    }
+    for (const member of next.staff || []) {
+      const old = (prior.staff || []).find(x => x.id === member.id);
+      if (!old) assert(member.available, '增援工作人员 ' + member.id + ' 必须核实到岗后加入');
+      if (old && policy.lockedStaffIds.includes(member.id)) assert(old.role === member.role, member.id + ' 正随已出发车辆执行，不能更换角色');
+    }
+    for (const shelter of next.shelters) assert(shelter.capacity >= (data.occupancy[shelter.id] || 0), shelter.id + ' 容量不能小于本场已接收人数');
+    return policy;
+  }
+  return { VERSION, ROLES, VEHICLE_TYPES, TYPE_LABELS, ROLE_LABELS, isEnabled, normalize, validateScenario, resourceChangePolicy, resourceDiff, validateResourceChange,
     wheelchairCapacity, routeIssues, crew, suggestAssignments, demoStaffAndAssignments };
 });

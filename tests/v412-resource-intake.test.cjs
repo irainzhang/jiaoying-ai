@@ -18,6 +18,48 @@ test('schema uses current map candidates and staff roles, never an invented loca
   s.fields.find(f => f.key === 'vehicleType').options[0].label = '污染';
   assert.equal(I.schema('vehicle').fields.find(f => f.key === 'vehicleType').options[0].label, '厢式车');
 });
+test('required and optional labels are centralized and template headers remain importable',()=>{
+  for(const kind of ['staff','vehicle','shelter']){
+    const s=I.schema(kind,context());
+    s.fields.forEach((field,index)=>{assert.ok(field.hint);assert.equal(s.template.headers[index],field.label+(field.required?' *':'（选填）'));});
+    assert.doesNotThrow(()=>I.parseRows(kind,[s.template.headers,s.fields.map(f=>f.key==='intent'?'新增':f.key==='id'?'NEW1':'')],context()));
+  }
+  const s=I.schema('vehicle',context());
+  assert.equal(s.fields.find(f=>f.key==='driverId').required,false);assert.equal(s.fields.find(f=>f.key==='wheelchairSlots').required,true);
+  const row=I.parseRows('vehicle',[vehicle({id:'',driverId:'',escortIds:[],wheelchairSlots:0})],context()).rows;
+  assert.equal(I.validateDraft('vehicle',row,context())[0].id,'');
+  assert.throws(()=>I.validateDraft('vehicle',[vehicle({wheelchairSlots:''})],context()),/轮椅位.*尚未填写/);
+});
+test('star and required suffix decorations accept old and new headers but never bypass alias duplicate checks',()=>{
+  for(const wrap of [x=>'* '+x,x=>x+' *',x=>'＊'+x+'＊',x=>'★'+x+'★',x=>x+'（必填）',x=>'★'+x+'（选填）＊',x=>x+'[可选]',x=>x+'必填']){
+    const parsed=I.parseRows('staff',[['工作人员编号','岗位','是否到岗'].map(wrap),['D03','司机','是']],context());
+    assert.deepEqual(parsed.rows,[{id:'D03',role:'driver',available:true}]);
+  }
+  assert.throws(()=>I.parseRows('staff',[['* 工作人员编号','人员编号（选填）'],['D03','D04']],context()),/多个表头/);
+  assert.throws(()=>I.parseRows('vehicle',[['＊总核载人数','totalCapacity★'],[8,9]],context()),/多个表头/);
+});
+test('clear headers detect resource type without using row values or file names',()=>{
+  assert.equal(I.detectKind([['工作人员编号 *','岗位 *'],['D01','司机']]),'staff');
+  assert.equal(I.detectKind([['型号（必填）','总核载人数★'],['小客车',9]]),'vehicle');
+  assert.equal(I.detectKind([['安置点名称 *','可接收人数'],['演练点',20]]),'shelter');
+  assert.equal(I.detectKind([['名称','状态'],['安置点名称','是']]),null);
+  assert.equal(I.detectKind([['名称','容量'],['旧车',8]]),null);
+  assert.throws(()=>I.detectKind([['工作人员编号','车辆型号']]),/混合.*一种资源/);
+  assert.throws(()=>I.parseRows('staff',[['车辆型号','总核载人数'],['小客车',9]],context()),/属于车辆.*当前选择的是工作人员/);
+});
+test('shelter updates resolve exact current map names before finding the existing resource',()=>{
+  const c=context();c.shelters=[{id:'N2',nodeId:'N2',name:'演练接收点',capacity:15,available:true}];
+  const headers=['操作','安置点名称','可接收人数','地图位置','是否可用'];
+  for(const location of ['N2','锦湖街道接收点','锦湖街道接收点 · N2']){
+    const parsed=I.parseRows('shelter',[headers,['修改','',20,location,'']],c);
+    assert.equal(parsed.rows[0].targetId,'N2');assert.equal(parsed.rows[0].nodeId,'N2');
+    const result=I.applyDraft('shelter',parsed.rows,c);assert.equal(result.length,1);assert.equal(result[0].capacity,20);assert.equal(result[0].name,'演练接收点');
+  }
+  assert.throws(()=>I.parseRows('shelter',[headers,['修改','',20,'锦湖','']],c),/未唯一匹配/);
+  c.nodes.push({id:'N3',label:'锦湖街道接收点'});
+  assert.throws(()=>I.parseRows('shelter',[headers,['修改','',20,'锦湖街道接收点','']],c),/未唯一匹配/);
+  assert.equal(I.parseRows('shelter',[headers,['修改','',20,'N2','']],c).rows[0].targetId,'N2');
+});
 test('Chinese workbook headers and explicit states normalize without importing personal names', () => {
   const result = I.parseRows('staff', [['人员编号', '岗位', '是否到岗', '姓名'], ['D03', '司机', '是', '不得写入姓名'], ['E02', '随车协助', '未到岗', '也不写入']], context());
   assert.deepEqual(result.rows, [{ id: 'D03', role: 'driver', available: true }, { id: 'E02', role: 'escort', available: false }]);

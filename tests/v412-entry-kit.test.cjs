@@ -47,7 +47,7 @@ test('unknown parsed options remain visible for correction; list choices are ind
 function node(dataset={}){return {dataset,value:'',innerHTML:'',textContent:'',disabled:false,hidden:false,files:[],classList:{toggle(){}},setAttribute(k,v){this[k]=v;},focus(){this.focused=true;},scrollIntoView(){this.scrolled=true;},closest(){return this;}};}
 function fixture(overrides={}){
   const nodes=new Map(),actions=new Map(),events={};
-  for(const key of ['kind','speech','file','status','error','preview','voice','example'])nodes.set(`[data-entry-${key}]`,node());
+  for(const key of ['kind','speech','file','status','error','preview','voice','example','schema-help'])nodes.set(`[data-entry-${key}]`,node());
   nodes.get('[data-entry-kind]').value='staff';
   for(const action of ['cancel','parse','apply','remove','voice','voice-cancel','template'])actions.set(action,node({entryAction:action}));
   const modes=['file','speech'].map(value=>node({entryMode:value})),materials=['file','speech'].map(value=>node({entryMaterial:value}));
@@ -72,14 +72,32 @@ test('speech is edited and previewed before applying; cancelling clears pending 
   const f=fixture();await f.mode('speech');await f.speech('工作人员 W0 为司机');assert.equal(f.applied.length,0);assert.equal(f.dispose.hasPending(),true);
   await f.click('cancel');assert.equal(f.dispose.hasPending(),false);assert.equal(f.applied.length,0);assert.equal(f.nodes.get('[data-entry-speech]').value,'');
 });
+
+test('typing into the speech text box is recorded as text, while an Excel import stays file provenance',async()=>{
+  const applied=[],f=fixture({onApply:(_kind,_rows,meta)=>applied.push(meta)});
+  await f.mode('speech');await f.speech('工作人员 W0 为司机');await f.click('apply');
+  assert.equal(applied[0].source,'text');assert.equal(applied[0].utterance,'工作人员 W0 为司机');
+  await f.mode('file');await f.upload();await f.click('apply');
+  assert.equal(applied[1].source,'file');assert.equal(applied[1].utterance,'');
+});
 test('new type, new file, and disposal discard late file results without resurrecting a preview',async()=>{
   const first=deferred(),second=deferred(),f=fixture();let calls=0;f.context.JiaoyingIntakeFile.read=()=>++calls===1?first.promise:second.promise;
-  const p1=f.upload({name:'old.xlsx'});assert.equal(f.dispose.hasPending(),true);await f.kind('vehicle');const p2=f.upload({name:'new.xlsx'});
+  const p1=f.upload({name:'old.xlsx'});assert.equal(f.dispose.hasPending(),true);await f.click('cancel');await f.kind('vehicle');const p2=f.upload({name:'new.xlsx'});
   first.resolve({rows:[['old']],warnings:[]});await p1;assert.equal(f.nodes.get('[data-entry-preview]').innerHTML,'');
   f.dispose();second.resolve({rows:[['new']],warnings:[]});await p2;assert.equal(f.nodes.get('[data-entry-preview]').innerHTML,'');assert.equal(f.dispose.hasPending(),false);assert.equal(f.applied.length,0);assert.deepEqual(Object.keys(f.events),[]);assert.ok(f.cancels>0);
 });
 test('late speech error cannot replace messages after switching kinds',async()=>{
-  const speech=deferred(),f=fixture({parseSpeech:()=>speech.promise});await f.mode('speech');const pending=f.speech('旧材料');await f.kind('vehicle');speech.reject(new Error('过期错误'));await pending;assert.equal(f.nodes.get('[data-entry-error]').textContent,'');
+  const speech=deferred(),f=fixture({parseSpeech:()=>speech.promise});await f.mode('speech');const pending=f.speech('旧材料');await f.click('cancel');await f.kind('vehicle');speech.reject(new Error('过期错误'));await pending;assert.equal(f.nodes.get('[data-entry-error]').textContent,'');
+});
+test('semantic request is cancelled on input change and provenance appears only for the current preview',async()=>{
+  const late=deferred();let requestSignal;
+  const f=fixture({parseSpeech:(_kind,_text,options)=>{requestSignal=options.signal;return late.promise;}});f.context.AbortController=AbortController;
+  f.context.JiaoyingSemanticIntake={sourceHTML:meta=>meta?'<p>来源：'+meta.provider+'</p>':''};
+  await f.mode('speech');const pending=f.speech('旧原话');assert.equal(requestSignal.aborted,false);
+  await f.click('cancel');await f.kind('vehicle');assert.equal(requestSignal.aborted,true);late.resolve({rows:[row()],semantic:{provider:'stale'}});await pending;
+  assert.equal(f.nodes.get('[data-entry-preview]').innerHTML,'');
+  const g=fixture({parseSpeech:()=>({rows:[row()],semantic:{provider:'DeepSeek'}})});g.context.JiaoyingSemanticIntake=f.context.JiaoyingSemanticIntake;
+  await g.mode('speech');await g.speech('新原话');assert.match(g.nodes.get('[data-entry-preview]').innerHTML,/来源：DeepSeek/);assert.equal(g.applied.length,0);
 });
 test('revalidates dynamic candidates when applying and retains failed preview',async()=>{
   let current=schema();const f=fixture({getSchema:()=>current});await f.upload();current={...schema(),fields:fields.map(x=>x.key==='role'?{...x,options:[]}:x)};
@@ -87,6 +105,53 @@ test('revalidates dynamic candidates when applying and retains failed preview',a
 });
 test('domain validation and append failures preserve material for correction, without claiming success',async()=>{
   const f=fixture({onApply:()=>{throw new Error('资源已经存在');}});await f.upload();await f.click('apply');assert.match(f.nodes.get('[data-entry-error]').textContent,/资源已经存在/);assert.equal(f.dispose.hasPending(),true);assert.match(f.nodes.get('[data-entry-preview]').innerHTML,/核对/);
+});
+test('schema-driven labels show required stars and optional hints without changing validation',()=>{
+  const {api}=kit(),resource=require('../dist/resource-intake.js'),s=resource.schema('vehicle');
+  const name=s.fields.find(f=>f.key==='name'),driver=s.fields.find(f=>f.key==='driverId');
+  assert.match(api.fieldLabel(name),/entry-required.*必填.*\*/);
+  assert.match(api.fieldLabel(driver),/选填/);assert.doesNotMatch(api.fieldLabel(driver),/entry-required/);
+  assert.match(api.fieldHint(driver),/接送.*必须补齐/);
+  assert.match(api.schemaHelpHTML(s),/必填.*车辆名称/);assert.match(api.schemaHelpHTML(s),/默认新增/);
+  const html=api.previewHTML(s,[{}]);assert.match(html,/aria-required="true"/);assert.match(html,/没有轮椅位填 0/);
+  assert.match(api.fieldHint({hint:'<script>'}),/&lt;script&gt;/);
+});
+test('resource tabs and entry selector switch one type only when there is no pending material',async()=>{
+  const changed=[],f=fixture({onKindChange:kind=>changed.push(kind),getSchema:kind=>({...schema(),id:kind,label:kind==='vehicle'?'车辆':'工作人员'})});
+  assert.equal(f.dispose.setKind('vehicle'),true);assert.equal(f.nodes.get('[data-entry-kind]').value,'vehicle');assert.deepEqual(changed,['vehicle']);
+  assert.match(f.actions.get('template').textContent,/车辆/);assert.match(f.nodes.get('[data-entry-schema-help]').innerHTML,/必填/);
+  await f.upload();const before=f.nodes.get('[data-entry-preview]').innerHTML;
+  assert.equal(f.dispose.setKind('staff'),false);assert.equal(f.nodes.get('[data-entry-kind]').value,'vehicle');
+  assert.match(f.nodes.get('[data-entry-error]').textContent,/先确认加入草稿.*取消本次录入/);
+  await f.kind('staff');assert.equal(f.nodes.get('[data-entry-kind]').value,'vehicle');assert.equal(f.nodes.get('[data-entry-preview]').innerHTML,before);
+  assert.deepEqual(changed,['vehicle']);await f.click('cancel');await f.kind('staff');assert.deepEqual(changed,['vehicle','staff']);
+  f.dispose();assert.equal(f.dispose.setKind('vehicle'),false);
+});
+test('resource type detection follows clear spreadsheet headers, updates selection and preserves preview',async()=>{
+  const resource=require('../dist/resource-intake.js'),changed=[],parsed=[],f=fixture({
+    detectKind:resource.detectKind,onKindChange:kind=>changed.push(kind),
+    getSchema:kind=>({...schema(),id:kind,label:kind==='vehicle'?'车辆':'工作人员'}),
+    parseRows:(kind,rows)=>{parsed.push({kind,rows});return {rows:[row()],warnings:[]};}
+  });
+  f.context.JiaoyingIntakeFile.read=async()=>({rows:[['车辆型号 *','总核载人数 *'],['小客车',9]],warnings:[]});
+  await f.upload({name:'not-a-vehicle-filename.xlsx'});
+  assert.deepEqual(changed,['vehicle']);assert.equal(parsed[0].kind,'vehicle');assert.equal(f.nodes.get('[data-entry-kind]').value,'vehicle');
+  assert.match(f.nodes.get('[data-entry-preview]').innerHTML,/根据文件表头切换为车辆/);assert.equal(f.applied.length,0);
+  assert.equal(f.dispose.hasPending(),true);
+});
+test('mixed or ambiguous spreadsheet headers never select a guessed resource type',async()=>{
+  const resource=require('../dist/resource-intake.js'),changed=[],parsed=[],f=fixture({detectKind:resource.detectKind,onKindChange:k=>changed.push(k),parseRows:k=>{parsed.push(k);return {rows:[row()]};}});
+  f.context.JiaoyingIntakeFile.read=async()=>({rows:[['工作人员编号','车辆型号'],['D1','中巴']],warnings:[]});
+  await f.upload();assert.match(f.nodes.get('[data-entry-error]').textContent,/混合.*一种资源/);assert.match(f.nodes.get('[data-entry-status]').textContent,/内容整理未完成.*没有加入草稿/);assert.deepEqual(parsed,[]);assert.deepEqual(changed,[]);
+  await f.click('cancel');f.context.JiaoyingIntakeFile.read=async()=>({rows:[['编号','名称'],['V1','备用']],warnings:[]});
+  await f.upload({name:'车辆.xlsx'});assert.deepEqual(parsed,['staff']);assert.deepEqual(changed,[]);
+});
+test('file failures stop the reading indicator and stale failures cannot overwrite a newer preview',async()=>{
+  const f=fixture();f.context.JiaoyingIntakeFile.read=async()=>{throw new Error('不支持的文件格式');};
+  await f.upload();assert.match(f.nodes.get('[data-entry-status]').textContent,/文件读取未完成.*没有加入草稿/);assert.match(f.nodes.get('[data-entry-error]').textContent,/不支持的文件格式/);
+  const late=deferred();let calls=0;f.context.JiaoyingIntakeFile.read=()=>++calls===1?late.promise:Promise.resolve({rows:[['编号'],['W0']],warnings:[]});
+  const first=f.upload({name:'old.xlsx'});await f.upload({name:'new.xlsx'});const status=f.nodes.get('[data-entry-status]').textContent;
+  late.reject(new Error('过期读取错误'));await first;assert.equal(f.nodes.get('[data-entry-status]').textContent,status);assert.equal(f.nodes.get('[data-entry-error]').textContent,'');assert.match(status,/已整理 1 条/);
 });
 test('asynchronous validation cannot be double-submitted; disposing before it ends blocks apply',async()=>{
   const gate=deferred(),f=fixture({validate:()=>gate.promise});await f.upload();const p=f.click('apply');await f.click('apply');assert.equal(f.actions.get('apply').disabled,true);f.dispose();gate.resolve([row()]);await p;assert.equal(f.applied.length,0);

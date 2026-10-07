@@ -16,7 +16,7 @@ if errorlevel 1 (
   exit /b 1
 )
 pushd "%~dp0"
-echo 正在显式开启同 Wi-Fi 协同演练。此窗口会显示房间加入链接。
+echo 正在显式开启同 Wi-Fi 协同演练。此窗口只显示电脑指挥员链接；登录后在接入管理生成手机执行链接。
 echo 不修改防火墙，不开启公网，不读取本机旧演练。按 Ctrl+C 关闭服务。
 "%JIAOYING_NODE%" "%~dp0lan-server.mjs"
 set "JIAOYING_EXIT=%ERRORLEVEL%"
