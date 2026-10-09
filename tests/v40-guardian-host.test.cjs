@@ -9,7 +9,7 @@ function hostFixture(blank=false){
 }
 test('Guardian current task reports actual zero-person startup, never imports independent 15-person seed',async()=>{
  const host=hostFixture(true),before=host.store.data,result=await tools.run(host,'read_state');
- assert.equal(result.people,0);assert.equal(result.routes.length,0);assert.equal(result.source,'jiaoying-current-task');assert.match(result.provider,/未连接大模型/);assert.deepEqual(host.store.data,before);
+ assert.equal(result.people,0);assert.equal(result.routes.length,0);assert.equal(result.source,'jiaoying-current-task');assert.match(result.provider,/本地工具与调度算法/);assert.deepEqual(host.store.data,before);
  await assert.rejects(tools.run(host,'calculate_draft'),/0 人/);assert.equal(host.calls.length,0);
 });
 test('Guardian calculation uses current host demands and writes only a draft through host adapter',async()=>{
@@ -27,7 +27,7 @@ test('Guardian rejects stale revision/session/input/execution stamps before invo
 });
 test('Guardian report preserves gaps, pending facts, live stages and provenance without mutating host',async()=>{
  const host=hostFixture();host.store.action('generate');host.store.action('village-report',{villageId:'VA',mode:'increment',people:3,pickupId:'P-A1',assistancePeople:0,wheelchairPeople:0,groupPolicy:'splittable',text:'新发现3人',source:'voice',reporter:'现场'});
- const before=host.store.data,result=await tools.run(host,'prepare_report');assert.equal(result.pendingReports,1);assert.equal(result.pending[0].pendingPeople,3);assert.match(result.reportText,/不是大模型回答/);assert.match(result.reportText,/未发布|已发布方案 无/);assert.equal(result.tool,'prepare_report');assert.deepEqual(host.store.data,before);
+ const before=host.store.data,result=await tools.run(host,'prepare_report');assert.equal(result.pendingReports,1);assert.equal(result.pending[0].pendingPeople,3);assert.match(result.reportText,/本地规则与算法结果/);assert.match(result.reportText,/未发布|已发布方案 无/);assert.equal(result.tool,'prepare_report');assert.deepEqual(host.store.data,before);
  host.store.action('end-task',{mode:'stopped'});await assert.rejects(tools.run(host,'calculate_draft'),/已结束/);
 });
 test('after arrivals with no draft, published routes remain historical and never claim current remaining capacity',async()=>{

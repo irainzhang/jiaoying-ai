@@ -24,7 +24,7 @@ export async function buildShowcase({outputDirectory,files,capabilities}){
   for(const name of ['start.html','showcase.css','showcase-home.js'])await write(name,await readFile(resolve(source,name),'utf8'));
   const catalog={version:capabilities.version,date:capabilities.date,title:'叫应 AI · 城市韧性协同展示',channel:'showcase',modelConnected:false,agentConnected:false,weatherConnected:false,crossDeviceSync:false,entries:features,limits:[
     '公开道路来自瑞安局部片区，人员、车辆、接收容量和通行状态为合成演练设定。',
-    '公开展示版使用本地规则和调度算法；未连接大模型，雨量为模拟数据。',
+    '公开展示版使用本地规则和调度算法；雨量为模拟数据。',
     '同一浏览器的两端共享演练，不同设备和浏览器各自独立；未连接原叫应系统。',
     '方案经人工核对后模拟执行，不用于真实应急指挥或安全导航。'
   ]};
@@ -44,7 +44,7 @@ export async function buildShowcase({outputDirectory,files,capabilities}){
     await writeFile(resolve(output,name),text.replace(needle,replacement),'utf8');
   }
   await write('release.json',JSON.stringify({version:capabilities.version+'-showcase',channel:'showcase',mode:'browser-exercise',scope:'same-browser-tabs',storageScope:'showcase/',modelConnected:false,agentConnected:false,weatherConnected:false},null,2));
-  await write('README.md','# 叫应 AI · 参赛展示\n\n固定入口：start.html。指挥端与现场端请在同一浏览器打开。人员与资源为演练设定；公开展示使用本地规则与调度算法，未连接大模型。\n\n展示版独立保存浏览器任务。后续发布沿用同一链接；更新提示由使用者确认后刷新，保留已提交记录。地图来源见 assets/maps/SOURCES.md，Leaflet 许可见 vendor/leaflet/LICENSE。\n');
+  await write('README.md','# 叫应 AI · 参赛展示\n\n固定入口：start.html。指挥端与现场端请在同一浏览器打开。人员与资源为演练设定；公开展示使用本地规则与调度算法。\n\n展示版独立保存浏览器任务。后续发布沿用同一链接；更新提示由使用者确认后刷新，保留已提交记录。地图来源见 assets/maps/SOURCES.md，Leaflet 许可见 vendor/leaflet/LICENSE。\n');
   const cached=[...new Set(paths)].filter(x=>!['.nojekyll','README.md'].includes(x)).sort();
   let worker=await readFile(new URL('../dist/guardian-offline-sw.js',import.meta.url),'utf8');
   worker=worker.replaceAll('jiaoying-guardian-','jiaoying-showcase-');

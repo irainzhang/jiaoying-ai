@@ -12,7 +12,7 @@ test('public Pages and file protocol never probe or send utterances',async()=>{
     const f=fixture(()=>{throw Error('must not fetch');},{location});
     const result=await f.api.interpret('staff','工作人员 D01',{fallback:()=>({rows:[{id:'D01'}]}),normalize});
     assert.equal(f.calls.length,0);assert.equal(result.semantic.provider,'offline');assert.equal(result.semantic.sent,false);
-    assert.match(f.api.sourceHTML(result.semantic),/不是大模型结果/);assert.match(f.api.statusHTML(),/本地规则/);
+    assert.match(f.api.sourceHTML(result.semantic),/本次来源：本地规则整理/);assert.match(f.api.statusHTML(),/本地规则/);
   }
 });
 test('configuration status alone is not represented as a successful model call',async()=>{

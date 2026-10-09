@@ -158,5 +158,5 @@ test('parser is pure and preserves the original utterance without side effects',
   assert.equal(JSON.stringify(c), original);
   assert.equal(out.proposal.payload.text, '新增20人');
   assert.equal(out.mode, 'local-rules');
-  assert.ok(out.evidence.some(s => s.includes('未调用大模型')));
+  assert.ok(out.evidence.some(s => s.includes('由本地规则整理')));
 });
