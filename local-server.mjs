@@ -5,6 +5,7 @@ import {resolve,extname,sep,dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {randomUUID} from 'node:crypto';
 import Exercise from './exercise.cjs';
+import releaseCapabilities from './dist/capabilities.js';
 import {integrationStatus,agentContract} from './integrations.mjs';
 import {createRoomAccess} from './room-access.mjs';
 import {createSemanticGateway,readSemanticConfig} from './semantic-gateway.mjs';
@@ -24,7 +25,7 @@ export function createExerciseServer({initialData=null,persistenceFile=null,star
   if(persistenceFile)persist(store.data);
   const transport={preferred:'sse',eventsUrl:'/api/v3/events',eventName:'state',pollIntervalMs:1200};
   const connection={mode:room?'lan-room':'local',roomId:room?.roomId||null,shared:!!room,scopeLabel:room?'同 Wi-Fi 房间':'仅本机浏览器',speechNote:room?'手机 HTTP 页面可能不支持浏览器语音识别，可使用系统键盘语音听写。':''};
-  const capabilities={realtimeEvents:true,villageReporting:true,commandIntake:true,mapDemandLocation:true,roadMapConversion:true,numericRainfall:true,taskLifecycle:true,resourceRegistry:true,version:'4.3.0',operations:true,stateRestore:true,persistentStorage:!!persistenceFile,crossDeviceSync:!!room};
+  const capabilities={realtimeEvents:true,villageReporting:true,commandIntake:true,mapDemandLocation:true,roadMapConversion:true,numericRainfall:true,taskLifecycle:true,resourceRegistry:true,version:releaseCapabilities.version,operations:true,stateRestore:true,persistentStorage:!!persistenceFile,crossDeviceSync:!!room};
   const connectionFor=user=>room&&user?{...connection,...room.connection(user)}:connection;
   const state=(user=null)=>{const full=store.data,limited=room&&user?.role==='field',data=limited?room.project(full,user):full;
     const metricData=limited?{...data,villageReports:data.villageReports.filter(r=>r.status==='pending')}:data;

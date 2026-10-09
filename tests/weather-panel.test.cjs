@@ -40,7 +40,7 @@ test('render has accessible rain controls and keeps simulated-source boundaries 
   assert.match(html,/id="weather-panel"/);assert.match(html,/aria-labelledby="weather-title"/);
   for(const rain of [20,50,80])assert.match(html,new RegExp('data-ac="weather-demo" data-rain="'+rain+'"'));
   assert.match(html,/data-rain="50"[^>]*>启动雨情演练/);
-  assert.match(html,/不是官方预警/);assert.match(html,/实时天气接口尚未接入/);assert.match(html,/不直接推断积水深度或自动封路/);
+  assert.match(html,/不是官方预警/);assert.match(html,/模拟雨情用于复核安排/);assert.match(html,/不直接推断积水深度或自动封路/);
 });
 test('host button helper receives the agreed action and rain value, including disabled state',()=>{
   const calls=[];

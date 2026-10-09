@@ -65,8 +65,8 @@ test('public pages retain repo-relative links and every referenced script and st
   assert.ok(index.indexOf('exercise-browser.js')<index.indexOf('pages-runtime.js'));
   assert.ok(index.indexOf('pages-runtime.js')<index.indexOf('workspace-app.js'));
   const start=await read('start.html');
-  assert.match(start,/公开版各设备的数据独立/);
-  assert.match(start,/同 Wi-Fi/);
+  assert.match(start,/两端在同一浏览器同步/);
+  assert.match(start,/任务自动保存在当前浏览器/);
   assert.match(start,/capabilities.js/);
   const catalog=await read('capabilities.js');assert.equal((catalog.match(/id:'O\d+'/g)||[]).length,18);
 });

@@ -52,3 +52,14 @@ test('only three current-task tools are exposed and natural-language publication
  const host=hostFixture();for(const name of ['confirm','publish_dispatch_plan','start','verify','end-task'])await assert.rejects(tools.run(host,name),/不提供发布/);
  assert.equal(tools.intent('还有多少人没安排').tool,'read_state');assert.equal(tools.intent('帮我重新安排').tool,'calculate_draft');assert.equal(tools.intent('查看当前人数').tool,'read_state');assert.equal(tools.intent('整理报告').tool,'prepare_report');assert.equal(tools.intent('现在发布任务').tool,null);assert.equal(host.calls.length,0);
 });
+
+test('ended task reports retain gaps and publication facts without directing the user to recalculate',async()=>{
+ const host=hostFixture(true);
+ host.store.action('command-intake',{rows:[{villageId:'VA',pickupId:'P-A1',people:20,assistancePeople:0,wheelchairPeople:0,groupPolicy:'splittable',text:'20人演练'}],source:'text'});
+ host.store.action('confirm');host.store.action('end-task',{mode:'stopped'});
+ const before=host.store.data,result=await tools.run(host,'prepare_report');
+ assert.equal(result.closed,true);assert.equal(result.waiting,20);assert.match(result.summary,/本场已结束/);
+ assert.match(result.reportText,/历史记录保留/);assert.doesNotMatch(result.summary+'\n'+result.reportText,/需重算|需重新计算|需计算或重新核对/);
+ assert.ok(result.gaps.length);assert.ok(result.gaps.every(x=>x.scope==='结束时待协调'));
+ await assert.rejects(tools.run(host,'calculate_draft'),/已结束/);assert.deepEqual(host.store.data,before);
+});

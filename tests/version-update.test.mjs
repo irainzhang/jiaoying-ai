@@ -8,7 +8,7 @@ const recoveryHTML=await readFile(new URL('../dist/update.html',import.meta.url)
 const recoveryScript=recoveryHTML.match(/<script>([\s\S]*?)<\/script>/)[1];
 const build='0123456789abcdefabcd';
 function events(object={}) { object.events={};object.addEventListener=(name,fn)=>(object.events[name]??=[]).push(fn);object.emit=(name,event={})=>(object.events[name]||[]).forEach(fn=>fn(event));return object; }
-function harness({recovery=false,offline=false,version='3.9.1',otherWorker=false}={}) {
+function harness({recovery=false,offline=false,version='3.9.1',currentVersion='3.9.0',otherWorker=false}={}) {
   function element(tag) { return events({tag,children:[],style:{},textContent:'',disabled:false,setAttribute(key,value){this[key]=value;},appendChild(child){this.children.push(child);},insertBefore(child){this.children.unshift(child);},click(){this.emit('click');}}); }
   const document=events({currentScript:{src:'https://example.test/jiaoying-ai/version-update.js'},hidden:false,createElement:element});
   document.body=element('body');document.body.appendChild(element('original-workspace'));
@@ -19,7 +19,7 @@ function harness({recovery=false,offline=false,version='3.9.1',otherWorker=false
   const registration=events({active:worker,update:async()=>{calls.update++;}});
   const sw=events({controller:worker,getRegistration:async()=>otherWorker?{active:{scriptURL:'https://example.test/other-sw.js'}}:registration,register:async(url,options)=>{calls.register.push({url,options});return registration;}});
   const location={href:'https://example.test/jiaoying-ai/'+(recovery?'update.html':'?v=3.9#command'),protocol:'https:',reload(){calls.reload++;}};
-  const window=events({JiaoyingCapabilities:{version:'3.9.0'},setInterval(fn,ms){calls.timers.push({fn,ms});}});
+  const window=events({JiaoyingCapabilities:{version:currentVersion},setInterval(fn,ms){calls.timers.push({fn,ms});}});
   const context={window,document,navigator:{serviceWorker:sw},location,URL,fetch:async(url,options)=>{calls.fetch.push({url,options});if(offline)throw new Error('offline');return {ok:true,json:async()=>({version,build,files:['index.html']})};}};
   context.Date=class extends Date { static now(){return now;} };
   Object.defineProperty(context,'localStorage',{get(){throw new Error('Update flow must not access task storage');}});
@@ -38,6 +38,16 @@ test('new-version notice waits for matching complete cache controlled by the new
   h.message({ready:true,build,version:'3.9.1'});assert.equal(button.disabled,false);assert.equal(h.calls.reload,0);
   button.click();assert.equal(h.calls.reload,1);assert.equal(h.document.body.children[1].tag,'original-workspace');
   assert.match(banner.children[0].textContent,/未提交内容请先保存/);
+});
+
+test('major-version upgrade preserves the workspace and only refreshes after complete V5 cache and a click',async()=>{
+  const h=harness({currentVersion:'4.3.2',version:'5.0.0'});await h.settle();
+  const banner=h.get('version-update-notice'),button=banner.children[1];
+  assert.match(banner.children[0].textContent,/V5\.0\.0/);assert.equal(button.disabled,true);
+  h.message({ready:true,build,version:'4.3.2'});assert.equal(button.disabled,true);
+  h.message({ready:true,build,version:'5.0.0'});assert.equal(button.disabled,false);
+  assert.equal(h.calls.reload,0);assert.equal(h.document.body.children[1].tag,'original-workspace');
+  button.click();assert.equal(h.calls.reload,1);
 });
 test('offline, unchanged, and older versions never interrupt the workspace',async()=>{
   for(const option of [{offline:true},{version:'3.9.0'},{version:'3.8.0'}]){

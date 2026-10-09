@@ -22,7 +22,7 @@ export async function buildShowcase({outputDirectory,files,capabilities}){
     await cp(resolve(outputDirectory,path),resolve(output,path));paths.push(path);
   }
   for(const name of ['start.html','showcase.css','showcase-home.js'])await write(name,await readFile(resolve(source,name),'utf8'));
-  const catalog={version:capabilities.version,date:capabilities.date,title:'叫应 AI · 城市韧性协同展示',channel:'showcase',modelConnected:false,agentConnected:false,weatherConnected:false,crossDeviceSync:false,entries:features,limits:[
+  const catalog={version:capabilities.version,date:capabilities.date,title:capabilities.title,channel:'showcase',modelConnected:false,agentConnected:false,weatherConnected:false,crossDeviceSync:false,entries:features,limits:[
     '公开道路来自瑞安局部片区，人员、车辆、接收容量和通行状态为合成演练设定。',
     '公开展示版使用本地规则和调度算法；雨量为模拟数据。',
     '同一浏览器的两端共享演练，不同设备和浏览器各自独立；未连接原叫应系统。',

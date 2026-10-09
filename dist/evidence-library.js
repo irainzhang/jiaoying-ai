@@ -36,8 +36,8 @@
     {id:'effect',label:'效果证据',status:'演练结果',detail:'同条件基线可以复跑，但不能推断真实救助效果、减少伤亡或模型独立贡献。'}
   ];
   const submissionChecklist=[
-    {id:'ppt',label:'解释方案的 PPT',status:'待制作',detail:'应包含问题、SDGs、应用场景、公开数据、Agent 设计、技术路线与价值；当前仅提供讲解结构。',source:'比赛手册 PDF 第4页'},
-    {id:'video',label:'8—10 分钟讲解视频',status:'待录制',detail:'正文要求不超过10分钟，评分表对不足8分钟或超过12分钟扣分；建议控制为8—10分钟。',source:'比赛手册 PDF 第4、6页'},
+    {id:'ppt',label:'解释方案的 PPT',status:'已备展示稿',detail:'展示 PPT 已单独准备，提交前由团队核对最终内容和匿名要求；不随网页公开材料自动分发。',source:'比赛手册 PDF 第4页'},
+    {id:'video',label:'8—10 分钟讲解视频',status:'已备8分15秒版本',detail:'已导出1080p演示视频、中文字幕与配音文稿；最终提交文件由团队确认。',source:'比赛手册 PDF 第4、6页'},
     {id:'code',label:'源码及环境说明 / 可访问链接',status:'随版本发布核验',detail:'以当前 README、可运行源码、依赖许可、公开页面和验证记录为准；当前链接可体验规则整理、调度计算和执行回报。',source:'比赛手册 PDF 第4、8页'},
     {id:'promise',label:'手写签名承诺书扫描件',status:'需团队完成',detail:'由团队成员填写签名材料；承诺书和证件信息不上传公开 GitHub。',source:'比赛手册 PDF 第8、14—15页'},
     {id:'anonymous',label:'匿名展示复核',status:'待最终材料核验',detail:'PPT、视频不含成员单位或个人信息；检查录屏账号、通知、浏览器栏、文件作者和声音自我介绍；公开仓库账号如何处理需向组委会确认。',source:'比赛手册 PDF 第8页'},
