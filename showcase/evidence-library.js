@@ -12,7 +12,7 @@
     {id:'osm-geography',name:'瑞安市城区公开道路与地理要素',kind:'公开地理数据快照',publisher:'OpenStreetMap contributors；经 Overpass API 获取',url:'https://www.openstreetmap.org/copyright',access:'打开 assets/maps/query.overpassql，向 https://overpass-api.de/api/interpreter 提交公开查询；可直接查看仓库的 ruian-osm-raw.json 与 source-metadata.json。无需账号。',jurisdiction:'浙江省瑞安市城区局部：120.60—120.70°E、27.74—27.82°N；不是行政区边界',date:'数据基准 2026-09-22T08:45:51Z；获取 2026-09-22T12:50:33Z',license:'ODbL 1.0；保留 © OpenStreetMap contributors 署名与数据同许可要求',licenseUrl:'https://opendatacommons.org/licenses/odbl/1-0/',fields:['OSM id','WGS84 坐标','highway','name','oneway','waterway','natural','place'],use:'显示真实地理背景，为小片区道路计算提供原始几何和方向标签。',limitations:'公开许可不代表已通过赛事地图来源审核。道路现状、交通限制及灾情尚未核实；地图不能作为真实应急导航。',assets:['assets/maps/ruian-osm-raw.json','assets/maps/ruian-urban.geojson','assets/maps/query.overpassql','assets/maps/source-metadata.json'],synthetic:false,contestApproval:'待组委会确认'},
     {id:'routing-model',name:'瑞安小片区道路计算图与演练通行参数',kind:'公开数据派生＋演练假设',publisher:'本项目，基于 OpenStreetMap',url:repo+'dist/assets/maps/ruian-routing.json',access:'读取公开仓库的 ruian-routing.json；按 scripts/build-road-network.py 从保存的原始 OSM 响应重新生成。生成规则以仓库实际脚本与元数据为准。',jurisdiction:'瑞安市城区选取的连通道路片区',date:'V3.5；原始数据时间同 OSM 目录',license:'派生道路数据库沿用 ODbL 1.0；算法与业务演练参数的独立许可尚未单列',licenseUrl:'https://opendatacommons.org/licenses/odbl/1-0/',fields:['节点及 OSM 来源','路段几何','方向','长度','演练分钟数','演练开放状态'],use:'最短路、可达性、封闭路段后的重新计算及路线展示。',limitations:'仅有限连通图；不包含完整限高限重、转向限制、临时管制和实时路况。长度来自坐标，通行时间与封路事件是演练假设。',assets:['assets/maps/ruian-routing.json'],synthetic:'mixed',contestApproval:'待组委会确认'},
     {id:'synthetic-exercise',name:'公开合成人员、车辆、接收点与事件情景',kind:'合成演练数据',publisher:'本项目',url:repo+'exercise.cjs',access:'从公开源码的 initial()、情景目录及 geo-scenario.cjs 读取；加载场景后可导出本场 JSON。初始样例为 6 组 15 人、3 辆车、2 个接收点。',jurisdiction:'以瑞安为演示背景；无真实居民或机构资源台账',date:'V3.5 固定情景；交互事件时间为操作时间',license:'公开读取；团队尚未单独声明业务样例的再分发许可，参赛使用说明待团队确认',fields:['人数','明确上报的协助/轮椅需求','同行分组','车辆座位与适配能力','接收容量','事件状态'],use:'展示上报、核实、约束计算、执行反馈和可复现对照。',limitations:'集合点及接收点用途是演练设定，不能据道路坐标认定为正式安置场所；不包含真实灾情或真实救助成效。',assets:[],synthetic:true,contestApproval:'合成样例作为参赛数据的使用方式待组委会确认'},
-    {id:'rule-tools',name:'规则整理与可复跑调度工具',kind:'项目实现与声明式规则',publisher:'本项目',url:repo+'exercise.cjs',access:'公开读取 exercise.cjs、resilience.cjs、dispatch-large.cjs、dist/village-assistant.js、dist/field-assistant.js 和 tests；按 README 运行验证。',jurisdiction:'本演练配置',date:'算法标识随方案与报告记录',license:'仓库公开可查看；应用代码尚未单列开源许可证，依赖按各自许可保留',fields:['输入版本','执行版本','约束','优化结果','规则基线','计算耗时','失败原因'],use:'字段整理、路线与车辆分配、同输入基线比较和结果校验。',limitations:'当前无大模型或 Agent 调用。基线是公开声明的模拟派车规则，不是对真实人工指挥表现的测量；求解收益不能称为 AI 独立效果。',assets:[],synthetic:false},
+    {id:'rule-tools',name:'规则整理与可复跑调度工具',kind:'项目实现与声明式规则',publisher:'本项目',url:repo+'exercise.cjs',access:'公开读取 exercise.cjs、resilience.cjs、dispatch-large.cjs、dist/village-assistant.js、dist/field-assistant.js 和 tests；按 README 运行验证。',jurisdiction:'本演练配置',date:'算法标识随方案与报告记录',license:'仓库公开可查看；应用代码尚未单列开源许可证，依赖按各自许可保留',fields:['输入版本','执行版本','约束','优化结果','规则基线','计算耗时','失败原因'],use:'字段整理、路线与车辆分配、同输入基线比较和结果校验。',limitations:'字段由规则整理，路线与资源由算法计算。基线是公开声明的模拟派车规则，不是对真实人工指挥表现的测量；求解收益不能称为 AI 独立效果。',assets:[],synthetic:false},
     {id:'speech-input',name:'浏览器语音识别与现场确认输入',kind:'交互演练输入',publisher:'使用者；识别服务由浏览器提供',url:repo+'dist/voice-input.js',access:'在支持的浏览器中点击语音输入并授权麦克风；识别文字可编辑，确认后才提交。也可使用公开示例文本。',jurisdiction:'当前浏览器演练',date:'每次输入/确认时间随记录保存',license:'输入者应使用有权提供的内容；浏览器识别服务遵循其自身条款',fields:['识别文字','人工更正字段','确认时间','村级批次','处理回执'],use:'减少现场录入步骤，同时保留原话和人工核对。',limitations:'应用未编写音频录制或存储逻辑；浏览器识别可能调用在线服务。确认后的文字可能进入演练记录和导出文件，分享时只使用合成示例。',assets:[],synthetic:'user-input'},
     {id:'exercise-weather',name:'演练天气序列与彩云接口契约',kind:'演练输入；实况未连接',publisher:'本项目；后续实况拟由彩云天气提供',url:repo+'integrations.mjs',access:'通过演练天气操作读取设定值；integrations.mjs 提供请求和归一化契约，本版本不发送彩云请求。',jurisdiction:'当前演练地点',date:'演练更新时间，非真实观测时间',license:'演练参数由项目提供；未来实况使用须另行遵循服务许可及凭证配置',fields:['sourceMode','降水数值','单位','累计时间窗','更新时间','状态'],use:'可重复触发演练条件变化；为后续实况显示预留来源、时间和过期判断。',limitations:'毫米累计量与毫米/小时强度分开；雨量不能直接当作积水深度、确定封路或受灾人数。',assets:[],synthetic:true},
     {id:'policy-ruian',name:'瑞安市防汛防台抗旱应急预案',kind:'公开政府文件',publisher:'瑞安市人民政府办公室',url:ruian,access:'政府政务公开附件可直接下载 PDF，无需账号；按文号和页码核验。',jurisdiction:'浙江省瑞安市行政区域',date:'2023-10-17',license:'政府公开文件；本项目仅提供出处、条款定位和简短转述，未另行声明开放许可',fields:['文号','发布机构','成文日期','条款编号','适用地域'],use:'人员转移、路段管控和持续报送的流程参考。',limitations:'本次核实的是公开文本；尚未取得主管部门对当前有效版本及项目适用性的确认。不能据此批准具体路线、容量或算法权重。',assets:[],synthetic:false},
@@ -27,7 +27,7 @@
     {...ruianBase,id:'policy-reporting',section:'5.5 信息报送',page:37,url:ruian+'#page=37',summary:'防御工作需持续报送；险情灾情和处置变化应及时续报，直至险情排除或灾情稳定、结束。',application:'事件保留状态变化和未解决事项，导出时区分草案、执行和核验记录。',boundary:'演练导出不替代正式信息报送；页面提示时限不是法定报送时限。',tags:['报告','反馈','事件','复盘']}
   ];
   const limits=[
-    {id:'ai',label:'AI / Agent',status:'未接入',detail:'当前为规则整理与实际算法计算，接口预留。不会产生模型调用记录或 AI 效果指标。'},
+    {id:'ai',label:'任务辅助',status:'规则与算法',detail:'需求由规则整理，路线与资源安排由算法计算；结果经人工核对后使用。'},
     {id:'weather',label:'彩云天气',status:'准备完成、未连接',detail:'天气显示演练来源；真实观测、实时交通、GPS 均未接入。'},
     {id:'map-review',label:'赛事地图要求',status:'待组委会确认',detail:'OSM 开放许可不等于赛事所要求的已审核地图来源。正式材料使用前应核实来源资格。'},
     {id:'synthetic-review',label:'合成情景参赛使用',status:'待组委会确认',detail:'公开生成规则和样例，明确为合成数据；其参赛使用方式仍需确认。'},
@@ -38,7 +38,7 @@
   const submissionChecklist=[
     {id:'ppt',label:'解释方案的 PPT',status:'待制作',detail:'应包含问题、SDGs、应用场景、公开数据、Agent 设计、技术路线与价值；当前仅提供讲解结构。',source:'比赛手册 PDF 第4页'},
     {id:'video',label:'8—10 分钟讲解视频',status:'待录制',detail:'正文要求不超过10分钟，评分表对不足8分钟或超过12分钟扣分；建议控制为8—10分钟。',source:'比赛手册 PDF 第4、6页'},
-    {id:'code',label:'源码及环境说明 / 可访问链接',status:'随版本发布核验',detail:'以当前 README、可运行源码、依赖许可、公开页面和验证记录为准；当前链接是规则与调度原型，尚非已接入模型的智能体。',source:'比赛手册 PDF 第4、8页'},
+    {id:'code',label:'源码及环境说明 / 可访问链接',status:'随版本发布核验',detail:'以当前 README、可运行源码、依赖许可、公开页面和验证记录为准；当前链接可体验规则整理、调度计算和执行回报。',source:'比赛手册 PDF 第4、8页'},
     {id:'promise',label:'手写签名承诺书扫描件',status:'需团队完成',detail:'由团队成员填写签名材料；承诺书和证件信息不上传公开 GitHub。',source:'比赛手册 PDF 第8、14—15页'},
     {id:'anonymous',label:'匿名展示复核',status:'待最终材料核验',detail:'PPT、视频不含成员单位或个人信息；检查录屏账号、通知、浏览器栏、文件作者和声音自我介绍；公开仓库账号如何处理需向组委会确认。',source:'比赛手册 PDF 第8页'},
     {id:'source-review',label:'数据、地图及原创关系说明',status:'目录已准备，资格待确认',detail:'保留来源机构与获取方式；向组委会核实地图及合成样例；说明原“叫应”仅有公开报道，本项目没有其源码、接口或官方授权。',source:'比赛手册 PDF 第3—5页'},
@@ -47,7 +47,7 @@
   const presentation=[
     {time:'00:00—00:45',title:'问题和定位',content:'说明基层叫应场景中的任务：谁还未联系、谁需协助、哪里受阻、是否已核验。定位为可核实的人员转移协同原型。'},
     {time:'00:45—01:20',title:'SDGs 与价值边界',content:'关联 SDG 11.5 和13.1，展示需求覆盖、等待和未解决事项等过程指标，不宣称已经减少伤亡。'},
-    {time:'01:20—02:00',title:'数据与架构',content:'区分 OSM 道路、合成人员资源、公开流程预案和演练天气。说明浏览器语音、规则整理、计算工具、人工确认；模型/Agent 均未连接。'},
+    {time:'01:20—02:00',title:'数据与架构',content:'区分 OSM 道路、合成人员资源、公开流程预案和演练天气。说明浏览器语音、规则整理、计算工具与人工确认的分工。'},
     {time:'02:00—03:15',title:'双端上报',content:'加载演练，现场输入新增12人、其中3人需协助且含1名轮椅人员；核对人数口径与原话，确认提交，在同一浏览器的指挥台核实。'},
     {time:'03:15—04:30',title:'约束与基线',content:'查看同快照的车辆、接收点分配、协助需求等待和未安排原因；数据和约束不变，不预写算法提升百分比。'},
     {time:'04:30—05:45',title:'失效与重新计算',content:'演示道路或资源失效，查看受影响任务和新草案。说明已上车对象约束、尚存缺口和需人工协调的资源。'},

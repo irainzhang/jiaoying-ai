@@ -6,13 +6,13 @@
 <p class="hint">如果仍看到旧版布局，可打开 <a href="update.html">保留记录，更新到最新版</a>。</p>
 <section class="section" id="try-demo" aria-labelledby="try-demo-title"><span class="eyebrow">TRY THE DEMO</span><h2 id="try-demo-title">首次试用 · 按这条流程走</h2><p>无需账号或安装。建议在电脑浏览器中打开上方两个入口，分别扮演指挥员与现场人员。</p><ol class="trial-steps"><li><strong>登记资源：</strong>在指挥台点击「资源录入 / 管理」，可用「填入演练示例」快速准备；点击「保存资源并重新计算」。也可展开下方 Excel 示例按顺序导入。</li><li><strong>录入需求：</strong>在「需求录入」选择接人地点、填写人数，核对后保存。语音与 Excel 都会先生成核对表。</li><li><strong>核对并发布：</strong>进入「任务执行」，查看地图、逐车安排和未安排原因，再点击发布。缺少位置、人员编组或容量时，先按页面提示补齐。</li><li><strong>模拟执行：</strong>切换到同一浏览器的现场端，选车后按页面的下一步依次接令、联系、出发及回报；指挥台同步看到进度。</li><li><strong>结束留档：</strong>回到指挥台核验到达，点击「结束当前任务」，在「任务记录」查看或导出结果。提前结束会保留未完成事项。</li></ol>
 <details class="sample-downloads"><summary>下载瑞安演练资源 Excel（工作人员 → 车辆 → 安置点）</summary><p>适用于新建的瑞安真实道路任务。先导入工作人员，再导入车辆、安置点；每次核对后加入草稿，三类全部加入后只需最终保存一次。首次导入工作人员用「新增」；车辆 V1–V3、接收点 S1/S2 用「修改」，以更新默认资源。</p><div class="download-links"><a href="assets/demo-resources/01-staff.xlsx" download>① 工作人员 · 9 名</a><a href="assets/demo-resources/02-vehicles.xlsx" download>② 车辆 · 3 辆</a><a href="assets/demo-resources/03-shelters.xlsx" download>③ 安置接收点 · 2 处</a><a href="assets/demo-resources/README.txt" target="_blank" rel="noopener">字段与导入说明 ↗</a></div><p>表头 * 为必填；（选填）可后补。重复导入前核对编号与操作，不要重复新增工作人员。所有人员、车辆与容量均为合成演练设定；道路坐标不代表获批安置场所。</p></details>
-<p class="trial-boundary"><strong>分享时请说明：</strong>这是交互演练原型。公开版各浏览器独立保存；同一浏览器的两端可联动，不同设备不共享。公开版未接入 DeepSeek；本机语义版需另行启动服务。</p></section>
+<p class="trial-boundary"><strong>分享时请说明：</strong>这是交互演练原型。公开版各浏览器独立保存；同一浏览器的两端可联动，不同设备不共享。需求整理、路线计算与任务记录均可在网页中体验。</p></section>
 <section class="intro-grid">
 <article><span>01</span><h2>需求录入</h2><p>上传 Excel / CSV 名单，或语音说明一批需求；在这里集中核实、补充位置与协助信息。未知项保留待补，不默认填零。</p></article>
 <article><span>02</span><h2>任务执行</h2><p>在同一处看地图、配置资源、点击发布。每车接令和联系后独立发车，送达后可再排一趟。完成演练后点击「结束当前任务」，提前结束也保留未完成事项。</p></article>
 <article><span>03</span><h2>任务记录</h2><p>查看本场结果、历史任务与复盘报告，导出留档。「开始新任务」保存旧场记录，默认从0人开始；可选15人示例，或明确结转上一场仍待接需求。</p></article>
 </section>
-<section class="source-note"><strong>这一版的 AI 与天气状态</strong><p>Excel 名单在本地读取；本机版可配置 DeepSeek 整理口述人员需求与资源，预览明确显示本次来源，失败回退规则。GitHub 静态版不连接模型。路线和资源分配由算法实际计算。「城市韧性守护」可读取本场需求、计算草案并回到主台核对发布；独立算法沙盘与 API 接口说明保留在次级入口。自主 Agent 编排与彩云实况未接通。雨量保持模拟；浏览器语音识别可能联网，不保存录音。</p></section>
+<section class="source-note"><strong>这一版的 AI 与天气状态</strong><p>Excel 名单在本地读取；本机版可配置 DeepSeek 整理口述人员需求与资源，预览明确显示本次来源，失败回退规则。公开版使用本地规则整理需求。路线和资源分配由算法实际计算。「城市韧性守护」可读取本场需求、计算草案并回到主台核对发布；独立算法沙盘与 API 接口说明保留在次级入口。自主 Agent 编排与彩云实况未接通。雨量保持模拟；浏览器语音识别可能联网，不保存录音。</p></section>
 <section class="section"><div class="section-title"><div><span class="eyebrow">CURRENT CAPABILITIES</span><h2>按优化清单逐项对照</h2></div><label>查找功能<input id="filter" type="search" placeholder="输入结束、名单、补报、恢复…"></label></div><p>当前 <span data-version></span> · 2026-10-07。下表来自当前能力目录；旧版会议核对表仅为历史基准。</p><div class="table-wrap"><table><thead><tr><th>编号</th><th>优化项</th><th>当前状态</th><th>完成内容与边界</th></tr></thead><tbody id="capability-list"></tbody></table></div></section>
 <section class="intro-grid">
 <article><h2>现场只做两件事</h2><p>在「执行任务」接收、联系、登记上车与到达；在「补报情况」一次说清新增人员或异常。核对后同步到指挥台，提交记录从二级入口查看。</p></article>

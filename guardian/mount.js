@@ -83,7 +83,7 @@
     if(currentTask)currentTask.element.hidden=mode!=='current';frameBody.hidden=mode==='current';
     if(mode==='current'){
       counts.textContent='3 个主台工具 · 同一场任务 · 人工发布';
-      badge.textContent='运行路径：主台本地规则与调度算法（未连接大模型）';
+      badge.textContent='运行路径：主台本地规则与调度算法';
       independence.textContent='当前主台任务 · 人数、路线、缺项与执行反馈来自同一份主台记录；建议更新后仍需人工在主台发布。';
       currentTask.refresh();
     }else{
@@ -251,7 +251,7 @@
         var caps = payload && payload.capabilities || {};
         counts.textContent = (Array.isArray(caps.tools) ? caps.tools.length : '—') + ' 个工具 · ' +
           (Array.isArray(caps.skills) ? caps.skills.length : '—') + ' 个技能 · 独立演练';
-        if(currentTask&&workspaceMode==='current'){counts.textContent='3 个主台工具 · 同一场任务 · 人工发布';badge.textContent='运行路径：主台本地规则与调度算法（未连接大模型）';independence.textContent='当前主台任务 · 人数、路线、缺项与执行反馈来自同一份主台记录；建议更新后仍需人工在主台发布。';}else updateProvider(caps.provider);
+        if(currentTask&&workspaceMode==='current'){counts.textContent='3 个主台工具 · 同一场任务 · 人工发布';badge.textContent='运行路径：主台本地规则与调度算法';independence.textContent='当前主台任务 · 人数、路线、缺项与执行反馈来自同一份主台记录；建议更新后仍需人工在主台发布。';}else updateProvider(caps.provider);
         connectFrameKeyboard();
       }),
       onTurn: safe(function (turn) { if(!currentTask||workspaceMode==='sandbox')updateProvider(turn && turn.provider); }),

@@ -182,7 +182,7 @@
       if (this.busy) return Promise.resolve({
         ok: false, busy: true, text: '上一轮仍在执行，请等待完成后再提交。',
         actions: [], toolResults: [], warnings: [], citations: [],
-        provider: { provider: 'local-status', providerLabel: '本地执行状态提示', mode: 'offline', disclosure: '此提示未调用大模型或业务工具。' }
+        provider: { provider: 'local-status', providerLabel: '本地执行状态提示', mode: 'offline', disclosure: '本地执行状态提示，不改变业务数据。' }
       });
 
       if (!clean) {

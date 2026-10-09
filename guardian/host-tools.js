@@ -13,7 +13,7 @@
     const publishedDraft=!!draft&&draft.id===d.activePlan?.id;
     const planKind=draft?(fresh?(publishedDraft?'published-current':'current-draft'):'stale-draft'):d.activePlan?'published-record':'none';
     const routeScope=planKind==='published-current'?'已发布方案':planKind==='current-draft'?'当前草案':planKind==='stale-draft'?'旧草案记录':'原发布记录';
-    const result={source:'jiaoying-current-task',stamp:stamp(state),exerciseId:d.exerciseId,name:d.taskName||d.scenario.name,provider:'本地工具与调度算法 · 未连接大模型',closed:['completed','stopped'].includes(d.taskLifecycle?.status),people:m.people,waiting:m.waiting,boarded:m.boarded,arrived:m.arrived,verified:m.verified,pendingReports:s.pendingReports??m.pendingReports??0,pendingInfoPeople:m.unplannedPeople??m.pendingInfoPeople??0,rainfall:d.weather.rainfall,planId:draft?.id||null,activePlanId:d.activePlan?.id||null,planFresh:fresh,planKind,routeScope,served:fresh?draft.servedPeople:null,publishedServed:d.activePlan?.servedPeople??null,routes:[],gaps:[],pending:[],evidence:[]};
+    const result={source:'jiaoying-current-task',stamp:stamp(state),exerciseId:d.exerciseId,name:d.taskName||d.scenario.name,provider:'本地工具与调度算法',closed:['completed','stopped'].includes(d.taskLifecycle?.status),people:m.people,waiting:m.waiting,boarded:m.boarded,arrived:m.arrived,verified:m.verified,pendingReports:s.pendingReports??m.pendingReports??0,pendingInfoPeople:m.unplannedPeople??m.pendingInfoPeople??0,rainfall:d.weather.rainfall,planId:draft?.id||null,activePlanId:d.activePlan?.id||null,planFresh:fresh,planKind,routeScope,served:fresh?draft.servedPeople:null,publishedServed:d.activePlan?.servedPeople??null,routes:[],gaps:[],pending:[],evidence:[]};
     result.routes=(p?.routes||[]).filter(r=>r.people).map(r=>{
       const ids=r.passengerIds||[...(r.onboard||[]),...r.stops.map(x=>x.id)],count=stage=>ids.filter(id=>d.stage[id]===stage).reduce((n,id)=>n+(d.scenario.households.find(h=>h.id===id)?.people||0),0);
       const progress={waiting:count('waiting'),boarded:count('boarded'),arrived:count('arrived'),verified:count('verified')};
@@ -25,7 +25,7 @@
     result.evidence=[{label:'主任务版本',value:`${d.exerciseId} · 输入 ${d.inputVersion} / 执行 ${d.executionVersion} / 修订 ${d.revision}`},{label:'雨量口径',value:`${d.weather.rainfall} mm · ${d.weather.window} · 模拟数据`},{label:'路线依据',value:d.scenario.region.mapKind==='osm-road-network'?'瑞安局部公开道路快照；人员需求由本场录入，资源容量为演练配置':'合成演练路网与配置'}];
     const planSummary=fresh?`${publishedDraft?'当前方案已发布，安排':'当前草案可安排'} ${draft.servedPeople} 人，${result.gaps.reduce((n,x)=>n+x.people,0)} 人需继续协调。`:planKind==='published-record'?`已发布方案 ${d.activePlan.id} 原安排 ${d.activePlan.servedPeople} 人；这是发布时记录，当前剩余可安排人数需重新计算。`:planKind==='stale-draft'?`旧草案 ${draft.id} 的依据已变化；当前剩余可安排人数需重新计算。`:'尚未生成安排。';
     result.summary=`本场 ${m.people} 人，待转移 ${m.waiting} 人，车上 ${m.boarded} 人，到达待核验 ${m.arrived} 人，已核验 ${m.verified} 人。${planSummary}${result.closed?'本场已结束，保留记录供查看。':''}`;
-    result.reportText=[`叫应本场任务摘要：${result.name}`,result.summary,`当前草案 ${result.planId||'无'}；已发布方案 ${result.activePlanId||'无'}；${result.planFresh?'草案版本与当前输入一致':'尚无有效草案，需计算或重新核对'}。`,`现场待核实 ${result.pendingReports} 条；${result.pendingInfoPeople} 人尚缺位置或必要信息，保留待安排。`,...result.routes.map(r=>`${r.scope} · ${r.vehicle}：该次安排 ${r.people} 人；${r.receiptLabel}，车上 ${r.progress.boarded} 人、到达待核验 ${r.progress.arrived} 人、已核验 ${r.progress.verified} 人。${r.pickups.map(x=>x.name).join(' → ')} → ${r.shelter}；该次计划演练累计 ${r.minutes} 分钟。`),...result.gaps.map(x=>`${x.scope}：${x.name} ${x.people} 人；${x.reason}`),...result.evidence.map(x=>`${x.label}：${x.value}`),'本地规则与算法结果，不是大模型回答；模拟天气、资源及通行条件仅供演练，人工确认后执行。不预测水深，不发送真实通知。'].join('\n');
+    result.reportText=[`叫应本场任务摘要：${result.name}`,result.summary,`当前草案 ${result.planId||'无'}；已发布方案 ${result.activePlanId||'无'}；${result.planFresh?'草案版本与当前输入一致':'尚无有效草案，需计算或重新核对'}。`,`现场待核实 ${result.pendingReports} 条；${result.pendingInfoPeople} 人尚缺位置或必要信息，保留待安排。`,...result.routes.map(r=>`${r.scope} · ${r.vehicle}：该次安排 ${r.people} 人；${r.receiptLabel}，车上 ${r.progress.boarded} 人、到达待核验 ${r.progress.arrived} 人、已核验 ${r.progress.verified} 人。${r.pickups.map(x=>x.name).join(' → ')} → ${r.shelter}；该次计划演练累计 ${r.minutes} 分钟。`),...result.gaps.map(x=>`${x.scope}：${x.name} ${x.people} 人；${x.reason}`),...result.evidence.map(x=>`${x.label}：${x.value}`),'本地规则与算法结果；模拟天气、资源及通行条件仅供演练，人工确认后执行。不预测水深，不发送真实通知。'].join('\n');
     return result;
   }
   async function run(host,tool,expected){
@@ -47,13 +47,13 @@
     if(/多少|还有|缺口|进度/.test(value))return {tool:'read_state'};
     if(/安排|重排|调度|规划|计算|研判/.test(value))return {tool:'calculate_draft'};
     if(/人数|多少|情况|状态|任务|读取|查看|进度|路线|缺/.test(value))return {tool:'read_state'};
-    return {tool:null,message:'本场支持“查看当前情况”“重新计算安排”“整理任务报告”。当前为本地规则选择工具，未连接大模型。'};
+    return {tool:null,message:'本场支持“查看当前情况”“重新计算安排”“整理任务报告”。根据本地规则选择工具，读取本场记录并计算。'};
   }
   function createPanel({document:doc,host,beforeReview=()=>{}}){
     const section=doc.createElement('section');section.id='guardian-current-task';section.className='guardian-current-task';
     let latest=null,calculatedAt=null,busy=false,disposed=false;
     const element=(tag,text,className)=>{const x=doc.createElement(tag);if(text!==undefined)x.textContent=text;if(className)x.className=className;return x;};
-    const heading=element('h2','当前主台任务'),label=element('p','本地工具与调度算法 · 未连接大模型','guardian-host-label'),facts=element('div','','guardian-host-facts'),status=element('p','正在读取本场任务…','guardian-host-status');status.setAttribute('role','status');status.setAttribute('aria-live','polite');
+    const heading=element('h2','当前主台任务'),label=element('p','本地工具与调度算法','guardian-host-label'),facts=element('div','','guardian-host-facts'),status=element('p','正在读取本场任务…','guardian-host-status');status.setAttribute('role','status');status.setAttribute('aria-live','polite');
     const actions=element('div',undefined,'guardian-host-actions'),details=element('div',undefined,'guardian-host-results'),form=element('form'),input=element('input'),send=element('button','整理我的问题');input.placeholder='例如：还有多少人没安排？帮我重新计算安排';input.setAttribute('aria-label','询问本场任务');input.maxLength=300;send.type='submit';form.append(input,send);
     const controls=[];
     function addButton(text,callback){const b=element('button',text);b.type='button';b.addEventListener('click',callback);controls.push(b);actions.appendChild(b);return b;}

@@ -51,7 +51,7 @@
     context = context || {};
     const text = typeof input === 'string' ? input.trim() : '';
     const t = normalize(text), data = context.data || {}, villages = data.villages || [];
-    const result = {mode:'local-rules',intent:'clarify',title:'请核对村级上报',summary:'本地规则整理草稿，确认后才会提交。',proposal:null,questions:[],warnings:[],evidence:['依据：输入原文及已登记的演示村；未调用大模型。']};
+    const result = {mode:'local-rules',intent:'clarify',title:'请核对村级上报',summary:'本地规则整理草稿，确认后才会提交。',proposal:null,questions:[],warnings:[],evidence:['依据：输入原文及已登记的演示村，由本地规则整理。']};
     const ask = value => result.questions.push(value);
     const finish = () => { result.questions = unique(result.questions); result.warnings = unique(result.warnings); return result; };
     if (!text) { ask('请先说出或输入本村新增、当前待转移总量或更正人数。'); return finish(); }

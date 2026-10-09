@@ -204,7 +204,7 @@
 
     function localToolProvider() {
       return { mode: 'offline', provider: 'offline', providerLabel: '本地工具执行（人工操作）',
-        disclosure: '本次操作由本地工具执行，未调用大模型。' };
+        disclosure: '本次操作由本地工具执行。' };
     }
 
     /** 人工确认：真实弹层 → 批准令牌 → 用同一组参数重新执行工具 */

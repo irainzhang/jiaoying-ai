@@ -57,7 +57,7 @@
     }
     async function refreshStatus(){
       if(inflight)return inflight;
-      if(!canProbe()){state={...state,checked:true,checking:false,configured:false,connected:false,mode:'offline',reason:'当前为静态演示；使用本机服务地址后可接入 DeepSeek。'};notify();return getStatus();}
+      if(!canProbe()){state={...state,checked:true,checking:false,configured:false,connected:false,mode:'offline',reason:'当前按本地规则整理需求与资源信息，请在核对表确认。'};notify();return getStatus();}
       state={...state,checking:true};
       inflight=(async()=>{try{const data=await request('/api/v3/semantic/status',{timeoutMs:5000});if(typeof data?.configured!=='boolean')throw new Error('当前地址没有可用的语义服务。');state={...state,checked:true,checking:false,configured:data.configured,connected:data.connected===true,mode:data.configured?'server-proxy':'offline',model:text(data.model,100),reason:data.configured?'后端已配置；语义调用是否成功以本次结果为准。':'本机尚未配置 DeepSeek，继续使用本地规则。'};}catch(_){state={...state,checked:true,checking:false,configured:false,connected:false,mode:'offline',reason:'未连接本机语义服务，继续使用本地规则。'};}finally{inflight=null;notify();}return getStatus();})();return inflight;
     }
@@ -87,8 +87,8 @@
       try{const normalized=await fallback();if(signal?.aborted)throw abortError();semantic.normalizedRows=auditRows(normalized.rows||(normalized.proposal?.payload?[normalized.proposal.payload]:[]),kind);record(semantic);return {...normalized,semantic};}
       catch(error){if(signal?.aborted||error.name==='AbortError')throw abortError();record(semantic);error.semantic=semantic;throw error;}
     }
-    function statusHTML(){const s=getStatus();return `<div class="notice semantic-status ${s.configured?'':'warn'}" role="status"><strong>${s.configured?'DeepSeek 语义整理 · 本机代理已配置':'本地规则整理 · 未连接大模型'}</strong><p>${esc(s.checking?'正在检查本机配置…':s.reason)}</p><p>${s.configured?'点击整理会将本次原话与匹配所需的地点、工作人员编号发送给 DeepSeek；Excel 原文件不发送。':'Excel 在浏览器读取，语音转文字后按本地规则整理。'}</p><button type="button" data-ac="semantic-refresh" class="quiet small">刷新语义服务状态</button></div>`;}
-    function sourceHTML(semantic){if(!semantic)return '';const online=semantic.mode==='online';return `<div class="notice semantic-source ${online?'':'warn'}" role="status"><strong>本次来源：${online?'DeepSeek 语义识别'+(semantic.model?' · '+esc(semantic.model):''):'本地规则整理（不是大模型结果）'}</strong><p>${esc(semantic.reason)}</p>${!online&&semantic.sent?'<p>已尝试在线整理，失败后回落本地规则；请核对本次结果。</p>':''}${semantic.evidence?.length?`<details><summary>查看对应原话</summary>${semantic.evidence.map(x=>'<p>'+esc(x)+'</p>').join('')}</details>`:''}<small>仅生成待核对内容，不会自动保存或发布任务。</small></div>`;}
+    function statusHTML(){const s=getStatus();return `<div class="notice semantic-status ${s.configured?'':'warn'}" role="status"><strong>${s.configured?'DeepSeek 语义整理 · 本机代理已配置':'本地规则整理 · 核对后保存'}</strong><p>${esc(s.checking?'正在检查本机配置…':s.reason)}</p><p>${s.configured?'点击整理会将本次原话与匹配所需的地点、工作人员编号发送给 DeepSeek；Excel 原文件不发送。':'Excel 在浏览器读取，语音转文字后按本地规则整理。'}</p><button type="button" data-ac="semantic-refresh" class="quiet small">刷新语义服务状态</button></div>`;}
+    function sourceHTML(semantic){if(!semantic)return '';const online=semantic.mode==='online';return `<div class="notice semantic-source ${online?'':'warn'}" role="status"><strong>本次来源：${online?'DeepSeek 语义识别'+(semantic.model?' · '+esc(semantic.model):''):'本地规则整理'}</strong><p>${esc(semantic.reason)}</p>${!online&&semantic.sent?'<p>已尝试在线整理，失败后回落本地规则；请核对本次结果。</p>':''}${semantic.evidence?.length?`<details><summary>查看对应原话</summary>${semantic.evidence.map(x=>'<p>'+esc(x)+'</p>').join('')}</details>`:''}<small>仅生成待核对内容，不会自动保存或发布任务。</small></div>`;}
     return {interpret,getStatus,refreshStatus,subscribe(fn){listeners.add(fn);return ()=>listeners.delete(fn);},statusHTML,sourceHTML,getHistory:()=>history.map(x=>JSON.parse(JSON.stringify(x))),safeContext,auditRecord};
   }
   return {...createClient(root),createClient};

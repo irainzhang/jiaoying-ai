@@ -87,7 +87,7 @@
     if (['completed','stopped'].includes(data.taskLifecycle?.status)) { ask('本场任务已结束，只读记录不能继续登记；请新建下一场。'); return stop(); }
     if (text.length > 2000) { ask('请将单条现场说明缩短至 2000 字以内。'); return stop(); }
     if (!Array.isArray(scenario.nodes) || !Array.isArray(scenario.edges)) { ask('演练数据尚未就绪，请等待两端连接后再整理。'); return stop(); }
-    result.evidence.push('依据：本次输入原文及当前演练数据；未调用大模型。');
+    result.evidence.push('依据：本次输入原文及当前演练数据，由本地规则整理。');
     // These expressions do not establish that the described event happened.
     if (/(?:可能|也许|似乎|好像|大概|大约|预计|计划|准备|将|即将|打算|稍后|一会儿|待会|等会|尚未|还未|没|并未|并不|不再|并非|不是|不要|无需|无须|未能|未曾|不确定|不清楚|是否|能否|假如|如果|假设|应该|明天|以后|过会|约[0-9一二两三四五六七八九十])/.test(normalized) || /(?:未|不|待)(?:联系|上车|接到|到达|送达|收到|完成|确认|受阻|堵塞|封闭|积水|发生|存在|需要|新增)/.test(normalized) || /[?？]/.test(text)) {
       ask('这段描述含否定、疑问、不确定或将来计划，请明确已经发生的单项结果后再确认。');
