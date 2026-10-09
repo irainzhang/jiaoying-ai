@@ -1,6 +1,6 @@
 {
-  "build": "c456ab2678534b66e185",
-  "version": "4.3.2",
+  "build": "9dd35d78423bdbead024",
+  "version": "5.0.0",
   "channel": "showcase",
   "files": [
     "assets/demo-resources/01-staff.xlsx",

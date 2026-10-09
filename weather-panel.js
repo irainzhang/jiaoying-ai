@@ -71,7 +71,7 @@
         return button(rain + ' mm', rain, view.rainfall === rain ? 'weather-choice is-selected' : 'weather-choice');
       }).join('') + button('启动雨情演练', 50, 'primary weather-start') + '</div>' +
       '<div class="weather-meta"><span>来源：' + escape(view.sourceLabel) + '</span><span>更新时间：' + escape(view.updatedLabel) + '（北京时间）</span></div>' +
-      '<p class="weather-boundary">此处为合成演练雨情，等级不是官方预警。天气变化用于复核安排，不直接推断积水深度或自动封路；实时天气接口尚未接入。</p>' +
+      '<p class="weather-boundary">模拟雨情用于复核安排，等级不是官方预警；不直接推断积水深度或自动封路。</p>' +
       '</div></section>';
   }
   return { render: render, deriveWeather: deriveWeather };
